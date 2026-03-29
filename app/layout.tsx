@@ -15,8 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ReDiscover",
-  description: "Surfacing overlooked drug treatments for women's health",
+  title: {
+    default: "Rediscover Women",
+    template: "%s | Rediscover Women",
+  },
+  description:
+    "Reexamining overlooked drug treatments for women's health. Drug repurposing signals sourced from peer-reviewed literature.",
 };
 
 export default function RootLayout({
@@ -29,7 +33,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-stone-50">
+      <body className="min-h-full flex flex-col bg-slate-50">
         <Nav />
         <div className="flex-1 flex flex-col">{children}</div>
         <Footer />

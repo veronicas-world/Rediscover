@@ -12,13 +12,30 @@ function SectionBlock({
 }) {
   if (!content) return null;
   return (
-    <div>
-      <h3 className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-1">
+    <div className="border-l-2 border-slate-200 pl-4">
+      <h3
+        className="text-xs font-semibold uppercase tracking-widest mb-2"
+        style={{ color: "var(--accent)" }}
+      >
         {label}
       </h3>
-      <p className="text-stone-700 text-sm leading-relaxed">{content}</p>
+      <p className="text-slate-700 text-sm leading-relaxed">{content}</p>
     </div>
   );
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const { data } = await supabase
+    .from("conditions")
+    .select("name")
+    .eq("slug", slug)
+    .single();
+  return { title: data?.name ?? "Condition" };
 }
 
 export default async function ConditionDetailPage({
@@ -71,25 +88,32 @@ export default async function ConditionDetailPage({
     .order("created_at");
 
   return (
-    <main className="max-w-3xl mx-auto w-full px-6 py-16">
+    <main className="max-w-3xl mx-auto w-full px-6 py-12">
+      {/* Back link */}
       <Link
         href="/conditions"
-        className="text-xs font-medium text-stone-500 hover:text-stone-800 transition-colors mb-8 inline-block"
+        className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-slate-700 transition-colors mb-8"
       >
-        ← Back to Conditions
+        ← All Conditions
       </Link>
 
       {/* Condition header */}
-      <h1
-        className="text-4xl font-bold tracking-tight mb-6"
-        style={{ color: "#6b2737" }}
-      >
-        {condition.name}
-      </h1>
+      <div className="mb-10 pb-8 border-b border-slate-200">
+        <h1
+          className="font-heading text-4xl font-bold tracking-tight mb-3 leading-tight"
+          style={{ color: "var(--accent-dark, #0d3d7a)" }}
+        >
+          {condition.name}
+        </h1>
+        {condition.description && (
+          <p className="text-slate-600 text-base leading-relaxed">
+            {condition.description}
+          </p>
+        )}
+      </div>
 
       {/* Condition profile */}
-      <div className="space-y-6 mb-16">
-        <SectionBlock label="Overview" content={condition.description} />
+      <div className="space-y-7 mb-16">
         <SectionBlock
           label="Prevalence"
           content={condition.prevalence_summary}
@@ -107,13 +131,15 @@ export default async function ConditionDetailPage({
 
       {/* Repurposing Signals */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-stone-900 mb-1">
-          Repurposing Signals
-        </h2>
-        <p className="text-stone-500 text-sm mb-8">
-          Existing drugs with evidence supporting investigation for this
-          condition.
-        </p>
+        <div className="mb-8">
+          <h2 className="font-heading text-2xl font-bold tracking-tight text-slate-900 mb-1">
+            Repurposing Signals
+          </h2>
+          <p className="text-slate-500 text-sm">
+            Existing drugs with published evidence supporting investigation for
+            this condition.
+          </p>
+        </div>
 
         <ResearchSignalsTabs signals={(signals ?? []) as unknown as Signal[]} />
       </div>

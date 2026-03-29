@@ -33,15 +33,15 @@ export interface Signal {
 const EVIDENCE_BADGE: Record<string, { label: string; classes: string }> = {
   strong: {
     label: "Strong",
-    classes: "bg-green-100 text-green-800 border border-green-200",
+    classes: "bg-green-50 text-green-700 border border-green-200",
   },
   moderate: {
     label: "Moderate",
-    classes: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+    classes: "bg-blue-50 text-blue-700 border border-blue-200",
   },
   preliminary: {
     label: "Preliminary",
-    classes: "bg-stone-100 text-stone-600 border border-stone-200",
+    classes: "bg-slate-100 text-slate-500 border border-slate-200",
   },
 };
 
@@ -49,10 +49,10 @@ function EvidenceBadge({ strength }: { strength: string | null }) {
   const key = (strength ?? "").toLowerCase();
   const badge = EVIDENCE_BADGE[key] ?? {
     label: strength ?? "Unknown",
-    classes: "bg-stone-100 text-stone-500 border border-stone-200",
+    classes: "bg-slate-100 text-slate-400 border border-slate-200",
   };
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded ${badge.classes}`}>
+    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${badge.classes}`}>
       {badge.label}
     </span>
   );
@@ -60,47 +60,49 @@ function EvidenceBadge({ strength }: { strength: string | null }) {
 
 function SignalCard({ signal }: { signal: Signal }) {
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-6">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
       {/* Compound name + badges */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <h3 className="text-lg font-semibold text-stone-900">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <h3
+          className="text-base font-semibold font-heading"
+          style={{ color: "var(--accent-dark, #0d3d7a)" }}
+        >
           {signal.compounds?.name ?? "Unknown compound"}
         </h3>
         {signal.evidence_strength && (
           <EvidenceBadge strength={signal.evidence_strength} />
         )}
-        {signal.signal_type && (
-          <span className="text-xs text-stone-500 border border-stone-200 rounded px-2 py-0.5">
-            {signal.signal_type}
-          </span>
-        )}
       </div>
 
       {/* Compound meta */}
       {(signal.compounds?.drug_class || signal.compounds?.fda_status) && (
-        <div className="flex gap-4 mb-4 text-xs text-stone-500">
+        <div className="flex flex-wrap gap-3 mb-4 text-xs text-slate-400">
           {signal.compounds.drug_class && (
-            <span>Class: {signal.compounds.drug_class}</span>
+            <span className="bg-slate-50 border border-slate-200 rounded px-2 py-0.5">
+              {signal.compounds.drug_class}
+            </span>
           )}
           {signal.compounds.fda_status && (
-            <span>FDA: {signal.compounds.fda_status}</span>
+            <span className="bg-slate-50 border border-slate-200 rounded px-2 py-0.5">
+              {signal.compounds.fda_status}
+            </span>
           )}
         </div>
       )}
 
       {/* Signal body */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {signal.summary && (
-          <p className="text-sm text-stone-700 leading-relaxed">
+          <p className="text-sm text-slate-700 leading-relaxed">
             {signal.summary}
           </p>
         )}
         {signal.mechanism_hypothesis && (
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-stone-400">
+          <div className="border-l-2 border-slate-200 pl-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-slate-400 block mb-1">
               Proposed Mechanism
             </span>
-            <p className="text-sm text-stone-600 leading-relaxed mt-0.5">
+            <p className="text-sm text-slate-600 leading-relaxed">
               {signal.mechanism_hypothesis}
             </p>
           </div>
@@ -109,47 +111,48 @@ function SignalCard({ signal }: { signal: Signal }) {
 
       {/* Sources */}
       {signal.sources && signal.sources.length > 0 && (
-        <div className="mt-5 pt-4 border-t border-stone-100">
-          <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-2">
+        <div className="mt-6 pt-4 border-t border-slate-100">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
             Sources
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {signal.sources.map((source) => (
-              <li key={source.id} className="text-xs text-stone-600 leading-relaxed">
+              <li key={source.id} className="text-xs text-slate-600 leading-relaxed">
                 {source.url ? (
                   <a
                     href={source.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium underline underline-offset-2 hover:text-stone-900"
+                    className="font-medium hover:underline underline-offset-2"
+                    style={{ color: "var(--accent)" }}
                   >
                     {source.title ?? source.external_id ?? source.url}
                   </a>
                 ) : (
-                  <span className="font-medium">
+                  <span className="font-medium text-slate-700">
                     {source.title ?? source.external_id ?? "Source"}
                   </span>
                 )}
                 {source.authors && (
-                  <span className="text-stone-400"> — {source.authors}</span>
+                  <span className="text-slate-400"> — {source.authors}</span>
                 )}
                 {source.journal && (
-                  <span className="text-stone-400 italic">, {source.journal}</span>
+                  <span className="text-slate-400 italic">, {source.journal}</span>
                 )}
                 {source.publication_date && (
-                  <span className="text-stone-400">
+                  <span className="text-slate-400">
                     {" "}({source.publication_date.slice(0, 4)})
                   </span>
                 )}
+                {source.external_id && source.source_type === "pubmed" && (
+                  <span className="ml-1 text-slate-400">
+                    · PMID {source.external_id}
+                  </span>
+                )}
                 {source.key_finding_excerpt && (
-                  <p className="mt-1 text-stone-500 italic">
+                  <p className="mt-1.5 text-slate-500 italic leading-relaxed">
                     &ldquo;{source.key_finding_excerpt}&rdquo;
                   </p>
-                )}
-                {source.external_id && source.source_type === "pubmed" && (
-                  <span className="ml-1 text-stone-400">
-                    PMID: {source.external_id}
-                  </span>
                 )}
               </li>
             ))}
@@ -171,15 +174,15 @@ const CAUTION_TYPE = "caution_signal";
 
 function CautionSignalCard({ signal }: { signal: Signal }) {
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 shadow-sm">
       {/* Compound name + warning badge */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <span className="text-amber-700 text-base" aria-hidden="true">⚠</span>
-        <h3 className="text-lg font-semibold text-amber-900">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <span className="text-amber-600 text-sm" aria-hidden="true">⚠</span>
+        <h3 className="text-base font-semibold font-heading text-amber-900">
           {signal.compounds?.name ?? "Unknown compound"}
         </h3>
         {signal.evidence_strength && (
-          <span className="text-xs font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
             {signal.evidence_strength.charAt(0).toUpperCase() +
               signal.evidence_strength.slice(1)}
           </span>
@@ -188,29 +191,33 @@ function CautionSignalCard({ signal }: { signal: Signal }) {
 
       {/* Compound meta */}
       {(signal.compounds?.drug_class || signal.compounds?.fda_status) && (
-        <div className="flex gap-4 mb-4 text-xs text-amber-700">
+        <div className="flex flex-wrap gap-3 mb-4 text-xs text-amber-700">
           {signal.compounds.drug_class && (
-            <span>Class: {signal.compounds.drug_class}</span>
+            <span className="bg-amber-100 border border-amber-200 rounded px-2 py-0.5">
+              {signal.compounds.drug_class}
+            </span>
           )}
           {signal.compounds.fda_status && (
-            <span>FDA: {signal.compounds.fda_status}</span>
+            <span className="bg-amber-100 border border-amber-200 rounded px-2 py-0.5">
+              {signal.compounds.fda_status}
+            </span>
           )}
         </div>
       )}
 
       {/* Signal body */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {signal.summary && (
           <p className="text-sm text-amber-900 leading-relaxed">
             {signal.summary}
           </p>
         )}
         {signal.mechanism_hypothesis && (
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-amber-600">
+          <div className="border-l-2 border-amber-300 pl-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-amber-600 block mb-1">
               Harm Mechanism
             </span>
-            <p className="text-sm text-amber-800 leading-relaxed mt-0.5">
+            <p className="text-sm text-amber-800 leading-relaxed">
               {signal.mechanism_hypothesis}
             </p>
           </div>
@@ -219,11 +226,11 @@ function CautionSignalCard({ signal }: { signal: Signal }) {
 
       {/* Sources */}
       {signal.sources && signal.sources.length > 0 && (
-        <div className="mt-5 pt-4 border-t border-amber-200">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 mb-2">
+        <div className="mt-6 pt-4 border-t border-amber-200">
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 mb-3">
             Sources
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {signal.sources.map((source) => (
               <li key={source.id} className="text-xs text-amber-800 leading-relaxed">
                 {source.url ? (
@@ -251,15 +258,15 @@ function CautionSignalCard({ signal }: { signal: Signal }) {
                     {" "}({source.publication_date.slice(0, 4)})
                   </span>
                 )}
-                {source.key_finding_excerpt && (
-                  <p className="mt-1 text-amber-700 italic">
-                    &ldquo;{source.key_finding_excerpt}&rdquo;
-                  </p>
-                )}
                 {source.external_id && source.source_type === "pubmed" && (
                   <span className="ml-1 text-amber-600">
-                    PMID: {source.external_id}
+                    · PMID {source.external_id}
                   </span>
+                )}
+                {source.key_finding_excerpt && (
+                  <p className="mt-1.5 text-amber-700 italic leading-relaxed">
+                    &ldquo;{source.key_finding_excerpt}&rdquo;
+                  </p>
                 )}
               </li>
             ))}
@@ -286,37 +293,47 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
   );
 
   const tabBase =
-    "pb-2 text-sm font-medium transition-colors focus:outline-none";
+    "pb-3 text-sm font-medium transition-colors focus:outline-none whitespace-nowrap";
   const activeStyle = {
-    color: "#6b2737",
-    borderBottom: "2px solid #6b2737",
+    color: "var(--accent)",
+    borderBottom: "2px solid var(--accent)",
   };
   const activeCautionStyle = {
     color: "#b45309",
     borderBottom: "2px solid #b45309",
   };
   const inactiveStyle = {
-    color: "#78716c",
+    color: "#94a3b8",
     borderBottom: "2px solid transparent",
   };
 
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex gap-6 mb-6 border-b border-stone-200">
+      <div className="flex gap-6 mb-8 border-b border-slate-200 overflow-x-auto">
         <button
           className={tabBase}
           style={activeTab === "direct" ? activeStyle : inactiveStyle}
           onClick={() => setActiveTab("direct")}
         >
           Direct Research
+          {directSignals.length > 0 && (
+            <span className="ml-1.5 text-xs bg-slate-100 text-slate-500 rounded-full px-1.5 py-0.5">
+              {directSignals.length}
+            </span>
+          )}
         </button>
         <button
           className={tabBase}
           style={activeTab === "cross" ? activeStyle : inactiveStyle}
           onClick={() => setActiveTab("cross")}
         >
-          Cross-Condition Signals
+          Cross-Condition
+          {crossSignals.length > 0 && (
+            <span className="ml-1.5 text-xs bg-slate-100 text-slate-500 rounded-full px-1.5 py-0.5">
+              {crossSignals.length}
+            </span>
+          )}
         </button>
         <button
           className={tabBase}
@@ -325,7 +342,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
         >
           Caution Signals
           {cautionSignals.length > 0 && (
-            <span className="ml-1.5 text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5">
+            <span className="ml-1.5 text-xs bg-amber-100 text-amber-600 rounded-full px-1.5 py-0.5">
               {cautionSignals.length}
             </span>
           )}
@@ -336,11 +353,11 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
       {activeTab === "direct" && (
         <div>
           {directSignals.length === 0 ? (
-            <p className="text-stone-500 text-sm italic">
-              Research in progress — no signals identified yet.
+            <p className="text-slate-400 text-sm italic py-4">
+              Research in progress — no direct signals identified yet.
             </p>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {directSignals.map((signal) => (
                 <SignalCard key={signal.id} signal={signal} />
               ))}
@@ -352,18 +369,21 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
       {/* Cross-Condition Signals tab */}
       {activeTab === "cross" && (
         <div>
-          <p className="text-sm text-stone-600 leading-relaxed mb-6 p-4 bg-stone-50 border border-stone-200 rounded-lg">
-            These signals come from studies where drugs developed for other
-            conditions showed unexpected improvements in symptoms related to this
-            condition. These are not direct clinical trials — they are indirect
-            signals that suggest further research may be warranted.
-          </p>
+          <div className="flex gap-3 items-start p-4 bg-blue-50 border border-blue-100 rounded-lg mb-6">
+            <span className="text-blue-400 text-sm mt-0.5 shrink-0">ℹ</span>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Drugs developed for other conditions that showed incidental benefit
+              for symptoms related to this condition. These are hypothesis-generating
+              signals — not treatment evidence — but they identify compounds worth
+              investigating.
+            </p>
+          </div>
           {crossSignals.length === 0 ? (
-            <p className="text-stone-500 text-sm italic">
-              Cross-condition signal research is in progress for this condition.
+            <p className="text-slate-400 text-sm italic py-4">
+              Cross-condition signals are in progress for this condition.
             </p>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {crossSignals.map((signal) => (
                 <SignalCard key={signal.id} signal={signal} />
               ))}
@@ -375,17 +395,20 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
       {/* Caution Signals tab */}
       {activeTab === "caution" && (
         <div>
-          <p className="text-sm text-amber-800 leading-relaxed mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            These drugs have been associated with worsening or triggering this
-            condition. This information is important for patients currently taking
-            these medications and for clinicians considering treatment options.
-          </p>
+          <div className="flex gap-3 items-start p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
+            <span className="text-amber-500 text-sm mt-0.5 shrink-0">⚠</span>
+            <p className="text-sm text-amber-800 leading-relaxed">
+              These drugs have been associated with worsening or triggering this
+              condition. Important for patients currently taking these medications
+              and clinicians considering treatment options.
+            </p>
+          </div>
           {cautionSignals.length === 0 ? (
-            <p className="text-stone-500 text-sm italic">
+            <p className="text-slate-400 text-sm italic py-4">
               No caution signals have been identified for this condition yet.
             </p>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {cautionSignals.map((signal) => (
                 <CautionSignalCard key={signal.id} signal={signal} />
               ))}
