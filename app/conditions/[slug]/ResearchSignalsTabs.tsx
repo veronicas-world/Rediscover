@@ -167,16 +167,122 @@ const CROSS_CONDITION_TYPES = new Set([
   "claims_data_analysis",
 ]);
 
-type Tab = "direct" | "cross";
+const CAUTION_TYPE = "caution_signal";
+
+function CautionSignalCard({ signal }: { signal: Signal }) {
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+      {/* Compound name + warning badge */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <span className="text-amber-700 text-base" aria-hidden="true">⚠</span>
+        <h3 className="text-lg font-semibold text-amber-900">
+          {signal.compounds?.name ?? "Unknown compound"}
+        </h3>
+        {signal.evidence_strength && (
+          <span className="text-xs font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+            {signal.evidence_strength.charAt(0).toUpperCase() +
+              signal.evidence_strength.slice(1)}
+          </span>
+        )}
+      </div>
+
+      {/* Compound meta */}
+      {(signal.compounds?.drug_class || signal.compounds?.fda_status) && (
+        <div className="flex gap-4 mb-4 text-xs text-amber-700">
+          {signal.compounds.drug_class && (
+            <span>Class: {signal.compounds.drug_class}</span>
+          )}
+          {signal.compounds.fda_status && (
+            <span>FDA: {signal.compounds.fda_status}</span>
+          )}
+        </div>
+      )}
+
+      {/* Signal body */}
+      <div className="space-y-3">
+        {signal.summary && (
+          <p className="text-sm text-amber-900 leading-relaxed">
+            {signal.summary}
+          </p>
+        )}
+        {signal.mechanism_hypothesis && (
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-widest text-amber-600">
+              Harm Mechanism
+            </span>
+            <p className="text-sm text-amber-800 leading-relaxed mt-0.5">
+              {signal.mechanism_hypothesis}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Sources */}
+      {signal.sources && signal.sources.length > 0 && (
+        <div className="mt-5 pt-4 border-t border-amber-200">
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 mb-2">
+            Sources
+          </p>
+          <ul className="space-y-2">
+            {signal.sources.map((source) => (
+              <li key={source.id} className="text-xs text-amber-800 leading-relaxed">
+                {source.url ? (
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium underline underline-offset-2 hover:text-amber-900"
+                  >
+                    {source.title ?? source.external_id ?? source.url}
+                  </a>
+                ) : (
+                  <span className="font-medium">
+                    {source.title ?? source.external_id ?? "Source"}
+                  </span>
+                )}
+                {source.authors && (
+                  <span className="text-amber-600"> — {source.authors}</span>
+                )}
+                {source.journal && (
+                  <span className="text-amber-600 italic">, {source.journal}</span>
+                )}
+                {source.publication_date && (
+                  <span className="text-amber-600">
+                    {" "}({source.publication_date.slice(0, 4)})
+                  </span>
+                )}
+                {source.key_finding_excerpt && (
+                  <p className="mt-1 text-amber-700 italic">
+                    &ldquo;{source.key_finding_excerpt}&rdquo;
+                  </p>
+                )}
+                {source.external_id && source.source_type === "pubmed" && (
+                  <span className="ml-1 text-amber-600">
+                    PMID: {source.external_id}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type Tab = "direct" | "cross" | "caution";
 
 export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("direct");
 
+  const cautionSignals = signals.filter((s) => s.signal_type === CAUTION_TYPE);
   const crossSignals = signals.filter(
     (s) => s.signal_type && CROSS_CONDITION_TYPES.has(s.signal_type)
   );
   const directSignals = signals.filter(
-    (s) => !CROSS_CONDITION_TYPES.has(s.signal_type ?? "")
+    (s) =>
+      s.signal_type !== CAUTION_TYPE &&
+      !CROSS_CONDITION_TYPES.has(s.signal_type ?? "")
   );
 
   const tabBase =
@@ -185,8 +291,12 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
     color: "#6b2737",
     borderBottom: "2px solid #6b2737",
   };
+  const activeCautionStyle = {
+    color: "#b45309",
+    borderBottom: "2px solid #b45309",
+  };
   const inactiveStyle = {
-    color: "#78716c", // stone-500
+    color: "#78716c",
     borderBottom: "2px solid transparent",
   };
 
@@ -207,6 +317,18 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
           onClick={() => setActiveTab("cross")}
         >
           Cross-Condition Signals
+        </button>
+        <button
+          className={tabBase}
+          style={activeTab === "caution" ? activeCautionStyle : inactiveStyle}
+          onClick={() => setActiveTab("caution")}
+        >
+          Caution Signals
+          {cautionSignals.length > 0 && (
+            <span className="ml-1.5 text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5">
+              {cautionSignals.length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -244,6 +366,28 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
             <div className="space-y-8">
               {crossSignals.map((signal) => (
                 <SignalCard key={signal.id} signal={signal} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Caution Signals tab */}
+      {activeTab === "caution" && (
+        <div>
+          <p className="text-sm text-amber-800 leading-relaxed mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            These drugs have been associated with worsening or triggering this
+            condition. This information is important for patients currently taking
+            these medications and for clinicians considering treatment options.
+          </p>
+          {cautionSignals.length === 0 ? (
+            <p className="text-stone-500 text-sm italic">
+              No caution signals have been identified for this condition yet.
+            </p>
+          ) : (
+            <div className="space-y-8">
+              {cautionSignals.map((signal) => (
+                <CautionSignalCard key={signal.id} signal={signal} />
               ))}
             </div>
           )}
