@@ -3,27 +3,6 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ResearchSignalsTabs, { type Signal } from "./ResearchSignalsTabs";
 
-function SectionBlock({
-  label,
-  content,
-}: {
-  label: string;
-  content: string | null;
-}) {
-  if (!content) return null;
-  return (
-    <div className="border-l-2 border-slate-200 pl-4">
-      <h3
-        className="text-xs font-semibold uppercase tracking-widest mb-2"
-        style={{ color: "var(--accent)" }}
-      >
-        {label}
-      </h3>
-      <p className="text-slate-700 text-sm leading-relaxed">{content}</p>
-    </div>
-  );
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -87,55 +66,120 @@ export default async function ConditionDetailPage({
     .eq("condition_id", condition.id)
     .order("created_at");
 
+  const hasSecondaryInfo = condition.biology_summary || condition.underfunding_notes;
+
   return (
-    <main className="max-w-3xl mx-auto w-full px-6 py-12">
+    <main className="max-w-4xl mx-auto w-full px-6 py-12">
       {/* Back link */}
       <Link
         href="/conditions"
-        className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-slate-700 transition-colors mb-8"
+        className="inline-flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-70 mb-8"
+        style={{ color: "#7A8B7A" }}
       >
         ← All Conditions
       </Link>
 
-      {/* Condition header */}
-      <div className="mb-10 pb-8 border-b border-slate-200">
-        <h1
-          className="font-heading text-4xl font-bold tracking-tight mb-3 leading-tight"
-          style={{ color: "var(--accent-dark, #0d3d7a)" }}
-        >
-          {condition.name}
-        </h1>
+      {/* Condition name */}
+      <h1
+        className="font-heading text-4xl font-bold tracking-tight mb-8 leading-tight"
+        style={{ color: "#333" }}
+      >
+        {condition.name}
+      </h1>
+
+      {/* Two-column profile */}
+      <div
+        className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10 pb-10"
+        style={{ borderBottom: "1px solid #E0DDD8" }}
+      >
+        {/* Left: Definition */}
         {condition.description && (
-          <p className="text-slate-600 text-base leading-relaxed">
-            {condition.description}
-          </p>
+          <div className="md:col-span-3">
+            <p
+              className="text-[10px] uppercase tracking-widest font-semibold mb-2"
+              style={{ color: "#999" }}
+            >
+              Definition
+            </p>
+            <p className="text-base leading-relaxed" style={{ color: "#333" }}>
+              {condition.description}
+            </p>
+          </div>
         )}
+
+        {/* Right: Quick stats */}
+        <div className={`${condition.description ? "md:col-span-2" : "md:col-span-5"} space-y-6`}>
+          {condition.prevalence_summary && (
+            <div>
+              <p
+                className="text-[10px] uppercase tracking-widest font-semibold mb-1.5"
+                style={{ color: "#999" }}
+              >
+                Prevalence
+              </p>
+              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+                {condition.prevalence_summary}
+              </p>
+            </div>
+          )}
+          {condition.treatment_gap_summary && (
+            <div>
+              <p
+                className="text-[10px] uppercase tracking-widest font-semibold mb-1.5"
+                style={{ color: "#999" }}
+              >
+                Treatment Gap
+              </p>
+              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+                {condition.treatment_gap_summary}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Condition profile */}
-      <div className="space-y-7 mb-16">
-        <SectionBlock
-          label="Prevalence"
-          content={condition.prevalence_summary}
-        />
-        <SectionBlock
-          label="Treatment Gap"
-          content={condition.treatment_gap_summary}
-        />
-        <SectionBlock label="Biology" content={condition.biology_summary} />
-        <SectionBlock
-          label="Research & Funding Context"
-          content={condition.underfunding_notes}
-        />
-      </div>
+      {/* Secondary info — full width */}
+      {hasSecondaryInfo && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12">
+          {condition.biology_summary && (
+            <div>
+              <p
+                className="text-[10px] uppercase tracking-widest font-semibold mb-2"
+                style={{ color: "#999" }}
+              >
+                Biology
+              </p>
+              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+                {condition.biology_summary}
+              </p>
+            </div>
+          )}
+          {condition.underfunding_notes && (
+            <div>
+              <p
+                className="text-[10px] uppercase tracking-widest font-semibold mb-2"
+                style={{ color: "#999" }}
+              >
+                Research &amp; Funding Context
+              </p>
+              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+                {condition.underfunding_notes}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Repurposing Signals */}
       <div>
         <div className="mb-8">
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-slate-900 mb-1">
+          <h2
+            className="font-heading text-2xl font-bold tracking-tight mb-1"
+            style={{ color: "#333" }}
+          >
             Repurposing Signals
           </h2>
-          <p className="text-slate-500 text-sm">
+          <p className="text-sm" style={{ color: "#666" }}>
             Existing drugs with published evidence supporting investigation for
             this condition.
           </p>

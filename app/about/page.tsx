@@ -6,11 +6,14 @@ export default function AboutPage() {
   return (
     <main className="max-w-3xl mx-auto w-full px-6 py-16">
       {/* Page header */}
-      <div className="mb-12 pb-8 border-b border-slate-200">
-        <h1 className="font-heading text-3xl font-bold tracking-tight text-slate-900 mb-2">
+      <div className="mb-12 pb-8" style={{ borderBottom: "1px solid #E0DDD8" }}>
+        <h1
+          className="font-heading text-3xl font-bold tracking-tight mb-2"
+          style={{ color: "#333" }}
+        >
           About
         </h1>
-        <p className="text-slate-500 text-base">
+        <p className="text-base" style={{ color: "#666" }}>
           What this tool is, how it works, and why it exists.
         </p>
       </div>
@@ -19,10 +22,10 @@ export default function AboutPage() {
 
         {/* Mission */}
         <section>
-          <h2 className="font-heading text-xl font-bold text-slate-900 mb-5">
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
             Mission
           </h2>
-          <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+          <div className="space-y-4 text-sm leading-relaxed" style={{ color: "#666" }}>
             <p>
               Rediscover Women exists because women&apos;s health conditions are
               systematically underfunded relative to their prevalence and
@@ -34,7 +37,7 @@ export default function AboutPage() {
             <p>
               This tool reverses the typical drug discovery question. Instead of
               asking <em>&ldquo;what does this drug treat?&rdquo;</em> it asks:{" "}
-              <strong className="text-slate-700">
+              <strong style={{ color: "#333" }}>
                 &ldquo;what existing drugs have shown unexpected promise for
                 conditions that aren&apos;t getting enough research attention?&rdquo;
               </strong>
@@ -50,20 +53,20 @@ export default function AboutPage() {
 
         {/* Methodology */}
         <section>
-          <h2 className="font-heading text-xl font-bold text-slate-900 mb-5">
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
             Methodology
           </h2>
-          <p className="text-slate-600 text-sm leading-relaxed mb-6">
+          <p className="text-sm leading-relaxed mb-6" style={{ color: "#666" }}>
             Signals are organized into three categories, each representing a
             different type of evidence and relationship between a drug and a
             condition.
           </p>
           <div className="space-y-4">
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-slate-900 mb-1.5">
+            <div className="bg-white rounded-xl p-5" style={{ border: "1px solid #E0DDD8" }}>
+              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#333" }}>
                 Direct Research
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
                 Published studies and clinical trials specifically targeting the
                 condition — including randomized controlled trials, preclinical
                 studies, computational repurposing analyses, and observational
@@ -71,11 +74,11 @@ export default function AboutPage() {
                 that condition.
               </p>
             </div>
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-slate-900 mb-1.5">
+            <div className="bg-white rounded-xl p-5" style={{ border: "1px solid #E0DDD8" }}>
+              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#333" }}>
                 Cross-Condition Signals
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
                 Studies where drugs developed and approved for entirely different
                 purposes showed incidental benefit for symptoms or biology related
                 to a women&apos;s health condition. These are hypothesis-generating
@@ -84,11 +87,14 @@ export default function AboutPage() {
                 dedicated investigation.
               </p>
             </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-slate-700 mb-1.5">
-                Reverse Signals
+            <div
+              className="rounded-xl p-5"
+              style={{ backgroundColor: "#FEFAF2", border: "1px solid #EAD9B0" }}
+            >
+              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#5D4B20" }}>
+                Pathway Insights
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: "#7A6030" }}>
                 Drugs observed to affect or worsen these conditions — documented
                 through clinical observation, pharmacovigilance data, or mechanistic
                 studies. Rather than serving solely as warnings, these signals offer
@@ -101,10 +107,10 @@ export default function AboutPage() {
 
         {/* Data Sources */}
         <section>
-          <h2 className="font-heading text-xl font-bold text-slate-900 mb-5">
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
             Data Sources
           </h2>
-          <p className="text-slate-600 text-sm leading-relaxed mb-5">
+          <p className="text-sm leading-relaxed mb-5" style={{ color: "#666" }}>
             All signals are sourced from peer-reviewed literature and regulatory
             databases. Every finding includes a cited PMID or primary source
             reference that can be independently verified.
@@ -124,7 +130,7 @@ export default function AboutPage() {
               {
                 name: "FDA Adverse Event Reporting System (FAERS)",
                 detail:
-                  "The FDA's pharmacovigilance database of post-market adverse event reports. Used to identify caution signals where drugs have been associated with worsening specific conditions.",
+                  "The FDA's pharmacovigilance database of post-market adverse event reports. Used to identify pathway signals where drugs have been associated with worsening specific conditions.",
               },
               {
                 name: "FDA Drug Approvals Database",
@@ -134,12 +140,15 @@ export default function AboutPage() {
             ].map(({ name, detail }) => (
               <li
                 key={name}
-                className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm"
+                className="bg-white rounded-xl p-5"
+                style={{ border: "1px solid #E0DDD8" }}
               >
-                <p className="text-sm font-semibold text-slate-900 mb-1">
+                <p className="text-sm font-semibold mb-1" style={{ color: "#333" }}>
                   {name}
                 </p>
-                <p className="text-sm text-slate-500 leading-relaxed">{detail}</p>
+                <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+                  {detail}
+                </p>
               </li>
             ))}
           </ul>
@@ -147,23 +156,23 @@ export default function AboutPage() {
 
         {/* Limitations & Disclaimer */}
         <section>
-          <h2 className="font-heading text-xl font-bold text-slate-900 mb-5">
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
             Limitations &amp; Disclaimer
           </h2>
           <div
-            className="rounded-xl p-5 mb-6 border"
-            style={{ backgroundColor: "#eef3fb", borderColor: "#c3d5ee" }}
+            className="rounded-xl p-5 mb-6"
+            style={{ backgroundColor: "#EEF1EE", border: "1px solid #C8D8C8" }}
           >
-            <p className="text-sm font-semibold text-slate-800 mb-1.5">
+            <p className="text-sm font-semibold mb-1.5" style={{ color: "#333" }}>
               This is a research discovery tool, not medical advice.
             </p>
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: "#5C6B5D" }}>
               Nothing on this site constitutes a treatment recommendation,
               diagnosis, or clinical guideline. Always consult a qualified
               healthcare provider before making any medical decisions.
             </p>
           </div>
-          <ul className="space-y-3 text-sm text-slate-600 leading-relaxed">
+          <ul className="space-y-3 text-sm leading-relaxed" style={{ color: "#666" }}>
             {[
               [
                 "Signals are not recommendations.",
@@ -183,9 +192,9 @@ export default function AboutPage() {
               ],
             ].map(([title, body]) => (
               <li key={title} className="flex gap-3">
-                <span className="text-slate-300 mt-0.5 shrink-0">—</span>
+                <span className="mt-0.5 shrink-0" style={{ color: "#ccc" }}>—</span>
                 <span>
-                  <strong className="text-slate-700">{title}</strong>{" "}
+                  <strong style={{ color: "#333" }}>{title}</strong>{" "}
                   {body}
                 </span>
               </li>
@@ -195,10 +204,10 @@ export default function AboutPage() {
 
         {/* Why Women's Health */}
         <section>
-          <h2 className="font-heading text-xl font-bold text-slate-900 mb-5">
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
             Why Women&apos;s Health?
           </h2>
-          <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+          <div className="space-y-4 text-sm leading-relaxed" style={{ color: "#666" }}>
             <p>
               The underfunding of women&apos;s health is not a recent phenomenon.
               Until 1993, women were routinely excluded from clinical trials — the

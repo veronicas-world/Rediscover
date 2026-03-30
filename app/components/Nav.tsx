@@ -1,35 +1,50 @@
 import Link from "next/link";
-import SearchBar from "./SearchBar";
+
+function FlaskIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M9 3h6" />
+      <path d="M9 3v6.5L5.2 16A2 2 0 007 19h10a2 2 0 001.8-2.6L15 9.4V3" />
+      <path d="M6.5 15h11" />
+    </svg>
+  );
+}
 
 export default function Nav() {
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-6">
+    <header className="sticky top-0 z-40" style={{ backgroundColor: "#5C6B5D" }}>
+      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
         {/* Logo */}
-        <Link
-          href="/"
-          className="text-lg font-bold tracking-tight text-slate-900 shrink-0 font-heading"
-        >
-          Rediscover{" "}
-          <span style={{ color: "var(--accent)" }}>Women</span>
+        <Link href="/" className="flex items-center gap-2.5 text-white shrink-0">
+          <FlaskIcon />
+          <span className="font-heading text-lg font-bold tracking-tight">
+            Rediscover Women
+          </span>
         </Link>
 
-        {/* Search — center, flexible width */}
-        <div className="flex-1 max-w-md">
-          <SearchBar size="sm" />
-        </div>
-
         {/* Nav links */}
-        <nav className="flex items-center gap-5 text-sm font-medium text-slate-500 shrink-0">
+        <nav className="flex items-center gap-6 text-sm font-medium">
           <Link
             href="/conditions"
-            className="hover:text-slate-900 transition-colors"
+            className="transition-opacity hover:opacity-70"
+            style={{ color: "rgba(255,255,255,0.9)" }}
           >
-            Conditions
+            Browse Conditions
           </Link>
           <Link
             href="/about"
-            className="hover:text-slate-900 transition-colors"
+            className="transition-opacity hover:opacity-70"
+            style={{ color: "rgba(255,255,255,0.75)" }}
           >
             About
           </Link>
