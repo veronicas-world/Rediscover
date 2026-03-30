@@ -84,15 +84,16 @@ export default function AboutPage() {
                 dedicated investigation.
               </p>
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-amber-900 mb-1.5">
-                ⚠ Caution Signals
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-slate-700 mb-1.5">
+                Reverse Signals
               </h3>
-              <p className="text-sm text-amber-800 leading-relaxed">
-                Drugs that have been associated with worsening or triggering these
-                conditions — documented through clinical observation,
-                pharmacovigilance data, or mechanistic studies. This is safety
-                information, not a treatment signal.
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Drugs observed to affect or worsen these conditions — documented
+                through clinical observation, pharmacovigilance data, or mechanistic
+                studies. Rather than serving solely as warnings, these signals offer
+                insight into the biological pathways involved and may point toward
+                new therapeutic approaches.
               </p>
             </div>
           </div>

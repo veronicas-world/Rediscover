@@ -121,13 +121,13 @@ export default function Home() {
                 benefit in women&apos;s health contexts.
               </p>
             </div>
-            <div className="bg-white rounded-xl border border-amber-200 p-6 shadow-sm bg-amber-50">
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 mb-2">
-                ⚠ Caution Signals
+            <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                Reverse Signals
               </p>
-              <p className="text-sm text-amber-800 leading-relaxed">
-                Drugs associated with worsening or triggering a condition —
-                important safety information for patients and clinicians.
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Drugs observed to worsen a condition — reframed as insight into
+                biological pathways that may point toward new treatments.
               </p>
             </div>
           </div>

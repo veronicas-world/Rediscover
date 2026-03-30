@@ -172,33 +172,46 @@ const CROSS_CONDITION_TYPES = new Set([
 
 const CAUTION_TYPE = "caution_signal";
 
-function CautionSignalCard({ signal }: { signal: Signal }) {
+function ReverseSignalCard({ signal }: { signal: Signal }) {
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 shadow-sm">
-      {/* Compound name + warning badge */}
+    <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 shadow-sm">
+      {/* Compound name + badges */}
       <div className="flex flex-wrap items-center gap-2 mb-3">
-        <span className="text-amber-600 text-sm" aria-hidden="true">⚠</span>
-        <h3 className="text-base font-semibold font-heading text-amber-900">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-slate-400 shrink-0"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="3" />
+          <path d="M11 2v2M11 20v2M2 11h2M20 11h2" />
+          <path d="m14.5 7.5 1.5-1.5M8 14l-1.5 1.5M14.5 14.5l1.5 1.5M8 8 6.5 6.5" />
+          <line x1="11" y1="14" x2="11" y2="20" />
+        </svg>
+        <h3 className="text-base font-semibold font-heading text-slate-800">
           {signal.compounds?.name ?? "Unknown compound"}
         </h3>
         {signal.evidence_strength && (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
-            {signal.evidence_strength.charAt(0).toUpperCase() +
-              signal.evidence_strength.slice(1)}
-          </span>
+          <EvidenceBadge strength={signal.evidence_strength} />
         )}
       </div>
 
       {/* Compound meta */}
       {(signal.compounds?.drug_class || signal.compounds?.fda_status) && (
-        <div className="flex flex-wrap gap-3 mb-4 text-xs text-amber-700">
+        <div className="flex flex-wrap gap-3 mb-4 text-xs text-slate-400">
           {signal.compounds.drug_class && (
-            <span className="bg-amber-100 border border-amber-200 rounded px-2 py-0.5">
+            <span className="bg-white border border-slate-200 rounded px-2 py-0.5">
               {signal.compounds.drug_class}
             </span>
           )}
           {signal.compounds.fda_status && (
-            <span className="bg-amber-100 border border-amber-200 rounded px-2 py-0.5">
+            <span className="bg-white border border-slate-200 rounded px-2 py-0.5">
               {signal.compounds.fda_status}
             </span>
           )}
@@ -208,16 +221,16 @@ function CautionSignalCard({ signal }: { signal: Signal }) {
       {/* Signal body */}
       <div className="space-y-4">
         {signal.summary && (
-          <p className="text-sm text-amber-900 leading-relaxed">
+          <p className="text-sm text-slate-700 leading-relaxed">
             {signal.summary}
           </p>
         )}
         {signal.mechanism_hypothesis && (
-          <div className="border-l-2 border-amber-300 pl-3">
-            <span className="text-xs font-semibold uppercase tracking-widest text-amber-600 block mb-1">
-              Harm Mechanism
+          <div className="border-l-2 border-slate-300 pl-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-slate-400 block mb-1">
+              Pathway Insight
             </span>
-            <p className="text-sm text-amber-800 leading-relaxed">
+            <p className="text-sm text-slate-600 leading-relaxed">
               {signal.mechanism_hypothesis}
             </p>
           </div>
@@ -226,45 +239,46 @@ function CautionSignalCard({ signal }: { signal: Signal }) {
 
       {/* Sources */}
       {signal.sources && signal.sources.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-amber-200">
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 mb-3">
+        <div className="mt-6 pt-4 border-t border-slate-200">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
             Sources
           </p>
           <ul className="space-y-3">
             {signal.sources.map((source) => (
-              <li key={source.id} className="text-xs text-amber-800 leading-relaxed">
+              <li key={source.id} className="text-xs text-slate-600 leading-relaxed">
                 {source.url ? (
                   <a
                     href={source.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium underline underline-offset-2 hover:text-amber-900"
+                    className="font-medium hover:underline underline-offset-2"
+                    style={{ color: "var(--accent)" }}
                   >
                     {source.title ?? source.external_id ?? source.url}
                   </a>
                 ) : (
-                  <span className="font-medium">
+                  <span className="font-medium text-slate-700">
                     {source.title ?? source.external_id ?? "Source"}
                   </span>
                 )}
                 {source.authors && (
-                  <span className="text-amber-600"> — {source.authors}</span>
+                  <span className="text-slate-400"> — {source.authors}</span>
                 )}
                 {source.journal && (
-                  <span className="text-amber-600 italic">, {source.journal}</span>
+                  <span className="text-slate-400 italic">, {source.journal}</span>
                 )}
                 {source.publication_date && (
-                  <span className="text-amber-600">
+                  <span className="text-slate-400">
                     {" "}({source.publication_date.slice(0, 4)})
                   </span>
                 )}
                 {source.external_id && source.source_type === "pubmed" && (
-                  <span className="ml-1 text-amber-600">
+                  <span className="ml-1 text-slate-400">
                     · PMID {source.external_id}
                   </span>
                 )}
                 {source.key_finding_excerpt && (
-                  <p className="mt-1.5 text-amber-700 italic leading-relaxed">
+                  <p className="mt-1.5 text-slate-500 italic leading-relaxed">
                     &ldquo;{source.key_finding_excerpt}&rdquo;
                   </p>
                 )}
@@ -298,9 +312,9 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
     color: "var(--accent)",
     borderBottom: "2px solid var(--accent)",
   };
-  const activeCautionStyle = {
-    color: "#b45309",
-    borderBottom: "2px solid #b45309",
+  const activeReverseStyle = {
+    color: "#475569",
+    borderBottom: "2px solid #475569",
   };
   const inactiveStyle = {
     color: "#94a3b8",
@@ -337,12 +351,12 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
         </button>
         <button
           className={tabBase}
-          style={activeTab === "caution" ? activeCautionStyle : inactiveStyle}
+          style={activeTab === "caution" ? activeReverseStyle : inactiveStyle}
           onClick={() => setActiveTab("caution")}
         >
-          Caution Signals
+          Reverse Signals
           {cautionSignals.length > 0 && (
-            <span className="ml-1.5 text-xs bg-amber-100 text-amber-600 rounded-full px-1.5 py-0.5">
+            <span className="ml-1.5 text-xs bg-slate-100 text-slate-500 rounded-full px-1.5 py-0.5">
               {cautionSignals.length}
             </span>
           )}
@@ -392,25 +406,39 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
         </div>
       )}
 
-      {/* Caution Signals tab */}
+      {/* Reverse Signals tab */}
       {activeTab === "caution" && (
         <div>
-          <div className="flex gap-3 items-start p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
-            <span className="text-amber-500 text-sm mt-0.5 shrink-0">⚠</span>
-            <p className="text-sm text-amber-800 leading-relaxed">
-              These drugs have been associated with worsening or triggering this
-              condition. Important for patients currently taking these medications
-              and clinicians considering treatment options.
+          <div className="flex gap-3 items-start p-4 bg-slate-50 border border-slate-200 rounded-lg mb-6">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-slate-400 mt-0.5 shrink-0"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="3" />
+              <path d="M11 2v2M11 20v2M2 11h2M20 11h2" />
+              <path d="m14.5 7.5 1.5-1.5M8 14l-1.5 1.5M14.5 14.5l1.5 1.5M8 8 6.5 6.5" />
+              <line x1="11" y1="14" x2="11" y2="20" />
+            </svg>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              These drugs have been observed to affect or worsen this condition. Rather than serving solely as warnings, these signals provide valuable insight into the biological pathways involved in the condition — and may point toward new therapeutic approaches. Understanding what makes a condition worse can reveal what might make it better.
             </p>
           </div>
           {cautionSignals.length === 0 ? (
             <p className="text-slate-400 text-sm italic py-4">
-              No caution signals have been identified for this condition yet.
+              No reverse signals have been identified for this condition yet.
             </p>
           ) : (
             <div className="space-y-6">
               {cautionSignals.map((signal) => (
-                <CautionSignalCard key={signal.id} signal={signal} />
+                <ReverseSignalCard key={signal.id} signal={signal} />
               ))}
             </div>
           )}
