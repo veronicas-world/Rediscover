@@ -377,6 +377,24 @@ function esc(val) {
   return `'${String(val).replace(/'/g, "''")}'`;
 }
 
+/**
+ * Title-case a drug/compound name.
+ * Capitalises the first letter of each word; leaves subsequent letters as-is
+ * so acronyms like "GLP-1" or "mTOR" survive if Claude returns them correctly.
+ * Handles hyphenated words (e.g. "anti-inflammatory" → "Anti-Inflammatory").
+ */
+function toTitleCase(name) {
+  if (!name) return name;
+  return name
+    .split(/(\s+|-)/)
+    .map((part, i, arr) => {
+      // Preserve whitespace/hyphen tokens unchanged
+      if (/^[\s-]+$/.test(part)) return part;
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    })
+    .join('');
+}
+
 function generateSQL(condition, conditionId, signals, articlesByPmid) {
   const today = new Date().toISOString().slice(0, 10);
   const out = [];
@@ -404,9 +422,10 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
     return out.join('\n');
   }
 
-  // Pre-assign deterministic UUIDs for this run
+  // Pre-assign deterministic UUIDs for this run; normalise compound name to title case
   const enriched = signals.map(sig => ({
     ...sig,
+    compound_name: toTitleCase(sig.compound_name),
     compoundId: randomUUID(),
     signalId:   randomUUID(),
     pmids:      Array.isArray(sig.pmids) ? sig.pmids : [],

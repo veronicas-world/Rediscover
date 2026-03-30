@@ -66,6 +66,28 @@ function EvidenceBadge({ strength }: { strength: string | null }) {
   );
 }
 
+// Derive a display label from a signal's sources array
+function getSourceLabel(sources: Source[]): string | null {
+  const types = new Set(sources.map((s) => s.source_type));
+  if (types.has("faers")) return "FDA FAERS";
+  if (types.has("pubmed")) return "PubMed";
+  return null;
+}
+
+// Small source badge shown on signal cards
+function SourceBadge({ sources }: { sources: Source[] }) {
+  const label = getSourceLabel(sources);
+  if (!label) return null;
+  return (
+    <span
+      className="text-[10px] font-semibold px-2 py-0.5 rounded tracking-wide whitespace-nowrap"
+      style={{ backgroundColor: "#F0EDE8", color: "#888", border: "1px solid #E0DDD8" }}
+    >
+      Source: {label}
+    </span>
+  );
+}
+
 // Section field label inside cards
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -75,7 +97,9 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Collapsible citations with configurable colors
+// Collapsible citations with configurable colors.
+// PubMed sources render as linked paper titles with authors/journal.
+// FAERS sources render as reaction-category rows with report counts.
 function CollapsibleSources({
   sources,
   linkColor = "#7A8B7A",
@@ -91,6 +115,10 @@ function CollapsibleSources({
 }) {
   const [open, setOpen] = useState(false);
   if (!sources.length) return null;
+
+  const pubmedSources = sources.filter((s) => s.source_type === "pubmed");
+  const faersSources  = sources.filter((s) => s.source_type === "faers");
+  const otherSources  = sources.filter((s) => s.source_type !== "pubmed" && s.source_type !== "faers");
 
   return (
     <div className="mt-5 pt-4" style={{ borderTop: `1px solid ${borderColor}` }}>
@@ -119,50 +147,116 @@ function CollapsibleSources({
       </button>
 
       {open && (
-        <ul className="mt-3 space-y-3">
-          {sources.map((source) => (
-            <li key={source.id} className="text-xs leading-relaxed" style={{ color: textColor }}>
-              {source.url ? (
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium hover:underline underline-offset-2"
-                  style={{ color: linkColor }}
-                >
-                  {source.title ?? source.external_id ?? source.url}
-                </a>
-              ) : (
-                <span className="font-medium" style={{ color: "#333" }}>
-                  {source.title ?? source.external_id ?? "Source"}
-                </span>
-              )}
-              {source.authors && (
-                <span style={{ color: mutedColor }}> — {source.authors}</span>
-              )}
-              {source.journal && (
-                <span style={{ color: mutedColor }} className="italic">
-                  , {source.journal}
-                </span>
-              )}
-              {source.publication_date && (
-                <span style={{ color: mutedColor }}>
-                  {" "}({source.publication_date.slice(0, 4)})
-                </span>
-              )}
-              {source.external_id && source.source_type === "pubmed" && (
-                <span className="ml-1" style={{ color: mutedColor }}>
-                  · PMID {source.external_id}
-                </span>
-              )}
-              {source.key_finding_excerpt && (
-                <p className="mt-1.5 italic leading-relaxed" style={{ color: mutedColor }}>
-                  &ldquo;{source.key_finding_excerpt}&rdquo;
+        <div className="mt-3 space-y-4">
+
+          {/* PubMed sources */}
+          {pubmedSources.length > 0 && (
+            <div>
+              {(faersSources.length > 0 || otherSources.length > 0) && (
+                <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
+                  Published Research
                 </p>
               )}
-            </li>
-          ))}
-        </ul>
+              <ul className="space-y-3">
+                {pubmedSources.map((source) => (
+                  <li key={source.id} className="text-xs leading-relaxed" style={{ color: textColor }}>
+                    {source.url ? (
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium hover:underline underline-offset-2"
+                        style={{ color: linkColor }}
+                      >
+                        {source.title ?? source.external_id ?? source.url}
+                      </a>
+                    ) : (
+                      <span className="font-medium" style={{ color: "#333" }}>
+                        {source.title ?? source.external_id ?? "Source"}
+                      </span>
+                    )}
+                    {source.authors && (
+                      <span style={{ color: mutedColor }}> — {source.authors}</span>
+                    )}
+                    {source.journal && (
+                      <span style={{ color: mutedColor }} className="italic">
+                        , {source.journal}
+                      </span>
+                    )}
+                    {source.publication_date && (
+                      <span style={{ color: mutedColor }}>
+                        {" "}({source.publication_date.slice(0, 4)})
+                      </span>
+                    )}
+                    {source.external_id && (
+                      <span className="ml-1" style={{ color: mutedColor }}>
+                        · PMID {source.external_id}
+                      </span>
+                    )}
+                    {source.key_finding_excerpt && (
+                      <p className="mt-1.5 italic leading-relaxed" style={{ color: mutedColor }}>
+                        &ldquo;{source.key_finding_excerpt}&rdquo;
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* FAERS sources — reaction categories with counts */}
+          {faersSources.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
+                FDA Adverse Event Reports (FAERS)
+              </p>
+              <ul className="space-y-1.5">
+                {faersSources.map((source) => (
+                  <li
+                    key={source.id}
+                    className="flex items-center justify-between text-xs rounded px-3 py-1.5"
+                    style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}
+                  >
+                    <span style={{ color: textColor }}>
+                      {/* Strip the "FAERS: " prefix added by the pipeline for a cleaner display */}
+                      {(source.title ?? "").replace(/^FAERS:\s*/i, "")}
+                    </span>
+                    {source.url && (
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-3 shrink-0 hover:underline underline-offset-2"
+                        style={{ color: mutedColor, fontSize: "10px" }}
+                      >
+                        FDA FAERS ↗
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Other / unknown source types */}
+          {otherSources.length > 0 && (
+            <ul className="space-y-3">
+              {otherSources.map((source) => (
+                <li key={source.id} className="text-xs leading-relaxed" style={{ color: textColor }}>
+                  <span className="font-medium" style={{ color: "#333" }}>
+                    {source.title ?? source.external_id ?? "Source"}
+                  </span>
+                  {source.journal && (
+                    <span style={{ color: mutedColor }} className="italic">
+                      , {source.journal}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+        </div>
       )}
     </div>
   );
@@ -181,8 +275,8 @@ function SignalCard({ signal }: { signal: Signal }) {
         )}
       </div>
 
-      {/* Compound meta tags */}
-      {(signal.compounds?.drug_class || signal.compounds?.fda_status) && (
+      {/* Compound meta tags + source badge */}
+      {(signal.compounds?.drug_class || signal.compounds?.fda_status || signal.sources.length > 0) && (
         <div className="flex flex-wrap gap-2 mb-5">
           {signal.compounds?.drug_class && (
             <span
@@ -200,6 +294,7 @@ function SignalCard({ signal }: { signal: Signal }) {
               {signal.compounds.fda_status}
             </span>
           )}
+          <SourceBadge sources={signal.sources} />
         </div>
       )}
 
@@ -229,13 +324,24 @@ function SignalCard({ signal }: { signal: Signal }) {
 }
 
 const CROSS_CONDITION_TYPES = new Set([
+  "cross_condition_signal",
   "population_study",
-  "side_effect_signal",
   "observational_study",
+  "side_effect_signal",
   "claims_data_analysis",
 ]);
 
-const CAUTION_TYPE = "caution_signal";
+const PATHWAY_TYPES = new Set([
+  "pathway_signal",
+  "caution_signal",
+]);
+
+const DIRECT_TYPES = new Set([
+  "clinical_trial_finding",
+  "case_report",
+  "mechanism_overlap",
+  "review_article",
+]);
 
 // Muted amber palette for Pathway signals
 const amber = {
@@ -291,8 +397,8 @@ function PathwaySignalCard({ signal }: { signal: Signal }) {
         )}
       </div>
 
-      {/* Meta tags */}
-      {(signal.compounds?.drug_class || signal.compounds?.fda_status) && (
+      {/* Meta tags + source badge */}
+      {(signal.compounds?.drug_class || signal.compounds?.fda_status || signal.sources.length > 0) && (
         <div className="flex flex-wrap gap-2 mb-5">
           {signal.compounds?.drug_class && (
             <span
@@ -310,6 +416,7 @@ function PathwaySignalCard({ signal }: { signal: Signal }) {
               {signal.compounds.fda_status}
             </span>
           )}
+          <SourceBadge sources={signal.sources} />
         </div>
       )}
 
@@ -353,13 +460,16 @@ type Tab = "direct" | "cross" | "caution";
 export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("direct");
 
-  const cautionSignals = signals.filter((s) => s.signal_type === CAUTION_TYPE);
+  const cautionSignals = signals.filter(
+    (s) => s.signal_type && PATHWAY_TYPES.has(s.signal_type)
+  );
   const crossSignals = signals.filter(
     (s) => s.signal_type && CROSS_CONDITION_TYPES.has(s.signal_type)
   );
+  // Direct = explicitly known direct types, plus any unrecognised types so nothing is lost
   const directSignals = signals.filter(
     (s) =>
-      s.signal_type !== CAUTION_TYPE &&
+      !PATHWAY_TYPES.has(s.signal_type ?? "") &&
       !CROSS_CONDITION_TYPES.has(s.signal_type ?? "")
   );
 
