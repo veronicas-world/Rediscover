@@ -8,10 +8,10 @@ export default function Footer() {
           {/* Brand */}
           <div className="sm:col-span-1">
             <p className="font-heading text-base font-bold mb-2" style={{ color: "#fff" }}>
-              ReDiscover Women
+              Repertus
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
-              A condition-first research tool for overlooked women&apos;s health signals.
+              Research tool for women&apos;s health. Not medical advice.
             </p>
           </div>
 
@@ -50,7 +50,7 @@ export default function Footer() {
               Important Notice
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
-              Not intended as medical advice. Always consult a qualified healthcare provider before making any treatment decisions.
+              For research purposes only. Always consult a healthcare provider before making treatment decisions.
             </p>
           </div>
         </div>
@@ -61,7 +61,7 @@ export default function Footer() {
           style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}
         >
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-            © 2026 ReDiscover Women
+            © 2026 Repertus
           </p>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
             For research and educational purposes only.

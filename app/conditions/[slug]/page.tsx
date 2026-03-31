@@ -206,7 +206,7 @@ export default async function ConditionDetailPage({
               Repurposing Signals
             </h2>
             <p className="text-sm" style={{ color: "#666" }}>
-              Existing drugs with published evidence supporting investigation for this condition.
+              Existing drugs with published evidence for this condition.
             </p>
           </div>
 

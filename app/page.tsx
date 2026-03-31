@@ -5,7 +5,7 @@ const METHODOLOGY = [
   {
     title: "Direct Research",
     description:
-      "Published studies and clinical trials explicitly testing compounds for a specific condition, including off-label use, investigational drugs, and supplements.",
+      "Published studies and trials directly testing a drug for this condition.",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <ellipse cx="12" cy="5" rx="9" ry="3" />
@@ -17,7 +17,7 @@ const METHODOLOGY = [
   {
     title: "Cross-Condition Signals",
     description:
-      "Evidence from related conditions with shared pathophysiology—such as chronic inflammation, immune dysregulation, or hormonal sensitivity.",
+      "Drugs approved for other conditions that showed incidental benefit for shared biology.",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="17 1 21 5 17 9" />
@@ -30,7 +30,7 @@ const METHODOLOGY = [
   {
     title: "Pathway Insights",
     description:
-      "Reverse-engineered hypotheses from known disease mechanisms: if a pathway is implicated, which approved drugs target that pathway?",
+      "Drugs observed to worsen a condition, revealing which biological pathways are involved.",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="3" />
@@ -59,15 +59,13 @@ export default async function Home() {
               className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight"
               style={{ color: "#1a1a1a" }}
             >
-              A condition-first research tool for overlooked women&apos;s health signals
+              Surfacing overlooked drug signals for women&apos;s health
             </h1>
             <p
               className="text-base sm:text-lg mb-10 max-w-2xl leading-relaxed"
               style={{ color: "#555" }}
             >
-              ReDiscover surfaces drug repurposing candidates and mechanistic insights
-              for underfunded conditions like endometriosis, PMDD, and PCOS—bridging
-              the gap between clinical need and available evidence.
+              Existing drugs. Underresearched conditions. Published evidence you can verify.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
@@ -100,9 +98,6 @@ export default async function Home() {
               >
                 Featured Conditions
               </h2>
-              <p className="text-base" style={{ color: "#666" }}>
-                Explore research signals for conditions affecting millions of women
-              </p>
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-10">
@@ -166,11 +161,8 @@ export default async function Home() {
               className="font-heading text-3xl sm:text-4xl font-bold mb-3"
               style={{ color: "#1a1a1a" }}
             >
-              Methodology
+              How signals are categorized
             </h2>
-            <p className="text-base" style={{ color: "#666" }}>
-              We identify repurposing signals through three complementary research pathways
-            </p>
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

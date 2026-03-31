@@ -22,11 +22,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Rediscover Women",
-    template: "%s | Rediscover Women",
+    default: "Repertus",
+    template: "%s | Repertus",
   },
   description:
-    "A condition-first research tool for overlooked women's health signals. Drug repurposing evidence sourced from peer-reviewed literature.",
+    "Surfacing overlooked drug signals for women's health.",
 };
 
 export default function RootLayout({

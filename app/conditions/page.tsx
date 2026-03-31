@@ -32,8 +32,7 @@ export default async function ConditionsPage() {
             Conditions
           </h1>
           <p className="text-base max-w-xl" style={{ color: "#555" }}>
-            Women&apos;s health conditions with active drug repurposing research
-            and evidence-based signal profiles.
+            Conditions with active drug repurposing signals in the database.
           </p>
         </div>
       </div>

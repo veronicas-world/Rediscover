@@ -4,22 +4,25 @@ import { useState } from "react";
 import Link from "next/link";
 import SearchBar from "./SearchBar";
 
-function FlaskIcon() {
+function VennIcon() {
   return (
     <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
+      width="22"
+      height="18"
+      viewBox="0 0 44 36"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="1.6"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M9 3h6" />
-      <path d="M9 3v6.5L5.2 16A2 2 0 007 19h10a2 2 0 001.8-2.6L15 9.4V3" />
-      <path d="M6.5 15h11" />
+      {/* Left circle */}
+      <circle cx="16" cy="18" r="13" strokeOpacity="0.9" />
+      {/* Right circle */}
+      <circle cx="28" cy="18" r="13" strokeOpacity="0.9" />
+      {/* Top circle */}
+      <circle cx="22" cy="10" r="13" strokeOpacity="0.9" />
     </svg>
   );
 }
@@ -37,9 +40,9 @@ export default function Nav() {
           className="flex items-center gap-2.5 text-white shrink-0"
           onClick={() => setMobileOpen(false)}
         >
-          <FlaskIcon />
+          <VennIcon />
           <span className="font-heading text-base sm:text-lg font-bold tracking-tight">
-            ReDiscover Women
+            Repertus
           </span>
         </Link>
 

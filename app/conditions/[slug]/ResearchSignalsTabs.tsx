@@ -271,7 +271,7 @@ function CollapsibleSources({
                     )}
                     {/* Inclusion note */}
                     <p className="mt-2 text-[10px] leading-relaxed" style={{ color: mutedColor }}>
-                      All adverse event reactions with 2+ reports are shown. Unexpected patterns may indicate undiscovered biological connections.
+                      Reactions with 2+ reports shown. Unexpected patterns may indicate biological connections.
                     </p>
                   </>
                 );
@@ -364,29 +364,30 @@ function SignalCard({ signal }: { signal: Signal }) {
   );
 }
 
-// Direct Research: PubMed / ClinicalTrials.gov studies directly targeting the condition
-const DIRECT_TYPES = new Set([
-  "clinical_trial_finding",
-  "case_report",
-  "mechanism_overlap",
-  "review_article",
-]);
+// Pathway signal_types — these always win regardless of source
+const PATHWAY_SIGNAL_TYPES = new Set(["pathway_signal", "caution_signal"]);
 
-// Cross-Condition: FAERS, SIDER, indirect / population signals
-const CROSS_CONDITION_TYPES = new Set([
-  "cross_condition_signal",
-  "population_study",
-  "observational_study",
-  "side_effect_signal",
-  "drug_label_signal",   // SIDER pipeline
-  "claims_data_analysis",
-]);
+// Source types that belong in Cross-Condition
+const CROSS_SOURCE_TYPES = new Set(["faers", "sider"]);
 
-// Pathways: drugs that affect or worsen the condition
-const PATHWAY_TYPES = new Set([
-  "pathway_signal",
-  "caution_signal",
-]);
+// Source types that belong in Direct Research
+const DIRECT_SOURCE_TYPES = new Set(["pubmed", "clinical_trial"]);
+
+function getSignalTab(signal: Signal): "direct" | "cross" | "caution" {
+  // Pathway signal_type overrides everything
+  if (PATHWAY_SIGNAL_TYPES.has(signal.signal_type ?? "")) return "caution";
+
+  const sourceTypes = signal.sources.map((s) => s.source_type).filter(Boolean);
+
+  // If any source is FAERS or SIDER → Cross-Condition
+  if (sourceTypes.some((t) => CROSS_SOURCE_TYPES.has(t!))) return "cross";
+
+  // If any source is PubMed or ClinicalTrials → Direct Research
+  if (sourceTypes.some((t) => DIRECT_SOURCE_TYPES.has(t!))) return "direct";
+
+  // No sources or unknown source type → Direct Research (default)
+  return "direct";
+}
 
 // Muted amber palette for Pathway signals
 const amber = {
@@ -505,21 +506,9 @@ type Tab = "direct" | "cross" | "caution";
 export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("direct");
 
-  const directSignals = signals.filter(
-    (s) => DIRECT_TYPES.has(s.signal_type ?? "")
-  );
-  const cautionSignals = signals.filter(
-    (s) => PATHWAY_TYPES.has(s.signal_type ?? "")
-  );
-  // Cross-condition: explicitly listed types + anything not in any known set (safe fallback)
-  const crossSignals = signals.filter(
-    (s) =>
-      CROSS_CONDITION_TYPES.has(s.signal_type ?? "") ||
-      (
-        !DIRECT_TYPES.has(s.signal_type ?? "") &&
-        !PATHWAY_TYPES.has(s.signal_type ?? "")
-      )
-  );
+  const directSignals = signals.filter((s) => getSignalTab(s) === "direct");
+  const cautionSignals = signals.filter((s) => getSignalTab(s) === "caution");
+  const crossSignals = signals.filter((s) => getSignalTab(s) === "cross");
 
   const tabs: { key: Tab; label: string; count: number }[] = [
     { key: "direct", label: "Direct Research", count: directSignals.length },
@@ -587,7 +576,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
         <div>
           {directSignals.length === 0 ? (
             <p className="text-sm italic py-4" style={{ color: "#999" }}>
-              Research in progress — no direct signals identified yet.
+              No direct signals identified yet.
             </p>
           ) : (
             <div className="space-y-5">
@@ -623,15 +612,12 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             <p className="text-sm leading-relaxed" style={{ color: "#5C6B5D" }}>
-              Drugs developed for other conditions that showed incidental benefit
-              for symptoms related to this condition. These are hypothesis-generating
-              signals — not treatment evidence — but they identify compounds worth
-              investigating.
+              Drugs approved for other conditions that showed incidental benefit for shared biology. Hypothesis-generating, not treatment evidence.
             </p>
           </div>
           {crossSignals.length === 0 ? (
             <p className="text-sm italic py-4" style={{ color: "#999" }}>
-              Cross-condition signals are in progress for this condition.
+              No cross-condition signals identified yet.
             </p>
           ) : (
             <div className="space-y-5">
@@ -668,16 +654,12 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
               <path d="m14.5 7.5 1.5-1.5M8 14l-1.5 1.5M14.5 14.5l1.5 1.5M8 8 6.5 6.5" />
             </svg>
             <p className="text-sm leading-relaxed" style={{ color: amber.body }}>
-              These drugs have been observed to affect or worsen this condition.
-              Rather than serving solely as warnings, these signals provide valuable
-              insight into the biological pathways involved in the condition — and
-              may point toward new therapeutic approaches. Understanding what makes
-              a condition worse can reveal what might make it better.
+              Drugs observed to affect or worsen this condition. These signals reveal which biological pathways are involved and may point toward new treatment approaches.
             </p>
           </div>
           {cautionSignals.length === 0 ? (
             <p className="text-sm italic py-4" style={{ color: "#999" }}>
-              No pathway signals have been identified for this condition yet.
+              No pathway signals identified yet.
             </p>
           ) : (
             <div className="space-y-5">

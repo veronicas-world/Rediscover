@@ -298,8 +298,7 @@ export default function SearchBar({ size = "sm", onNavigate }: SearchBarProps) {
                 No results found
               </p>
               <p className="text-xs leading-relaxed" style={{ color: "#999" }}>
-                No signals found for this compound yet. We&apos;re continuously
-                expanding our database.
+                No signals for this compound yet. Database is continuously expanding.
               </p>
             </div>
           )}
@@ -451,8 +450,7 @@ export default function SearchBar({ size = "sm", onNavigate }: SearchBarProps) {
                         className="pl-4 pr-4 pb-3 text-xs leading-relaxed"
                         style={{ color: "#999" }}
                       >
-                        No signals found for this compound yet. We&apos;re
-                        continuously expanding our database.
+                        No signals for this compound yet.
                       </p>
                     )}
                   </div>
