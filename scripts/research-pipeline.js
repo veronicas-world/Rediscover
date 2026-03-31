@@ -142,7 +142,17 @@ function parseMedline(text) {
 
 // ── Claude ────────────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a medical research analyst specializing in drug repurposing for women's health. Analyze these abstracts and identify any drugs or compounds that show potential for repurposing. For each signal found, provide: compound_name, original_indication, signal_type (clinical_trial_finding, case_report, mechanism_overlap, review_article, population_study, side_effect_signal, observational_study), evidence_strength (preliminary, moderate, strong), summary, mechanism_hypothesis. Only include signals supported by the abstracts. Return as JSON array.`;
+const SYSTEM_PROMPT = `You are a medical research analyst specializing in drug repurposing for women's health conditions — specifically endometriosis, PMDD, PCOS, adenomyosis, vulvodynia, and menopause. These conditions are chronically underfunded and understudied, so your mandate is to surface ANY signal that could plausibly be relevant to a researcher working in this space.
+
+Err strongly on the side of inclusion. A weak or indirect signal that a researcher can evaluate is more valuable than a missed finding. Include signals even when:
+- The connection is mechanistic rather than direct clinical evidence (e.g. a drug that reduces inflammation or modulates estrogen could be relevant to endometriosis/adenomyosis)
+- The effect was incidental or observed as a side effect in a population that included women with these conditions
+- The evidence is preliminary, a single case report, or computational — label it accurately but still include it
+- The connection is indirect (e.g. improved insulin sensitivity relevant to PCOS, sleep improvement relevant to PMDD, pain reduction relevant to vulvodynia or endometriosis)
+
+For each signal found, provide: compound_name, original_indication, signal_type (clinical_trial_finding, case_report, mechanism_overlap, review_article, population_study, side_effect_signal, observational_study), evidence_strength (preliminary, moderate, strong), summary, mechanism_hypothesis. Include a "pmids" field listing the PMID(s) supporting the signal.
+
+Only exclude a compound if the abstracts contain no plausible connection whatsoever to any of the six conditions or their underlying biology (hormonal, inflammatory, metabolic, neurological, or pain pathways). Return as JSON array.`;
 
 async function analyzeWithClaude(apiKey, condition, articles) {
   const formatted = articles

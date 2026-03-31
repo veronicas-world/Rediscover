@@ -12,12 +12,19 @@ interface ConditionResult {
   description: string | null;
 }
 
+interface ConditionRef {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface CompoundResult {
   type: "compound";
   id: string;
   name: string;
   generic_name: string | null;
   drug_class: string | null;
+  conditions: ConditionRef[];
 }
 
 type Result = ConditionResult | CompoundResult;
@@ -35,7 +42,7 @@ async function runSearch(query: string): Promise<Result[]> {
       .from("compounds")
       .select("id, name, generic_name, drug_class")
       .or(`name.ilike.${q},generic_name.ilike.${q},drug_class.ilike.${q}`)
-      .limit(4),
+      .limit(5),
   ]);
 
   const conditions: ConditionResult[] = (conditionsRes.data ?? []).map((c) => ({
@@ -43,9 +50,39 @@ async function runSearch(query: string): Promise<Result[]> {
     ...c,
   }));
 
-  const compounds: CompoundResult[] = (compoundsRes.data ?? []).map((c) => ({
+  const compoundRows = compoundsRes.data ?? [];
+
+  // Fetch which conditions have signals for the matched compounds, in one query
+  const conditionsByCompound: Record<string, ConditionRef[]> = {};
+  if (compoundRows.length > 0) {
+    const ids = compoundRows.map((c) => c.id);
+    const signalsRes = await supabase
+      .from("repurposing_signals")
+      .select("compound_id, conditions(id, name, slug)")
+      .in("compound_id", ids)
+      .eq("status", "active");
+
+    for (const row of signalsRes.data ?? []) {
+      const cid = row.compound_id as string;
+      // Supabase returns embedded relations as array or object depending on cardinality;
+      // cast through unknown to handle either shape.
+      const raw = row.conditions as unknown;
+      const cond: ConditionRef | null = Array.isArray(raw) ? (raw[0] ?? null) : (raw as ConditionRef | null);
+      if (!cond) continue;
+      if (!conditionsByCompound[cid]) conditionsByCompound[cid] = [];
+      if (!conditionsByCompound[cid].some((c) => c.id === cond.id)) {
+        conditionsByCompound[cid].push(cond);
+      }
+    }
+  }
+
+  const compounds: CompoundResult[] = compoundRows.map((c) => ({
     type: "compound",
-    ...c,
+    id: c.id,
+    name: c.name,
+    generic_name: c.generic_name,
+    drug_class: c.drug_class,
+    conditions: conditionsByCompound[c.id] ?? [],
   }));
 
   return [...conditions, ...compounds];
@@ -95,22 +132,18 @@ export default function SearchBar({ size = "sm" }: SearchBarProps) {
     }, 220);
   }
 
-  function navigate(result: Result) {
+  function navigateToCondition(slug: string) {
     setOpen(false);
     setQuery("");
-    if (result.type === "condition") {
-      router.push(`/conditions/${result.slug}`);
-    } else {
-      router.push("/conditions");
-    }
+    router.push(`/conditions/${slug}`);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") setOpen(false);
   }
 
-  const conditions = results.filter((r): r is ConditionResult => r.type === "condition");
-  const compounds = results.filter((r): r is CompoundResult => r.type === "compound");
+  const conditionResults = results.filter((r): r is ConditionResult => r.type === "condition");
+  const compoundResults  = results.filter((r): r is CompoundResult  => r.type === "compound");
   const hasResults = results.length > 0;
 
   const isLg = size === "lg";
@@ -176,7 +209,8 @@ export default function SearchBar({ size = "sm" }: SearchBarProps) {
             </p>
           ) : (
             <div>
-              {conditions.length > 0 && (
+              {/* Conditions section */}
+              {conditionResults.length > 0 && (
                 <div>
                   <p
                     className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest"
@@ -184,10 +218,10 @@ export default function SearchBar({ size = "sm" }: SearchBarProps) {
                   >
                     Conditions
                   </p>
-                  {conditions.map((r) => (
+                  {conditionResults.map((r) => (
                     <button
                       key={r.id}
-                      onMouseDown={() => navigate(r)}
+                      onMouseDown={() => navigateToCondition(r.slug)}
                       className="w-full text-left px-4 py-2.5 transition-colors"
                       style={{ color: "#333" }}
                       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F5F3EF")}
@@ -204,39 +238,68 @@ export default function SearchBar({ size = "sm" }: SearchBarProps) {
                 </div>
               )}
 
-              {compounds.length > 0 && (
-                <div style={conditions.length > 0 ? { borderTop: "1px solid #F0EDE8" } : {}}>
+              {/* Compounds section */}
+              {compoundResults.length > 0 && (
+                <div style={conditionResults.length > 0 ? { borderTop: "1px solid #F0EDE8" } : {}}>
                   <p
                     className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest"
                     style={{ color: "#999" }}
                   >
                     Compounds
                   </p>
-                  {compounds.map((r) => (
-                    <button
-                      key={r.id}
-                      onMouseDown={() => navigate(r)}
-                      className="w-full text-left px-4 py-2.5 transition-colors"
-                      style={{ color: "#333" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F5F3EF")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <p className="text-sm font-medium">{r.name}</p>
-                      {(r.generic_name || r.drug_class) && (
-                        <p className="text-xs mt-0.5" style={{ color: "#999" }}>
-                          {[r.generic_name, r.drug_class].filter(Boolean).join(" · ")}
+                  {compoundResults.map((compound) => (
+                    <div key={compound.id}>
+                      {/* Compound header — not a nav target itself */}
+                      <div className="px-4 pt-2 pb-1">
+                        <p className="text-sm font-medium" style={{ color: "#333" }}>
+                          {compound.name}
+                        </p>
+                        {(compound.generic_name || compound.drug_class) && (
+                          <p className="text-xs mt-0.5" style={{ color: "#999" }}>
+                            {[compound.generic_name, compound.drug_class]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Condition sub-links */}
+                      {compound.conditions.length > 0 ? (
+                        <div className="pb-1.5">
+                          {compound.conditions.map((cond) => (
+                            <button
+                              key={cond.id}
+                              onMouseDown={() => navigateToCondition(cond.slug)}
+                              className="w-full text-left flex items-center gap-2 pl-7 pr-4 py-1.5 transition-colors"
+                              style={{ color: "#5C6B5D" }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F5F3EF")}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                            >
+                              <svg
+                                width="10"
+                                height="10"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="shrink-0"
+                                style={{ color: "#aaa" }}
+                              >
+                                <polyline points="9 18 15 12 9 6" />
+                              </svg>
+                              <span className="text-xs">{cond.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="pl-7 pr-4 pb-2.5 text-xs" style={{ color: "#bbb" }}>
+                          No signals indexed yet
                         </p>
                       )}
-                    </button>
+                    </div>
                   ))}
-                </div>
-              )}
-
-              {compounds.length > 0 && (
-                <div className="px-4 py-2" style={{ borderTop: "1px solid #F0EDE8" }}>
-                  <p className="text-xs" style={{ color: "#bbb" }}>
-                    Compound results link to the conditions list.
-                  </p>
                 </div>
               )}
             </div>

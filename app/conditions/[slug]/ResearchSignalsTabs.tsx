@@ -204,37 +204,78 @@ function CollapsibleSources({
             </div>
           )}
 
-          {/* FAERS sources — reaction categories with counts */}
+          {/* FAERS sources — query summary + reaction categories with counts */}
           {faersSources.length > 0 && (
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
                 FDA Adverse Event Reports (FAERS)
               </p>
-              <ul className="space-y-1.5">
-                {faersSources.map((source) => (
-                  <li
-                    key={source.id}
-                    className="flex items-center justify-between text-xs rounded px-3 py-1.5"
-                    style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}
-                  >
-                    <span style={{ color: textColor }}>
-                      {/* Strip the "FAERS: " prefix added by the pipeline for a cleaner display */}
-                      {(source.title ?? "").replace(/^FAERS:\s*/i, "")}
-                    </span>
-                    {source.url && (
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-3 shrink-0 hover:underline underline-offset-2"
-                        style={{ color: mutedColor, fontSize: "10px" }}
+              {(() => {
+                const querySummary = faersSources.find((s) =>
+                  (s.external_id ?? "").startsWith("FAERS-QUERY-")
+                );
+                const reactionRows = faersSources.filter((s) =>
+                  !(s.external_id ?? "").startsWith("FAERS-QUERY-")
+                );
+                return (
+                  <>
+                    {/* Volume summary row */}
+                    {querySummary && (
+                      <div
+                        className="rounded px-3 py-2 mb-2 text-xs leading-snug"
+                        style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8", color: textColor }}
                       >
-                        FDA FAERS ↗
-                      </a>
+                        <span style={{ color: mutedColor }}>
+                          {/* Strip "FDA FAERS Database Query: " prefix for a tighter label */}
+                          {(querySummary.title ?? "").replace(/^FDA FAERS Database Query:\s*/i, "")}
+                        </span>
+                        {querySummary.url && (
+                          <a
+                            href={querySummary.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-2 hover:underline underline-offset-2 whitespace-nowrap"
+                            style={{ color: mutedColor, fontSize: "10px" }}
+                          >
+                            FDA FAERS ↗ (raw FDA data)
+                          </a>
+                        )}
+                      </div>
                     )}
-                  </li>
-                ))}
-              </ul>
+                    {/* Per-reaction pill rows */}
+                    {reactionRows.length > 0 && (
+                      <ul className="space-y-1.5">
+                        {reactionRows.map((source) => (
+                          <li
+                            key={source.id}
+                            className="flex items-center justify-between text-xs rounded px-3 py-1.5"
+                            style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}
+                          >
+                            <span style={{ color: textColor }}>
+                              {(source.title ?? "").replace(/^FAERS:\s*/i, "")}
+                            </span>
+                            {source.url && (
+                              <a
+                                href={source.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-3 shrink-0 hover:underline underline-offset-2 whitespace-nowrap"
+                                style={{ color: mutedColor, fontSize: "10px" }}
+                              >
+                                verify ↗ (raw FDA data)
+                              </a>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {/* Inclusion note */}
+                    <p className="mt-2 text-[10px] leading-relaxed" style={{ color: mutedColor }}>
+                      All adverse event reactions with 2+ reports are shown. Unexpected patterns may indicate undiscovered biological connections.
+                    </p>
+                  </>
+                );
+              })()}
             </div>
           )}
 
