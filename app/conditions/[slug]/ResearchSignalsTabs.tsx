@@ -364,24 +364,28 @@ function SignalCard({ signal }: { signal: Signal }) {
   );
 }
 
-const CROSS_CONDITION_TYPES = new Set([
-  "cross_condition_signal",
-  "population_study",
-  "observational_study",
-  "side_effect_signal",
-  "claims_data_analysis",
-]);
-
-const PATHWAY_TYPES = new Set([
-  "pathway_signal",
-  "caution_signal",
-]);
-
+// Direct Research: PubMed / ClinicalTrials.gov studies directly targeting the condition
 const DIRECT_TYPES = new Set([
   "clinical_trial_finding",
   "case_report",
   "mechanism_overlap",
   "review_article",
+]);
+
+// Cross-Condition: FAERS, SIDER, indirect / population signals
+const CROSS_CONDITION_TYPES = new Set([
+  "cross_condition_signal",
+  "population_study",
+  "observational_study",
+  "side_effect_signal",
+  "drug_label_signal",   // SIDER pipeline
+  "claims_data_analysis",
+]);
+
+// Pathways: drugs that affect or worsen the condition
+const PATHWAY_TYPES = new Set([
+  "pathway_signal",
+  "caution_signal",
 ]);
 
 // Muted amber palette for Pathway signals
@@ -501,17 +505,20 @@ type Tab = "direct" | "cross" | "caution";
 export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("direct");
 
-  const cautionSignals = signals.filter(
-    (s) => s.signal_type && PATHWAY_TYPES.has(s.signal_type)
-  );
-  const crossSignals = signals.filter(
-    (s) => s.signal_type && CROSS_CONDITION_TYPES.has(s.signal_type)
-  );
-  // Direct = explicitly known direct types, plus any unrecognised types so nothing is lost
   const directSignals = signals.filter(
+    (s) => DIRECT_TYPES.has(s.signal_type ?? "")
+  );
+  const cautionSignals = signals.filter(
+    (s) => PATHWAY_TYPES.has(s.signal_type ?? "")
+  );
+  // Cross-condition: explicitly listed types + anything not in any known set (safe fallback)
+  const crossSignals = signals.filter(
     (s) =>
-      !PATHWAY_TYPES.has(s.signal_type ?? "") &&
-      !CROSS_CONDITION_TYPES.has(s.signal_type ?? "")
+      CROSS_CONDITION_TYPES.has(s.signal_type ?? "") ||
+      (
+        !DIRECT_TYPES.has(s.signal_type ?? "") &&
+        !PATHWAY_TYPES.has(s.signal_type ?? "")
+      )
   );
 
   const tabs: { key: Tab; label: string; count: number }[] = [
