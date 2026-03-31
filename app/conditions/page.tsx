@@ -16,22 +16,31 @@ export default async function ConditionsPage() {
   }
 
   return (
-    <main className="max-w-6xl mx-auto w-full px-6 py-16">
+    <main className="flex-1" style={{ backgroundColor: "#F5F3EF" }}>
       {/* Page header */}
-      <div className="mb-10">
-        <h1
-          className="font-heading text-3xl font-bold tracking-tight mb-2"
-          style={{ color: "#333" }}
-        >
-          Conditions
-        </h1>
-        <p className="text-base max-w-xl" style={{ color: "#666" }}>
-          Women&apos;s health conditions with active drug repurposing research
-          and evidence-based signal profiles.
-        </p>
+      <div style={{ backgroundColor: "#fff", borderBottom: "1px solid #E0DDD8" }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <nav className="text-xs mb-4" style={{ color: "#999" }}>
+            <span>Home</span>
+            <span className="mx-2">›</span>
+            <span style={{ color: "#4D5E4D" }}>Conditions</span>
+          </nav>
+          <h1
+            className="font-heading text-3xl sm:text-4xl font-bold tracking-tight mb-3"
+            style={{ color: "#1a1a1a" }}
+          >
+            Conditions
+          </h1>
+          <p className="text-base max-w-xl" style={{ color: "#555" }}>
+            Women&apos;s health conditions with active drug repurposing research
+            and evidence-based signal profiles.
+          </p>
+        </div>
       </div>
 
-      <ConditionsList conditions={conditions ?? []} />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <ConditionsList conditions={conditions ?? []} />
+      </div>
     </main>
   );
 }

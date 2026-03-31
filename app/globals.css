@@ -2,9 +2,9 @@
 
 :root {
   --background: #F5F3EF;
-  --foreground: #333333;
-  --accent: #7A8B7A;
-  --accent-dark: #5C6B5D;
+  --foreground: #1a1a1a;
+  --accent: #4D5E4D;
+  --accent-dark: #3E4E3E;
   --border: #E0DDD8;
 }
 
@@ -12,11 +12,11 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-cream: #F5F3EF;
-  --color-charcoal: #333333;
+  --color-charcoal: #1a1a1a;
   --color-muted: #666666;
-  --color-sage: #7A8B7A;
-  --color-sage-dark: #5C6B5D;
-  --color-sage-light: #EEF1EE;
+  --color-sage: #4D5E4D;
+  --color-sage-dark: #3E4E3E;
+  --color-sage-light: #EDEAE4;
   --color-warm-border: #E0DDD8;
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
@@ -27,8 +27,21 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Headings use Playfair Display */
 .font-heading {
   font-family: var(--font-playfair, Georgia, "Times New Roman", serif);
+}
+
+/* Smooth focus outlines */
+:focus-visible {
+  outline: 2px solid #4D5E4D;
+  outline-offset: 2px;
+}
+
+/* Remove default search input clear button in WebKit */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
 }

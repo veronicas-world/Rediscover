@@ -4,28 +4,36 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="max-w-3xl mx-auto w-full px-6 py-16">
+    <main className="flex-1" style={{ backgroundColor: "#F5F3EF" }}>
       {/* Page header */}
-      <div className="mb-12 pb-8" style={{ borderBottom: "1px solid #E0DDD8" }}>
-        <h1
-          className="font-heading text-3xl font-bold tracking-tight mb-2"
-          style={{ color: "#333" }}
-        >
-          About
-        </h1>
-        <p className="text-base" style={{ color: "#666" }}>
-          What this tool is, how it works, and why it exists.
-        </p>
+      <div style={{ backgroundColor: "#fff", borderBottom: "1px solid #E0DDD8" }}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <nav className="text-xs mb-4" style={{ color: "#999" }}>
+            <span>Home</span>
+            <span className="mx-2">›</span>
+            <span style={{ color: "#4D5E4D" }}>About</span>
+          </nav>
+          <h1
+            className="font-heading text-3xl sm:text-4xl font-bold tracking-tight mb-3"
+            style={{ color: "#1a1a1a" }}
+          >
+            About
+          </h1>
+          <p className="text-base" style={{ color: "#555" }}>
+            What this tool is, how it works, and why it exists.
+          </p>
+        </div>
       </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
 
       <div className="space-y-14">
 
         {/* Mission */}
         <section>
-          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
             Mission
           </h2>
-          <div className="space-y-4 text-sm leading-relaxed" style={{ color: "#666" }}>
+          <div className="space-y-4 text-sm leading-relaxed" style={{ color: "#555" }}>
             <p>
               Rediscover Women exists because women&apos;s health conditions are
               systematically underfunded relative to their prevalence and
@@ -37,7 +45,7 @@ export default function AboutPage() {
             <p>
               This tool reverses the typical drug discovery question. Instead of
               asking <em>&ldquo;what does this drug treat?&rdquo;</em> it asks:{" "}
-              <strong style={{ color: "#333" }}>
+              <strong style={{ color: "#1a1a1a" }}>
                 &ldquo;what existing drugs have shown unexpected promise for
                 conditions that aren&apos;t getting enough research attention?&rdquo;
               </strong>
@@ -53,20 +61,20 @@ export default function AboutPage() {
 
         {/* Methodology */}
         <section>
-          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
             Methodology
           </h2>
-          <p className="text-sm leading-relaxed mb-6" style={{ color: "#666" }}>
+          <p className="text-sm leading-relaxed mb-6" style={{ color: "#555" }}>
             Signals are organized into three categories, each representing a
             different type of evidence and relationship between a drug and a
             condition.
           </p>
           <div className="space-y-4">
             <div className="bg-white rounded-xl p-5" style={{ border: "1px solid #E0DDD8" }}>
-              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#333" }}>
+              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#1a1a1a" }}>
                 Direct Research
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#555" }}>
                 Published studies and clinical trials specifically targeting the
                 condition — including randomized controlled trials, preclinical
                 studies, computational repurposing analyses, and observational
@@ -75,10 +83,10 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="bg-white rounded-xl p-5" style={{ border: "1px solid #E0DDD8" }}>
-              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#333" }}>
+              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#1a1a1a" }}>
                 Cross-Condition Signals
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#555" }}>
                 Studies where drugs developed and approved for entirely different
                 purposes showed incidental benefit for symptoms or biology related
                 to a women&apos;s health condition. These are hypothesis-generating
@@ -107,10 +115,10 @@ export default function AboutPage() {
 
         {/* Data Sources */}
         <section>
-          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
             Data Sources
           </h2>
-          <p className="text-sm leading-relaxed mb-5" style={{ color: "#666" }}>
+          <p className="text-sm leading-relaxed mb-5" style={{ color: "#555" }}>
             All signals are sourced from peer-reviewed literature and regulatory
             databases. Every finding includes a cited PMID or primary source
             reference that can be independently verified.
@@ -143,10 +151,10 @@ export default function AboutPage() {
                 className="bg-white rounded-xl p-5"
                 style={{ border: "1px solid #E0DDD8" }}
               >
-                <p className="text-sm font-semibold mb-1" style={{ color: "#333" }}>
+                <p className="text-sm font-semibold mb-1" style={{ color: "#1a1a1a" }}>
                   {name}
                 </p>
-                <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+                <p className="text-sm leading-relaxed" style={{ color: "#555" }}>
                   {detail}
                 </p>
               </li>
@@ -156,14 +164,14 @@ export default function AboutPage() {
 
         {/* Limitations & Disclaimer */}
         <section>
-          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
             Limitations &amp; Disclaimer
           </h2>
           <div
             className="rounded-xl p-5 mb-6"
             style={{ backgroundColor: "#EEF1EE", border: "1px solid #C8D8C8" }}
           >
-            <p className="text-sm font-semibold mb-1.5" style={{ color: "#333" }}>
+            <p className="text-sm font-semibold mb-1.5" style={{ color: "#1a1a1a" }}>
               This is a research discovery tool, not medical advice.
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "#5C6B5D" }}>
@@ -172,7 +180,7 @@ export default function AboutPage() {
               healthcare provider before making any medical decisions.
             </p>
           </div>
-          <ul className="space-y-3 text-sm leading-relaxed" style={{ color: "#666" }}>
+          <ul className="space-y-3 text-sm leading-relaxed" style={{ color: "#555" }}>
             {[
               [
                 "Signals are not recommendations.",
@@ -194,7 +202,7 @@ export default function AboutPage() {
               <li key={title} className="flex gap-3">
                 <span className="mt-0.5 shrink-0" style={{ color: "#ccc" }}>—</span>
                 <span>
-                  <strong style={{ color: "#333" }}>{title}</strong>{" "}
+                  <strong style={{ color: "#1a1a1a" }}>{title}</strong>{" "}
                   {body}
                 </span>
               </li>
@@ -204,10 +212,10 @@ export default function AboutPage() {
 
         {/* Why Women's Health */}
         <section>
-          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#333" }}>
+          <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
             Why Women&apos;s Health?
           </h2>
-          <div className="space-y-4 text-sm leading-relaxed" style={{ color: "#666" }}>
+          <div className="space-y-4 text-sm leading-relaxed" style={{ color: "#555" }}>
             <p>
               The underfunding of women&apos;s health is not a recent phenomenon.
               Until 1993, women were routinely excluded from clinical trials — the
@@ -242,6 +250,7 @@ export default function AboutPage() {
           </div>
         </section>
 
+      </div>
       </div>
     </main>
   );
