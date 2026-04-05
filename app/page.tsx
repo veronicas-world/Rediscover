@@ -68,7 +68,7 @@ export default async function Home() {
               className="text-base sm:text-lg mb-10 max-w-2xl leading-relaxed"
               style={{ color: "#555" }}
             >
-              Existing drugs. Underresearched conditions. Published evidence you can verify.
+              Women&apos;s health conditions are chronically underfunded and underresearched. This tool surfaces existing drugs and compounds that published evidence suggests may be relevant to six of the most neglected conditions in women&apos;s medicine. Every signal is drawn from real data sources and linked to its original reference.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
