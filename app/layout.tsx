@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Repertus",
-    template: "%s | Repertus",
+    default: "Women's Health Evidence Lab",
+    template: "%s | Women's Health Evidence Lab",
   },
   description:
     "Surfacing overlooked drug signals for women's health.",

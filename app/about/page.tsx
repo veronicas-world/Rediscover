@@ -20,7 +20,7 @@ export default function AboutPage() {
             About
           </h1>
           <p className="text-base" style={{ color: "#555" }}>
-            What Repertus is, how it works, and why it exists.
+            What Women&apos;s Health Evidence Lab is, how it works, and why it exists.
           </p>
         </div>
       </div>
@@ -34,7 +34,7 @@ export default function AboutPage() {
               The Name
             </h2>
             <p className="text-sm leading-relaxed" style={{ color: "#555" }}>
-              Repertus comes from the Latin <em>reperire</em>: to discover again. We resurface hidden signals in existing medical data that could transform treatment for underfunded women&apos;s health conditions.
+              Women&apos;s Health Evidence Lab is exactly what it describes: a research tool dedicated to surfacing and organizing published evidence for underfunded women&apos;s health conditions. The name reflects the mission directly — no translation required.
             </p>
           </section>
 
@@ -48,7 +48,7 @@ export default function AboutPage() {
                 Women&apos;s health conditions are systematically underfunded relative to their prevalence and severity. Endometriosis, PMDD, vulvodynia, and adenomyosis affect hundreds of millions of people worldwide and receive a fraction of the research investment directed at conditions with comparable disease burden.
               </p>
               <p>
-                Repertus asks a different question: what existing drugs have shown unexpected promise for conditions that aren&apos;t getting enough research attention? Drug repurposing is faster, cheaper, and lower risk than developing new drugs from scratch. For conditions with no approved treatment, a repurposed drug may be the fastest route to meaningful relief.
+                Women&apos;s Health Evidence Lab asks a different question: what existing drugs have shown unexpected promise for conditions that aren&apos;t getting enough research attention? Drug repurposing is faster, cheaper, and lower risk than developing new drugs from scratch. For conditions with no approved treatment, a repurposed drug may be the fastest route to meaningful relief.
               </p>
             </div>
           </section>
@@ -160,7 +160,7 @@ export default function AboutPage() {
                 ],
                 [
                   "No original research.",
-                  "Repertus surfaces and organizes published research. It does not conduct studies or generate new data.",
+                  "Women\u2019s Health Evidence Lab surfaces and organizes published research. It does not conduct studies or generate new data.",
                 ],
                 [
                   "The literature is incomplete.",
@@ -191,7 +191,7 @@ export default function AboutPage() {
                 Endometriosis affects an estimated 190 million people worldwide and takes an average of 7 to 10 years to diagnose. Vulvodynia affects 8 to 16% of women across the lifespan and has no FDA-approved treatment. PMDD was not recognized as a distinct DSM diagnosis until 2013.
               </p>
               <p>
-                Repertus is a small attempt to work within these constraints. To use what already exists in the published literature to surface overlooked evidence and direct attention toward signals that deserve follow-up.
+                Women&apos;s Health Evidence Lab is a small attempt to work within these constraints. To use what already exists in the published literature to surface overlooked evidence and direct attention toward signals that deserve follow-up.
               </p>
             </div>
           </section>

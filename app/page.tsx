@@ -6,6 +6,7 @@ const METHODOLOGY = [
     title: "Direct Research",
     description:
       "Published studies and trials directly testing a drug for this condition.",
+    href: "/about/direct-research",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <ellipse cx="12" cy="5" rx="9" ry="3" />
@@ -18,6 +19,7 @@ const METHODOLOGY = [
     title: "Cross-Condition Signals",
     description:
       "Drugs approved for other conditions that showed incidental benefit for shared biology.",
+    href: "/about/cross-condition",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="17 1 21 5 17 9" />
@@ -31,6 +33,7 @@ const METHODOLOGY = [
     title: "Pathway Insights",
     description:
       "Drugs observed to worsen a condition, revealing which biological pathways are involved.",
+    href: "/about/pathways",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="3" />
@@ -44,7 +47,7 @@ const METHODOLOGY = [
 export default async function Home() {
   const { data: featuredConditions } = await supabase
     .from("conditions")
-    .select("id, name, slug, prevalence_summary, treatment_gap_summary")
+    .select("id, name, slug")
     .order("name")
     .limit(3);
 
@@ -87,6 +90,47 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ── Methodology ──────────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "#EDEAE4", borderBottom: "1px solid #E0DDD8" }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+          <div className="mb-10">
+            <h2
+              className="font-heading text-3xl sm:text-4xl font-bold mb-3"
+              style={{ color: "#1a1a1a" }}
+            >
+              How signals are categorized
+            </h2>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {METHODOLOGY.map(({ title, description, href, icon }) => (
+              <Link
+                key={title}
+                href={href}
+                className="group flex flex-col bg-white rounded-lg p-6 sm:p-8 transition-shadow hover:shadow-md"
+                style={{ border: "1px solid #E0DDD8" }}
+              >
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center mb-5"
+                  style={{ backgroundColor: "#EDEAE4", color: "#4D5E4D" }}
+                >
+                  {icon}
+                </div>
+                <h3 className="font-heading text-xl font-bold mb-3 group-hover:opacity-75 transition-opacity" style={{ color: "#1a1a1a" }}>
+                  {title}
+                </h3>
+                <p className="text-sm leading-relaxed mb-5" style={{ color: "#666" }}>
+                  {description}
+                </p>
+                <p className="text-sm font-medium mt-auto" style={{ color: "#4D5E4D" }}>
+                  Learn more →
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Featured Conditions ───────────────────────────────────────────── */}
       {featuredConditions && featuredConditions.length > 0 && (
         <section style={{ backgroundColor: "#F5F3EF", borderBottom: "1px solid #E0DDD8" }}>
@@ -109,29 +153,13 @@ export default async function Home() {
                   style={{ border: "1px solid #E0DDD8" }}
                 >
                   <h3
-                    className="font-heading text-2xl font-bold mb-3 group-hover:opacity-75 transition-opacity"
+                    className="font-heading text-2xl font-bold mb-4 group-hover:opacity-75 transition-opacity"
                     style={{ color: "#1a1a1a" }}
                   >
                     {condition.name}
                   </h3>
-                  {condition.prevalence_summary && (
-                    <p
-                      className="text-sm mb-4 leading-relaxed"
-                      style={{ color: "#666" }}
-                    >
-                      {condition.prevalence_summary}
-                    </p>
-                  )}
-                  {condition.treatment_gap_summary && (
-                    <p
-                      className="text-sm leading-relaxed mb-6"
-                      style={{ color: "#444" }}
-                    >
-                      {condition.treatment_gap_summary}
-                    </p>
-                  )}
                   <p
-                    className="text-sm font-medium mt-auto"
+                    className="text-sm font-medium"
                     style={{ color: "#4D5E4D" }}
                   >
                     View Research →
@@ -152,43 +180,6 @@ export default async function Home() {
           </div>
         </section>
       )}
-
-      {/* ── Methodology ──────────────────────────────────────────────────── */}
-      <section style={{ backgroundColor: "#EDEAE4", borderBottom: "1px solid #E0DDD8" }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-          <div className="mb-10">
-            <h2
-              className="font-heading text-3xl sm:text-4xl font-bold mb-3"
-              style={{ color: "#1a1a1a" }}
-            >
-              How signals are categorized
-            </h2>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {METHODOLOGY.map(({ title, description, icon }) => (
-              <div
-                key={title}
-                className="bg-white rounded-lg p-6 sm:p-8"
-                style={{ border: "1px solid #E0DDD8" }}
-              >
-                <div
-                  className="w-12 h-12 rounded-lg flex items-center justify-center mb-5"
-                  style={{ backgroundColor: "#EDEAE4", color: "#4D5E4D" }}
-                >
-                  {icon}
-                </div>
-                <h3 className="font-heading text-xl font-bold mb-3" style={{ color: "#1a1a1a" }}>
-                  {title}
-                </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
-                  {description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
     </main>
   );

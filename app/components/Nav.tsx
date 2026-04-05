@@ -6,23 +6,10 @@ import SearchBar from "./SearchBar";
 
 function VennIcon() {
   return (
-    <svg
-      width="22"
-      height="18"
-      viewBox="0 0 44 36"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {/* Left circle */}
-      <circle cx="16" cy="18" r="13" strokeOpacity="0.9" />
-      {/* Right circle */}
-      <circle cx="28" cy="18" r="13" strokeOpacity="0.9" />
-      {/* Top circle */}
-      <circle cx="22" cy="10" r="13" strokeOpacity="0.9" />
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="9" cy="9" r="7" stroke="white" strokeWidth="1.5" fillOpacity="0.1" fill="white"/>
+      <circle cx="15" cy="9" r="7" stroke="white" strokeWidth="1.5" fillOpacity="0.1" fill="white"/>
+      <circle cx="12" cy="15" r="7" stroke="white" strokeWidth="1.5" fillOpacity="0.1" fill="white"/>
     </svg>
   );
 }
@@ -42,7 +29,7 @@ export default function Nav() {
         >
           <VennIcon />
           <span className="font-heading text-base sm:text-lg font-bold tracking-tight">
-            Repertus
+            Women&apos;s Health Evidence Lab
           </span>
         </Link>
 

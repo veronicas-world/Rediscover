@@ -8,7 +8,7 @@ export const metadata = {
 export default async function ConditionsPage() {
   const { data: conditions, error } = await supabase
     .from("conditions")
-    .select("id, name, slug, prevalence_summary, treatment_gap_summary")
+    .select("id, name, slug")
     .order("name");
 
   if (error) {

@@ -8,7 +8,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="sm:col-span-1">
             <p className="font-heading text-base font-bold mb-2" style={{ color: "#fff" }}>
-              Repertus
+              Women&apos;s Health Evidence Lab
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
               Research tool for women&apos;s health. Not medical advice.
@@ -61,7 +61,7 @@ export default function Footer() {
           style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}
         >
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-            © 2026 Repertus
+            © 2026 Women&apos;s Health Evidence Lab
           </p>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
             For research and educational purposes only.
