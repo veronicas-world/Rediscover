@@ -34,7 +34,7 @@ export default function NoSignalsDisclosure({ compounds }: { compounds: Compound
         >
           <polyline points="9 18 15 12 9 6" />
         </svg>
-        In Database — No Signals Yet ({compounds.length})
+        In Database: No Signals Yet ({compounds.length})
       </button>
 
       {open && (

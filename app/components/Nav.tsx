@@ -42,7 +42,7 @@ export default function Nav() {
           >
             Browse Conditions
           </Link>
-          {/* SearchBar — nav (sm) variant: dark-background-aware input */}
+          {/* SearchBar: nav (sm) variant: dark-background-aware input */}
           <div className="w-52 lg:w-64">
             <SearchBar size="sm" />
           </div>
@@ -88,7 +88,7 @@ export default function Nav() {
           }}
         >
           <div className="px-4 pt-4 pb-3">
-            {/* Search — full width in mobile drawer */}
+            {/* Search: full width in mobile drawer */}
             <SearchBar size="lg" onNavigate={() => setMobileOpen(false)} />
           </div>
           <nav className="flex flex-col px-4 pb-4 gap-1">

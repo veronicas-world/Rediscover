@@ -176,7 +176,7 @@ function CollapsibleSources({
                       </span>
                     )}
                     {source.authors && (
-                      <span style={{ color: mutedColor }}> — {source.authors}</span>
+                      <span style={{ color: mutedColor }}> · {source.authors}</span>
                     )}
                     {source.journal && (
                       <span style={{ color: mutedColor }} className="italic">
@@ -204,7 +204,7 @@ function CollapsibleSources({
             </div>
           )}
 
-          {/* FAERS sources — query summary + reaction categories with counts */}
+          {/* FAERS sources: query summary + reaction categories with counts */}
           {faersSources.length > 0 && (
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
@@ -449,7 +449,7 @@ function EvidenceGroup({
   );
 }
 
-// ── Pathway signal_types — these always win regardless of source
+// ── Pathway signal_types: these always win regardless of source
 const PATHWAY_SIGNAL_TYPES = new Set(["pathway_signal", "caution_signal"]);
 
 // Source types that belong in Cross-Condition

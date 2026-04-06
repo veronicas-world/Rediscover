@@ -185,7 +185,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
         )}
       </div>
 
-      {/* Not searching — show full conditions grid */}
+      {/* Not searching: show full conditions grid */}
       {!isSearching && (
         <>
           <p className="text-sm mb-8" style={{ color: "#999" }}>
@@ -214,7 +214,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
         </>
       )}
 
-      {/* Searching — show grouped results */}
+      {/* Searching: show grouped results */}
       {isSearching && searched && searchResults.length === 0 && (
         <p className="text-sm" style={{ color: "#999" }}>No results for &ldquo;{query}&rdquo;.</p>
       )}

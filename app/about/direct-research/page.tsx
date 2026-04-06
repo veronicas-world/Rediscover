@@ -36,7 +36,7 @@ export default function DirectResearchPage() {
               What it is
             </h2>
             <p className="text-sm leading-relaxed" style={{ color: "#555" }}>
-              Clinical trials, case reports, and peer reviewed studies where researchers specifically studied a drug&apos;s effect on the condition. This is the most straightforward evidence — researchers set out to answer the question and published their findings.
+              Clinical trials, case reports, and peer reviewed studies where researchers specifically studied a drug&apos;s effect on the condition. This is the most straightforward evidence. Researchers set out to answer the question and published their findings.
             </p>
           </section>
 

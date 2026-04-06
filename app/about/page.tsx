@@ -82,13 +82,13 @@ export default function AboutPage() {
               Data Sources
             </h2>
             <p className="text-sm leading-relaxed mb-5" style={{ color: "#555" }}>
-              All signals are sourced from peer-reviewed literature and regulatory databases. Every finding includes a cited PMID or primary source reference.
+              All signals are sourced from peer reviewed literature and regulatory databases. Every finding includes a cited PMID or primary source reference.
             </p>
             <ul className="space-y-3">
               {[
                 {
                   name: "PubMed / MEDLINE",
-                  detail: "Primary source for peer-reviewed biomedical literature. All PMIDs link directly to the original PubMed record.",
+                  detail: "Primary source for peer reviewed biomedical literature. All PMIDs link directly to the original PubMed record.",
                 },
                 {
                   name: "ClinicalTrials.gov",
@@ -96,7 +96,7 @@ export default function AboutPage() {
                 },
                 {
                   name: "FDA Adverse Event Reporting System (FAERS)",
-                  detail: "Post-market adverse event reports. Used to identify pathway signals where drugs have been associated with worsening specific conditions.",
+                  detail: "Postmarket adverse event reports. Used to identify pathway signals where drugs have been associated with worsening specific conditions.",
                 },
                 {
                   name: "FDA Drug Approvals Database",
@@ -155,7 +155,7 @@ export default function AboutPage() {
                 ],
               ].map(([title, body]) => (
                 <li key={title} className="flex gap-3">
-                  <span className="mt-0.5 shrink-0" style={{ color: "#ccc" }}>—</span>
+                  <span className="mt-0.5 shrink-0" style={{ color: "#ccc" }}>·</span>
                   <span>
                     <strong style={{ color: "#1a1a1a" }}>{title}</strong>{" "}
                     {body}

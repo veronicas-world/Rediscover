@@ -74,7 +74,7 @@ async function runSearch(query: string): Promise<Result[]> {
     slug: c.slug,
   }));
 
-  // Compounds — look up which conditions each matched compound has signals for
+  // Compounds: look up which conditions each matched compound has signals for
   const compoundRows = compoundsRes.data ?? [];
   const conditionsByCompound: Record<string, { id: string; name: string; slug: string }[]> = {};
 
@@ -414,7 +414,7 @@ export default function SearchBar({ size = "sm", onNavigate }: SearchBarProps) {
             )}
           </div>
 
-          {/* "Show all results" — pinned outside the scroll area, always visible */}
+          {/* "Show all results": pinned outside the scroll area, always visible */}
           {searched && (
             <div style={{ borderTop: "1px solid #E0DDD8" }}>
               <button

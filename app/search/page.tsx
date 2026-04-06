@@ -33,7 +33,7 @@ async function search(q: string) {
   const conditions: ConditionRow[] = conditionsRes.data ?? [];
 
   // For each matched compound, fetch ALL conditions it has active signals for.
-  // No .limit() here — we want every condition link, not just the first.
+  // No .limit() here. We want every condition link, not just the first.
   const compoundRows: CompoundRow[] = compoundsRes.data ?? [];
   const conditionsByCompound: Record<string, ConditionRow[]> = {};
 
