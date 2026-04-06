@@ -135,8 +135,8 @@ export default async function SearchPage({
             {/* Conditions */}
             {conditions.length > 0 && (
               <section>
-                <div className="flex items-baseline gap-3 mb-6">
-                  <h2 className="font-heading text-xl font-bold" style={{ color: "#1a1a1a" }}>Conditions</h2>
+                <div className="flex items-baseline gap-4 mb-8">
+                  <h2 className="section-label">Conditions</h2>
                   <span className="text-sm" style={{ color: "#999" }}>{conditions.length} result{conditions.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -144,10 +144,10 @@ export default async function SearchPage({
                     <Link
                       key={c.id}
                       href={`/conditions/${c.slug}`}
-                      className="group block bg-white rounded-lg p-6 sm:p-8 transition-shadow hover:shadow-md"
-                      style={{ border: "1px solid #E0DDD8" }}
+                      className="group block bg-white p-6 sm:p-8 transition-shadow hover:shadow-md"
+                      style={{ border: "1px solid #E0DDD8", borderRadius: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
                     >
-                      <h3 className="font-heading text-2xl font-bold mb-4 group-hover:opacity-75 transition-opacity" style={{ color: "#1a1a1a" }}>
+                      <h3 className="font-heading text-xl mb-4 group-hover:opacity-75 transition-opacity" style={{ color: "#1a1a1a" }}>
                         {c.name}
                       </h3>
                       <p className="text-sm font-medium" style={{ color: "#4D5E4D" }}>View Research Signals →</p>
@@ -163,16 +163,16 @@ export default async function SearchPage({
               const unlinked  = compounds.filter((c) => c.conditions.length === 0);
               return (
                 <section>
-                  <div className="flex items-baseline gap-3 mb-6">
-                    <h2 className="font-heading text-xl font-bold" style={{ color: "#1a1a1a" }}>Medications</h2>
+                  <div className="flex items-baseline gap-4 mb-8">
+                    <h2 className="section-label">Medications</h2>
                     <span className="text-sm" style={{ color: "#999" }}>{linked.length} result{linked.length !== 1 ? "s" : ""}</span>
                   </div>
 
                   {linked.length > 0 && (
                     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                       {linked.map((c) => (
-                        <div key={c.id} className="bg-white rounded-lg p-6 sm:p-8" style={{ border: "1px solid #E0DDD8" }}>
-                          <p className="font-heading text-2xl font-bold mb-1" style={{ color: "#1a1a1a" }}>{c.name}</p>
+                        <div key={c.id} className="bg-white p-6 sm:p-8" style={{ border: "1px solid #E0DDD8", borderRadius: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                          <p className="font-heading text-xl mb-1" style={{ color: "#1a1a1a" }}>{c.name}</p>
                           {(c.generic_name || c.drug_class) && (
                             <p className="text-xs mb-3" style={{ color: "#999" }}>
                               {[c.generic_name, c.drug_class].filter(Boolean).join(" · ")}
@@ -203,8 +203,8 @@ export default async function SearchPage({
             {/* Signals */}
             {signals.length > 0 && (
               <section>
-                <div className="flex items-baseline gap-3 mb-6">
-                  <h2 className="font-heading text-xl font-bold" style={{ color: "#1a1a1a" }}>Signals</h2>
+                <div className="flex items-baseline gap-4 mb-8">
+                  <h2 className="section-label">Signals</h2>
                   <span className="text-sm" style={{ color: "#999" }}>{signals.length} result{signals.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -212,8 +212,8 @@ export default async function SearchPage({
                     <Link
                       key={s.id}
                       href={`/conditions/${s.condition.slug}`}
-                      className="group block bg-white rounded-lg p-6 sm:p-8 transition-shadow hover:shadow-md"
-                      style={{ border: "1px solid #E0DDD8" }}
+                      className="group block bg-white p-6 sm:p-8 transition-shadow hover:shadow-md"
+                      style={{ border: "1px solid #E0DDD8", borderRadius: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
                     >
                       <p className="text-sm leading-relaxed mb-4 line-clamp-4" style={{ color: "#444" }}>{s.summary}</p>
                       <p className="text-sm font-medium group-hover:opacity-75 transition-opacity" style={{ color: "#4D5E4D" }}>

@@ -18,30 +18,61 @@
   --color-sage-dark: #3E4E3E;
   --color-sage-light: #EDEAE4;
   --color-warm-border: #E0DDD8;
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-source-sans);
+  --font-serif: var(--font-source-serif);
 }
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter, system-ui, sans-serif);
+  font-family: var(--font-source-sans, system-ui, sans-serif);
+  font-size: 16px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headings use Playfair Display */
+/* ── Font utilities ────────────────────────────────────────────────────── */
+
+/* Page and section headings — Source Serif 4, medium weight */
 .font-heading {
-  font-family: var(--font-playfair, Georgia, "Times New Roman", serif);
+  font-family: var(--font-source-serif, Georgia, serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-/* Smooth focus outlines */
+/* Nav site name — Playfair Display */
+.font-serif {
+  font-family: var(--font-playfair, Georgia, serif);
+}
+
+/* Section labels — small, uppercase, spaced, sans-serif, no decoration */
+.section-label {
+  font-family: var(--font-source-sans, system-ui, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #777;
+}
+
+/* Breadcrumb nav */
+.font-label {
+  font-family: var(--font-source-sans, system-ui, sans-serif);
+  font-size: 0.75rem;
+}
+
+/* ── Focus ─────────────────────────────────────────────────────────────── */
+
 :focus-visible {
   outline: 2px solid #4D5E4D;
   outline-offset: 2px;
 }
 
-/* Remove default search input clear button in WebKit */
+/* ── Search input ──────────────────────────────────────────────────────── */
+
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }

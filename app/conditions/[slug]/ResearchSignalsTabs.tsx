@@ -364,7 +364,92 @@ function SignalCard({ signal }: { signal: Signal }) {
   );
 }
 
-// Pathway signal_types — these always win regardless of source
+// ── Evidence grouping ────────────────────────────────────────────────────────
+
+const EVIDENCE_ORDER = ["strong", "moderate", "preliminary"] as const;
+
+const EVIDENCE_LABELS: Record<string, string> = {
+  strong: "Strong Evidence",
+  moderate: "Moderate Evidence",
+  preliminary: "Preliminary Evidence",
+};
+
+function groupByEvidence(signals: Signal[]): { key: string; label: string; signals: Signal[] }[] {
+  const buckets: Record<string, Signal[]> = {};
+  for (const s of signals) {
+    const key = (s.evidence_strength ?? "preliminary").toLowerCase();
+    if (!buckets[key]) buckets[key] = [];
+    buckets[key].push(s);
+  }
+  // Known strengths in order, then any unknowns
+  const ordered = EVIDENCE_ORDER.filter((k) => buckets[k]?.length);
+  const unknown = Object.keys(buckets).filter((k) => !EVIDENCE_ORDER.includes(k as typeof EVIDENCE_ORDER[number]));
+  return [...ordered, ...unknown].map((key) => ({
+    key,
+    label: EVIDENCE_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1) + " Evidence",
+    signals: buckets[key],
+  }));
+}
+
+function EvidenceGroup({
+  groupKey,
+  label,
+  count,
+  children,
+  accentColor = "#4D5E4D",
+  badgeBg = "#D8E5D8",
+  badgeColor = "#4D5E4D",
+}: {
+  groupKey: string;
+  label: string;
+  count: number;
+  children: React.ReactNode;
+  accentColor?: string;
+  badgeBg?: string;
+  badgeColor?: string;
+}) {
+  const defaultOpen = groupKey !== "preliminary";
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-2 py-3 text-left transition-opacity hover:opacity-70"
+        style={{ borderBottom: open ? "none" : "1px solid #E0DDD8" }}
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            color: accentColor,
+            transform: open ? "rotate(180deg)" : "none",
+            transition: "transform 0.15s",
+            flexShrink: 0,
+          }}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+        <span className="text-sm font-semibold" style={{ color: "#333" }}>{label}</span>
+        <span
+          className="text-xs px-2 py-0.5 rounded-full font-semibold"
+          style={{ backgroundColor: badgeBg, color: badgeColor }}
+        >
+          {count}
+        </span>
+      </button>
+      {open && <div className="space-y-4 pt-4 pb-2">{children}</div>}
+    </div>
+  );
+}
+
+// ── Pathway signal_types — these always win regardless of source
 const PATHWAY_SIGNAL_TYPES = new Set(["pathway_signal", "caution_signal"]);
 
 // Source types that belong in Cross-Condition
@@ -574,15 +659,20 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
       {/* Direct Research tab */}
       {activeTab === "direct" && (
         <div>
-          {directSignals.length === 0 ? (
-            <p className="text-sm italic py-4" style={{ color: "#999" }}>
-              No direct signals identified yet.
-            </p>
-          ) : (
-            <div className="space-y-5">
-              {directSignals.map((signal) => (
-                <SignalCard key={signal.id} signal={signal} />
+          {directSignals.length > 0 && (
+            <div className="space-y-2 mb-6">
+              {groupByEvidence(directSignals).map(({ key, label, signals: group }) => (
+                <EvidenceGroup key={key} groupKey={key} label={label} count={group.length}>
+                  {group.map((signal) => <SignalCard key={signal.id} signal={signal} />)}
+                </EvidenceGroup>
               ))}
+            </div>
+          )}
+          {directSignals.length < 2 && (
+            <div className="rounded-lg p-4" style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+                Few or no clinical trials exist specifically targeting this condition. The limited research base is itself evidence of the underfunding problem this tool exists to address.
+              </p>
             </div>
           )}
         </div>
@@ -615,15 +705,20 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
               Drugs approved for other conditions that showed incidental benefit for shared biology. Hypothesis-generating, not treatment evidence.
             </p>
           </div>
-          {crossSignals.length === 0 ? (
-            <p className="text-sm italic py-4" style={{ color: "#999" }}>
-              No cross-condition signals identified yet.
-            </p>
-          ) : (
-            <div className="space-y-5">
-              {crossSignals.map((signal) => (
-                <SignalCard key={signal.id} signal={signal} />
+          {crossSignals.length > 0 && (
+            <div className="space-y-2 mb-6">
+              {groupByEvidence(crossSignals).map(({ key, label, signals: group }) => (
+                <EvidenceGroup key={key} groupKey={key} label={label} count={group.length}>
+                  {group.map((signal) => <SignalCard key={signal.id} signal={signal} />)}
+                </EvidenceGroup>
               ))}
+            </div>
+          )}
+          {crossSignals.length < 2 && (
+            <div className="rounded-lg p-4" style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#666" }}>
+                Cross-condition signal data for this condition is limited in public databases. This may reflect gaps in how womens health outcomes are tracked in broader drug trials, not an absence of real effects.
+              </p>
             </div>
           )}
         </div>
@@ -657,15 +752,28 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
               Drugs observed to affect or worsen this condition. These signals reveal which biological pathways are involved and may point toward new treatment approaches.
             </p>
           </div>
-          {cautionSignals.length === 0 ? (
-            <p className="text-sm italic py-4" style={{ color: "#999" }}>
-              No pathway signals identified yet.
-            </p>
-          ) : (
-            <div className="space-y-5">
-              {cautionSignals.map((signal) => (
-                <PathwaySignalCard key={signal.id} signal={signal} />
+          {cautionSignals.length > 0 && (
+            <div className="space-y-2 mb-6">
+              {groupByEvidence(cautionSignals).map(({ key, label, signals: group }) => (
+                <EvidenceGroup
+                  key={key}
+                  groupKey={key}
+                  label={label}
+                  count={group.length}
+                  accentColor={amber.link}
+                  badgeBg={amber.tagBg}
+                  badgeColor={amber.link}
+                >
+                  {group.map((signal) => <PathwaySignalCard key={signal.id} signal={signal} />)}
+                </EvidenceGroup>
               ))}
+            </div>
+          )}
+          {cautionSignals.length < 2 && (
+            <div className="rounded-lg p-4" style={{ backgroundColor: amber.bg, border: `1px solid ${amber.border}` }}>
+              <p className="text-sm leading-relaxed" style={{ color: amber.body }}>
+                No pathway signals have been identified for this condition yet. This section will be updated as more data is available.
+              </p>
             </div>
           )}
         </div>

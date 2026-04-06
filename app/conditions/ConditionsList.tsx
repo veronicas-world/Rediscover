@@ -196,17 +196,17 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
               <Link
                 key={condition.id}
                 href={`/conditions/${condition.slug}`}
-                className="group block bg-white rounded-lg p-6 sm:p-8 transition-shadow hover:shadow-md"
-                style={{ border: "1px solid #E0DDD8" }}
+                className="group block bg-white p-6 sm:p-8 transition-shadow hover:shadow-md"
+                style={{ border: "1px solid #E0DDD8", borderRadius: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
               >
                 <h2
-                  className="font-heading text-2xl font-bold mb-4 group-hover:opacity-75 transition-opacity"
+                  className="font-heading text-xl mb-4 group-hover:opacity-75 transition-opacity"
                   style={{ color: "#1a1a1a" }}
                 >
                   {condition.name}
                 </h2>
-                <p className="text-sm font-medium" style={{ color: "#4D5E4D" }}>
-                  View Research Signals →
+                <p className="text-sm font-semibold" style={{ color: "#4D5E4D" }}>
+                  View research signals
                 </p>
               </Link>
             ))}
@@ -225,7 +225,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
           {/* Conditions */}
           {conditionResults.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#aaa" }}>
+              <p className="section-label mb-5">
                 Conditions
               </p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -233,10 +233,10 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
                   <Link
                     key={r.id}
                     href={`/conditions/${r.slug}`}
-                    className="group block bg-white rounded-lg p-6 transition-shadow hover:shadow-md"
-                    style={{ border: "1px solid #E0DDD8" }}
+                    className="group block bg-white p-6 transition-shadow hover:shadow-md"
+                    style={{ border: "1px solid #E0DDD8", borderRadius: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
                   >
-                    <h2 className="font-heading text-xl font-bold mb-3 group-hover:opacity-75 transition-opacity" style={{ color: "#1a1a1a" }}>
+                    <h2 className="font-heading text-lg mb-3 group-hover:opacity-75 transition-opacity" style={{ color: "#1a1a1a" }}>
                       {r.name}
                     </h2>
                     <p className="text-sm font-medium" style={{ color: "#4D5E4D" }}>View Research Signals →</p>
@@ -249,12 +249,12 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
           {/* Medications */}
           {compoundResults.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#aaa" }}>
+              <p className="section-label mb-5">
                 Medications
               </p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {compoundResults.map((r) => (
-                  <div key={r.id} className="bg-white rounded-lg p-6" style={{ border: "1px solid #E0DDD8" }}>
+                  <div key={r.id} className="bg-white p-6" style={{ border: "1px solid #E0DDD8", borderRadius: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
                     <p className="font-heading text-xl font-bold mb-1" style={{ color: "#1a1a1a" }}>{r.name}</p>
                     {(r.generic_name || r.drug_class) && (
                       <p className="text-xs mb-3" style={{ color: "#999" }}>
@@ -286,7 +286,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
           {/* Signals */}
           {signalResults.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "#aaa" }}>
+              <p className="section-label mb-5">
                 Signals
               </p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -294,8 +294,8 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
                   <Link
                     key={r.id}
                     href={`/conditions/${r.condition.slug}`}
-                    className="group block bg-white rounded-lg p-6 transition-shadow hover:shadow-md"
-                    style={{ border: "1px solid #E0DDD8" }}
+                    className="group block bg-white p-6 transition-shadow hover:shadow-md"
+                    style={{ border: "1px solid #E0DDD8", borderRadius: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
                   >
                     <p className="text-sm leading-relaxed mb-3 line-clamp-3" style={{ color: "#444" }}>{r.summary}</p>
                     <p className="text-sm font-medium group-hover:opacity-75 transition-opacity" style={{ color: "#4D5E4D" }}>

@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+const CARD_STYLE = {
+  border: "1px solid #E0DDD8",
+  borderRadius: "10px",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+};
+
 const METHODOLOGY = [
   {
     title: "Direct Research",
@@ -56,16 +62,17 @@ export default async function Home() {
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section style={{ backgroundColor: "#fff", borderBottom: "1px solid #E0DDD8" }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-28">
-          <div className="max-w-3xl">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 lg:py-24">
+          <div className="max-w-2xl">
+            <p className="section-label mb-4">Research Tool</p>
             <h1
-              className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight"
+              className="font-heading text-4xl sm:text-5xl mb-6 leading-tight"
               style={{ color: "#1a1a1a" }}
             >
               Surfacing overlooked drug signals for women&apos;s health
             </h1>
             <p
-              className="text-base sm:text-lg mb-10 max-w-2xl leading-relaxed"
+              className="text-base sm:text-lg mb-8 leading-relaxed"
               style={{ color: "#555" }}
             >
               Women&apos;s health conditions are chronically underfunded and underresearched. This tool surfaces existing drugs and compounds that published evidence suggests may be relevant to six of the most neglected conditions in women&apos;s medicine. Every signal is drawn from real data sources and linked to its original reference.
@@ -73,17 +80,17 @@ export default async function Home() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href="/conditions"
-                className="inline-flex items-center justify-center px-7 py-4 text-white text-sm font-semibold tracking-wide transition-opacity hover:opacity-90 rounded"
-                style={{ backgroundColor: "#4D5E4D" }}
+                className="inline-flex items-center justify-center px-6 py-3 text-white text-sm font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#4D5E4D", borderRadius: "6px" }}
               >
-                Browse Conditions →
+                Browse Conditions
               </Link>
               <Link
-                href="/conditions"
-                className="inline-flex items-center justify-center px-7 py-4 text-white text-sm font-semibold tracking-wide transition-opacity hover:opacity-90 rounded"
-                style={{ backgroundColor: "#4D5E4D" }}
+                href="/search"
+                className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-80"
+                style={{ backgroundColor: "transparent", border: "1px solid #4D5E4D", color: "#4D5E4D", borderRadius: "6px" }}
               >
-                Search Database →
+                Search Database
               </Link>
             </div>
           </div>
@@ -92,10 +99,11 @@ export default async function Home() {
 
       {/* ── Methodology ──────────────────────────────────────────────────── */}
       <section style={{ backgroundColor: "#EDEAE4", borderBottom: "1px solid #E0DDD8" }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
           <div className="mb-10">
+            <p className="section-label mb-3">Signal Types</p>
             <h2
-              className="font-heading text-3xl sm:text-4xl font-bold mb-3"
+              className="font-heading text-2xl sm:text-3xl"
               style={{ color: "#1a1a1a" }}
             >
               How signals are categorized
@@ -107,23 +115,23 @@ export default async function Home() {
               <Link
                 key={title}
                 href={href}
-                className="group flex flex-col bg-white rounded-lg p-6 sm:p-8 transition-shadow hover:shadow-md"
-                style={{ border: "1px solid #E0DDD8" }}
+                className="group flex flex-col bg-white p-6 sm:p-8 transition-shadow hover:shadow-md"
+                style={CARD_STYLE}
               >
                 <div
-                  className="w-12 h-12 rounded-lg flex items-center justify-center mb-5"
-                  style={{ backgroundColor: "#EDEAE4", color: "#4D5E4D" }}
+                  className="w-11 h-11 flex items-center justify-center mb-5"
+                  style={{ backgroundColor: "#EDEAE4", color: "#4D5E4D", borderRadius: "8px" }}
                 >
                   {icon}
                 </div>
-                <h3 className="font-heading text-xl font-bold mb-3 group-hover:opacity-75 transition-opacity" style={{ color: "#1a1a1a" }}>
+                <h3 className="font-heading text-lg mb-2 group-hover:opacity-75 transition-opacity" style={{ color: "#1a1a1a" }}>
                   {title}
                 </h3>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: "#666" }}>
                   {description}
                 </p>
-                <p className="text-sm font-medium mt-auto" style={{ color: "#4D5E4D" }}>
-                  Learn more →
+                <p className="text-sm font-semibold mt-auto" style={{ color: "#4D5E4D" }}>
+                  Learn more
                 </p>
               </Link>
             ))}
@@ -134,13 +142,14 @@ export default async function Home() {
       {/* ── Featured Conditions ───────────────────────────────────────────── */}
       {featuredConditions && featuredConditions.length > 0 && (
         <section style={{ backgroundColor: "#F5F3EF", borderBottom: "1px solid #E0DDD8" }}>
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
             <div className="mb-10">
+              <p className="section-label mb-3">Featured Conditions</p>
               <h2
-                className="font-heading text-3xl sm:text-4xl font-bold mb-3"
+                className="font-heading text-2xl sm:text-3xl"
                 style={{ color: "#1a1a1a" }}
               >
-                Featured Conditions
+                Start here
               </h2>
             </div>
 
@@ -149,32 +158,32 @@ export default async function Home() {
                 <Link
                   key={condition.id}
                   href={`/conditions/${condition.slug}`}
-                  className="group block bg-white rounded-lg p-6 sm:p-8 transition-shadow hover:shadow-md"
-                  style={{ border: "1px solid #E0DDD8" }}
+                  className="group block bg-white p-6 sm:p-8 transition-shadow hover:shadow-md"
+                  style={CARD_STYLE}
                 >
                   <h3
-                    className="font-heading text-2xl font-bold mb-4 group-hover:opacity-75 transition-opacity"
+                    className="font-heading text-xl mb-4 group-hover:opacity-75 transition-opacity"
                     style={{ color: "#1a1a1a" }}
                   >
                     {condition.name}
                   </h3>
                   <p
-                    className="text-sm font-medium"
+                    className="text-sm font-semibold"
                     style={{ color: "#4D5E4D" }}
                   >
-                    View Research →
+                    View research signals
                   </p>
                 </Link>
               ))}
             </div>
 
-            <div className="text-center">
+            <div>
               <Link
                 href="/conditions"
-                className="text-sm font-medium transition-opacity hover:opacity-70"
-                style={{ color: "#666" }}
+                className="text-sm font-semibold transition-opacity hover:opacity-70"
+                style={{ color: "#4D5E4D" }}
               >
-                View all conditions →
+                View all conditions
               </Link>
             </div>
           </div>

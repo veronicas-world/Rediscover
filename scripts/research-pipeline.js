@@ -169,6 +169,7 @@ async function analyzeWithClaude(apiKey, condition, articles) {
   const userMessage =
     `Condition: ${condition}\n\n` +
     `Analyze the following ${articles.length} PubMed abstracts for drug repurposing signals related to ${condition}. ` +
+    `Return a maximum of 8 signals — prioritize the strongest evidence. ` +
     `For each signal, include a "pmids" field — an array of the PMID strings from the abstracts that support it. ` +
     `Return ONLY a valid JSON array (no markdown, no commentary). If no signals are found, return [].\n\n` +
     formatted;
@@ -182,7 +183,7 @@ async function analyzeWithClaude(apiKey, condition, articles) {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     }),
@@ -207,6 +208,18 @@ async function analyzeWithClaude(apiKey, condition, articles) {
   try {
     return JSON.parse(jsonMatch[0]);
   } catch (e) {
+    // Response was likely truncated — extract every complete object before the cut-off point.
+    const partialMatches = [...jsonMatch[0].matchAll(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}/g)];
+    if (partialMatches.length > 0) {
+      const recovered = [];
+      for (const m of partialMatches) {
+        try { recovered.push(JSON.parse(m[0])); } catch { /* skip malformed */ }
+      }
+      if (recovered.length > 0) {
+        console.warn(`[warn] Claude JSON truncated — recovered ${recovered.length} complete object(s).`);
+        return recovered;
+      }
+    }
     throw new Error(`Failed to parse Claude JSON: ${e.message}\nRaw: ${jsonMatch[0]}`);
   }
 }
@@ -450,7 +463,7 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
     out.push(`  ${esc(s.compound_name)},`);
     out.push(`  ${esc(s.original_indication ?? null)},`);
     out.push(`  'FDA Approved'`);
-    out.push(`) ON CONFLICT (name) DO NOTHING;`);
+    out.push(`) ON CONFLICT (lower(name)) DO NOTHING;`);
     out.push('');
   }
 
@@ -470,7 +483,10 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
     out.push(`  ${esc(s.mechanism_hypothesis)},`);
     out.push(`  'active'`);
     out.push(`FROM compounds c`);
-    out.push(`WHERE c.name = ${esc(s.compound_name)};`);
+    out.push(`WHERE c.name = ${esc(s.compound_name)}`);
+    out.push(`ON CONFLICT (compound_id, condition_id) DO UPDATE SET`);
+    out.push(`  summary           = EXCLUDED.summary,`);
+    out.push(`  evidence_strength = EXCLUDED.evidence_strength;`);
     out.push('');
   }
 
@@ -496,9 +512,9 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
 
       out.push(`INSERT INTO sources`);
       out.push(`  (id, signal_id, source_type, external_id, title, authors, journal, publication_date, url)`);
-      out.push(`VALUES (`);
-      out.push(`  ${esc(sourceId)},`);
-      out.push(`  ${esc(s.signalId)},`);
+      out.push(`SELECT`);
+      out.push(`  gen_random_uuid(),`);
+      out.push(`  rs.id,`);
       out.push(`  'pubmed',`);
       out.push(`  ${esc(pmid)},`);
       out.push(`  ${esc(art.title)},`);
@@ -506,7 +522,11 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
       out.push(`  ${esc(art.journal)},`);
       out.push(`  ${esc(parsePubmedDate(art.date))},`);
       out.push(`  ${esc(`https://pubmed.ncbi.nlm.nih.gov/${pmid}/`)}`);
-      out.push(`);`);
+      out.push(`FROM repurposing_signals rs`);
+      out.push(`JOIN compounds c ON rs.compound_id = c.id`);
+      out.push(`WHERE c.name = ${esc(s.compound_name)}`);
+      out.push(`AND rs.condition_id = ${esc(conditionId)}`);
+      out.push(`ON CONFLICT DO NOTHING;`);
       out.push('');
     }
   }

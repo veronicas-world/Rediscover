@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 mb-10">
           {/* Brand */}
           <div className="sm:col-span-1">
-            <p className="font-heading text-base font-bold mb-2" style={{ color: "#fff" }}>
+            <p className="font-serif text-base font-bold mb-2" style={{ color: "#fff" }}>
               Women&apos;s Health Evidence Lab
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
@@ -18,7 +18,7 @@ export default function Footer() {
           {/* Explore */}
           <div>
             <p
-              className="text-[10px] font-semibold uppercase tracking-widest mb-4"
+              className="section-label mb-4"
               style={{ color: "rgba(255,255,255,0.4)" }}
             >
               Explore
@@ -44,7 +44,7 @@ export default function Footer() {
           {/* Disclaimer */}
           <div>
             <p
-              className="text-[10px] font-semibold uppercase tracking-widest mb-4"
+              className="section-label mb-4"
               style={{ color: "rgba(255,255,255,0.4)" }}
             >
               Important Notice
@@ -61,7 +61,7 @@ export default function Footer() {
           style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}
         >
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-            © 2026 Women&apos;s Health Evidence Lab
+            &copy; 2026 Women&apos;s Health Evidence Lab
           </p>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
             For research and educational purposes only.

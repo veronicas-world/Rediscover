@@ -538,11 +538,8 @@ async function generateSQL(drugName, signals, trialDataByNct, supabaseUrl, supab
     out.push(`FROM compounds c`);
     out.push(`WHERE c.name = ${esc(s.drug_name)}`);
     out.push(`ON CONFLICT (compound_id, condition_id) DO UPDATE SET`);
-    out.push(`  signal_type          = EXCLUDED.signal_type,`);
-    out.push(`  evidence_strength    = EXCLUDED.evidence_strength,`);
-    out.push(`  summary              = EXCLUDED.summary,`);
-    out.push(`  mechanism_hypothesis = EXCLUDED.mechanism_hypothesis,`);
-    out.push(`  status               = EXCLUDED.status;`);
+    out.push(`  summary           = EXCLUDED.summary,`);
+    out.push(`  evidence_strength = EXCLUDED.evidence_strength;`);
     out.push('');
   }
 

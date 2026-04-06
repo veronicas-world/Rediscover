@@ -311,7 +311,7 @@ export default function SearchBar({ size = "sm", onNavigate }: SearchBarProps) {
             {/* Conditions */}
             {conditionResults.length > 0 && (
               <div>
-                <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#aaa" }}>
+                <p className="section-label px-4 pt-3 pb-1.5">
                   Conditions
                 </p>
                 {conditionResults.map((r) => (
@@ -331,7 +331,7 @@ export default function SearchBar({ size = "sm", onNavigate }: SearchBarProps) {
             {/* Medications */}
             {compoundResults.length > 0 && (
               <div style={conditionResults.length > 0 ? { borderTop: "1px solid #F0EDE8" } : {}}>
-                <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#aaa" }}>
+                <p className="section-label px-4 pt-3 pb-1.5">
                   Medications
                 </p>
                 {compoundResults.map((compound) => {
@@ -395,7 +395,7 @@ export default function SearchBar({ size = "sm", onNavigate }: SearchBarProps) {
             {/* Signals */}
             {signalResults.length > 0 && (
               <div style={conditionResults.length > 0 || compoundResults.length > 0 ? { borderTop: "1px solid #F0EDE8" } : {}}>
-                <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#aaa" }}>
+                <p className="section-label px-4 pt-3 pb-1.5">
                   Signals
                 </p>
                 {signalResults.map((r) => (

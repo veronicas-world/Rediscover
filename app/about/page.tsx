@@ -19,24 +19,11 @@ export default function AboutPage() {
           >
             About
           </h1>
-          <p className="text-base" style={{ color: "#555" }}>
-            What Women&apos;s Health Evidence Lab is, how it works, and why it exists.
-          </p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         <div className="space-y-14">
-
-          {/* Name */}
-          <section>
-            <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
-              The Name
-            </h2>
-            <p className="text-sm leading-relaxed" style={{ color: "#555" }}>
-              Women&apos;s Health Evidence Lab is exactly what it describes: a research tool dedicated to surfacing and organizing published evidence for underfunded women&apos;s health conditions. The name reflects the mission directly — no translation required.
-            </p>
-          </section>
 
           {/* Mission */}
           <section>

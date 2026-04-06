@@ -28,7 +28,7 @@ export default function Nav() {
           onClick={() => setMobileOpen(false)}
         >
           <VennIcon />
-          <span className="font-heading text-base sm:text-lg font-bold tracking-tight">
+          <span className="font-serif text-base sm:text-lg font-bold tracking-tight">
             Women&apos;s Health Evidence Lab
           </span>
         </Link>
