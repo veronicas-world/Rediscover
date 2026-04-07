@@ -116,9 +116,12 @@ function CollapsibleSources({
   const [open, setOpen] = useState(false);
   if (!sources.length) return null;
 
-  const pubmedSources = sources.filter((s) => s.source_type === "pubmed");
-  const faersSources  = sources.filter((s) => s.source_type === "faers");
-  const otherSources  = sources.filter((s) => s.source_type !== "pubmed" && s.source_type !== "faers");
+  const pubmedSources  = sources.filter((s) => s.source_type === "pubmed");
+  const faersSources   = sources.filter((s) => s.source_type === "faers");
+  const redditSources  = sources.filter((s) => s.source_type === "reddit");
+  const otherSources   = sources.filter(
+    (s) => s.source_type !== "pubmed" && s.source_type !== "faers" && s.source_type !== "reddit"
+  );
 
   return (
     <div className="mt-5 pt-4" style={{ borderTop: `1px solid ${borderColor}` }}>
@@ -275,6 +278,56 @@ function CollapsibleSources({
                     </p>
                   </>
                 );
+              })()}
+            </div>
+          )}
+
+          {/* Reddit post sources — grouped by subreddit */}
+          {redditSources.length > 0 && (
+            <div>
+              {(pubmedSources.length > 0 || faersSources.length > 0 || otherSources.length > 0) && (
+                <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
+                  Community Posts
+                </p>
+              )}
+              {(() => {
+                const grouped: Record<string, Source[]> = {};
+                for (const s of redditSources) {
+                  const sub = s.external_id ?? "unknown";
+                  if (!grouped[sub]) grouped[sub] = [];
+                  grouped[sub].push(s);
+                }
+                return Object.entries(grouped).map(([sub, subPosts]) => (
+                  <div key={sub} className="mb-3 last:mb-0">
+                    <p className="text-[10px] font-bold mb-1.5" style={{ color: mutedColor }}>
+                      r/{sub}
+                    </p>
+                    <ul
+                      className="space-y-1.5 pl-3"
+                      style={{ borderLeft: `2px solid ${borderColor}` }}
+                    >
+                      {subPosts.map((source) => (
+                        <li key={source.id} className="text-xs leading-snug">
+                          {source.url ? (
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline underline-offset-2"
+                              style={{ color: linkColor }}
+                            >
+                              {source.title ?? source.url}
+                            </a>
+                          ) : (
+                            <span style={{ color: textColor }}>
+                              {source.title ?? "Reddit post"}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ));
               })()}
             </div>
           )}
@@ -449,6 +502,18 @@ function EvidenceGroup({
   );
 }
 
+// ── Community color palette ───────────────────────────────────────────────────
+const community = {
+  bg:        "#F0F5FB",
+  border:    "#B8CEDD",
+  heading:   "#2C3E50",
+  body:      "#44596A",
+  label:     "#6B7E8E",
+  tagBg:     "#DCE9F5",
+  tagBorder: "#9DBAD4",
+  link:      "#2B5F8A",
+};
+
 // ── Pathway signal_types: these always win regardless of source
 const PATHWAY_SIGNAL_TYPES = new Set(["pathway_signal", "caution_signal"]);
 
@@ -458,8 +523,10 @@ const CROSS_SOURCE_TYPES = new Set(["faers", "sider"]);
 // Source types that belong in Direct Research
 const DIRECT_SOURCE_TYPES = new Set(["pubmed", "clinical_trial"]);
 
-function getSignalTab(signal: Signal): "direct" | "cross" | "caution" {
-  // Pathway signal_type overrides everything
+function getSignalTab(signal: Signal): "direct" | "cross" | "caution" | "community" {
+  // Community reports always go to their own tab
+  if (signal.signal_type === "community_report") return "community";
+  // Pathway signal_type overrides everything else
   if (PATHWAY_SIGNAL_TYPES.has(signal.signal_type ?? "")) return "caution";
 
   const sourceTypes = signal.sources.map((s) => s.source_type).filter(Boolean);
@@ -586,44 +653,35 @@ function PathwaySignalCard({ signal }: { signal: Signal }) {
   );
 }
 
-type Tab = "direct" | "cross" | "caution";
+type Tab = "direct" | "cross" | "caution" | "community";
 
 export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("direct");
 
-  const directSignals = signals.filter((s) => getSignalTab(s) === "direct");
-  const cautionSignals = signals.filter((s) => getSignalTab(s) === "caution");
-  const crossSignals = signals.filter((s) => getSignalTab(s) === "cross");
+  const directSignals    = signals.filter((s) => getSignalTab(s) === "direct");
+  const cautionSignals   = signals.filter((s) => getSignalTab(s) === "caution");
+  const crossSignals     = signals.filter((s) => getSignalTab(s) === "cross");
+  const communitySignals = signals.filter((s) => getSignalTab(s) === "community");
 
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: "direct", label: "Direct Research", count: directSignals.length },
-    { key: "cross", label: "Cross-Condition", count: crossSignals.length },
-    { key: "caution", label: "Pathways", count: cautionSignals.length },
+    { key: "direct",    label: "Direct Research",       count: directSignals.length },
+    { key: "cross",     label: "Cross-Condition",        count: crossSignals.length },
+    { key: "caution",   label: "Pathways",               count: cautionSignals.length },
+    { key: "community", label: "Community Reports",      count: communitySignals.length },
   ];
 
   function tabStyle(key: Tab) {
     const isActive = activeTab === key;
-    const isPathway = key === "caution";
-
-    if (isActive && isPathway) {
-      return {
-        backgroundColor: amber.tagBg,
-        color: amber.link,
-        border: `1px solid ${amber.tagBorder}`,
-      };
+    if (isActive && key === "caution") {
+      return { backgroundColor: amber.tagBg, color: amber.link, border: `1px solid ${amber.tagBorder}` };
+    }
+    if (isActive && key === "community") {
+      return { backgroundColor: community.tagBg, color: community.link, border: `1px solid ${community.tagBorder}` };
     }
     if (isActive) {
-      return {
-        backgroundColor: "#EEF1EE",
-        color: "#5C6B5D",
-        border: "1px solid #7A8B7A",
-      };
+      return { backgroundColor: "#EEF1EE", color: "#5C6B5D", border: "1px solid #7A8B7A" };
     }
-    return {
-      backgroundColor: "transparent",
-      color: "#666",
-      border: "1px solid #E0DDD8",
-    };
+    return { backgroundColor: "transparent", color: "#666", border: "1px solid #E0DDD8" };
   }
 
   return (
@@ -644,6 +702,8 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
                 style={
                   activeTab === key && key === "caution"
                     ? { backgroundColor: amber.bg, color: amber.label }
+                    : activeTab === key && key === "community"
+                    ? { backgroundColor: community.tagBg, color: community.link }
                     : activeTab === key
                     ? { backgroundColor: "#D8E5D8", color: "#5C6B5D" }
                     : { backgroundColor: "#F0EDE8", color: "#888" }
@@ -773,6 +833,65 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
             <div className="rounded-lg p-4" style={{ backgroundColor: amber.bg, border: `1px solid ${amber.border}` }}>
               <p className="text-sm leading-relaxed" style={{ color: amber.body }}>
                 No pathway signals have been identified for this condition yet. This section will be updated as more data is available.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Community Forum Reports tab */}
+      {activeTab === "community" && (
+        <div>
+          {/* Disclaimer */}
+          <div
+            className="flex gap-3 items-start p-4 rounded-lg mb-6"
+            style={{ backgroundColor: community.bg, border: `1px solid ${community.border}` }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mt-0.5 shrink-0"
+              style={{ color: community.label }}
+              aria-hidden="true"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <p className="text-sm leading-relaxed" style={{ color: community.body }}>
+              These signals come from patient communities, not clinical studies. They are hypothesis generating. They reflect the lived experience of women who have shared medical knowledge with each other because formal research has not served them.
+            </p>
+          </div>
+
+          {communitySignals.length > 0 && (
+            <div className="space-y-2 mb-6">
+              {groupByEvidence(communitySignals).map(({ key, label, signals: group }) => (
+                <EvidenceGroup
+                  key={key}
+                  groupKey={key}
+                  label={label}
+                  count={group.length}
+                  accentColor={community.link}
+                  badgeBg={community.tagBg}
+                  badgeColor={community.link}
+                >
+                  {group.map((signal) => <SignalCard key={signal.id} signal={signal} />)}
+                </EvidenceGroup>
+              ))}
+            </div>
+          )}
+
+          {communitySignals.length === 0 && (
+            <div className="rounded-lg p-4" style={{ backgroundColor: community.bg, border: `1px solid ${community.border}` }}>
+              <p className="text-sm leading-relaxed" style={{ color: community.body }}>
+                Community forum data for this condition has not been processed yet.
               </p>
             </div>
           )}

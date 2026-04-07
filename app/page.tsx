@@ -48,6 +48,20 @@ const METHODOLOGY = [
       </svg>
     ),
   },
+  {
+    title: "Community Forum Reports",
+    description:
+      "Patient communities have generated real world treatment knowledge for decades. We surface recurring treatment reports from condition-specific forums as hypothesis generating signals.",
+    href: "/about/community-reports",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
 ];
 
 export default async function Home() {
@@ -110,7 +124,7 @@ export default async function Home() {
             </h2>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2">
             {METHODOLOGY.map(({ title, description, href, icon }) => (
               <Link
                 key={title}
