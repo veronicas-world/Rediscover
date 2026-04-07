@@ -71,6 +71,16 @@ body {
   outline-offset: 2px;
 }
 
+/* ── Scrollbar hiding (used for horizontal scroll containers) ──────────── */
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Search input ──────────────────────────────────────────────────────── */
 
 input[type="search"]::-webkit-search-cancel-button {

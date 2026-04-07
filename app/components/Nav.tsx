@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import SearchBar from "./SearchBar";
 
@@ -16,6 +16,34 @@ function VennIcon() {
 
 export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const aboutCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function openAbout() {
+    if (aboutCloseTimer.current) clearTimeout(aboutCloseTimer.current);
+    setAboutOpen(true);
+  }
+
+  function scheduleCloseAbout() {
+    aboutCloseTimer.current = setTimeout(() => setAboutOpen(false), 150);
+  }
+
+  // Close dropdown when clicking outside (needed on touch devices)
+  useEffect(() => {
+    if (!aboutOpen) return;
+    function handleOutsideClick(e: MouseEvent | TouchEvent) {
+      if (aboutRef.current && !aboutRef.current.contains(e.target as Node)) {
+        setAboutOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [aboutOpen]);
 
   return (
     <header className="sticky top-0 z-40" style={{ backgroundColor: "#4D5E4D" }}>
@@ -28,8 +56,9 @@ export default function Nav() {
           onClick={() => setMobileOpen(false)}
         >
           <VennIcon />
-          <span className="font-serif text-base sm:text-lg font-bold tracking-tight">
-            Women&apos;s Health Evidence Lab
+          <span className="font-serif font-bold tracking-tight">
+            <span className="hidden sm:inline text-base sm:text-lg">Women&apos;s Health Evidence Lab</span>
+            <span className="sm:hidden text-base">WHEL</span>
           </span>
         </Link>
 
@@ -42,7 +71,62 @@ export default function Nav() {
           >
             Browse Conditions
           </Link>
-          {/* SearchBar: nav (sm) variant: dark-background-aware input */}
+
+          {/* About dropdown */}
+          <div
+            ref={aboutRef}
+            className="relative"
+            onMouseEnter={openAbout}
+            onMouseLeave={scheduleCloseAbout}
+          >
+            <button
+              className="text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-75"
+              style={{ color: "rgba(255,255,255,0.92)" }}
+              aria-expanded={aboutOpen}
+              aria-haspopup="true"
+              onClick={() => (aboutOpen ? setAboutOpen(false) : openAbout())}
+            >
+              About
+            </button>
+            {aboutOpen && (
+              /* pt-2 creates a transparent hover bridge over the visual gap */
+              <div className="absolute top-full right-0 pt-2" style={{ zIndex: 50, minWidth: "180px" }}>
+                <div
+                  className="rounded overflow-hidden"
+                  style={{
+                    backgroundColor: "#3E4E3E",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+                  }}
+                  onMouseEnter={openAbout}
+                  onMouseLeave={scheduleCloseAbout}
+                >
+                  <Link
+                    href="/about"
+                    onClick={() => setAboutOpen(false)}
+                    className="block px-4 py-2.5 text-sm font-medium"
+                    style={{ color: "rgba(255,255,255,0.92)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#4D5E4D")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    Mission
+                  </Link>
+                  <Link
+                    href="/about/more-information"
+                    onClick={() => setAboutOpen(false)}
+                    className="block px-4 py-2.5 text-sm font-medium"
+                    style={{ color: "rgba(255,255,255,0.92)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#4D5E4D")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    More Information
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SearchBar: nav (sm) variant */}
           <div className="w-52 lg:w-64">
             <SearchBar size="sm" />
           </div>
@@ -103,10 +187,18 @@ export default function Nav() {
             <Link
               href="/about"
               onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2 py-3 text-sm font-medium border-b"
+              style={{ color: "rgba(255,255,255,0.75)", borderColor: "rgba(255,255,255,0.1)" }}
+            >
+              Mission
+            </Link>
+            <Link
+              href="/about/more-information"
+              onClick={() => setMobileOpen(false)}
               className="flex items-center gap-2 py-3 text-sm font-medium"
               style={{ color: "rgba(255,255,255,0.65)" }}
             >
-              About
+              More Information
             </Link>
           </nav>
         </div>

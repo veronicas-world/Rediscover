@@ -35,7 +35,7 @@ export default function AboutPage() {
                 Women&apos;s health conditions are systematically underfunded relative to their prevalence and severity. Endometriosis, PMDD, vulvodynia, and adenomyosis affect hundreds of millions of people worldwide and receive a fraction of the research investment directed at conditions with comparable disease burden.
               </p>
               <p>
-                Women&apos;s Health Evidence Lab asks a different question: what existing drugs have shown unexpected promise for conditions that aren&apos;t getting enough research attention? Drug repurposing is faster, cheaper, and lower risk than developing new drugs from scratch. For conditions with no approved treatment, a repurposed drug may be the fastest route to meaningful relief.
+                Women&apos;s Health Evidence Lab (WHEL) asks a different question: what existing drugs have shown unexpected promise for conditions that aren&apos;t getting enough research attention? Drug repurposing is faster, cheaper, and lower risk than developing new drugs from scratch. For conditions with no approved treatment, a repurposed drug may be the fastest route to meaningful relief.
               </p>
             </div>
           </section>
@@ -73,6 +73,17 @@ export default function AboutPage() {
                   Drugs observed to affect or worsen a condition. These signals reveal which biological pathways are involved and may point toward new therapeutic approaches.
                 </p>
               </div>
+              <div
+                className="rounded-xl p-5"
+                style={{ backgroundColor: "#F0F5FB", border: "1px solid #B8CEDD" }}
+              >
+                <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#2C3E50" }}>
+                  Community Forum Reports
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#44596A" }}>
+                  Patient communities on Reddit and condition specific forums have generated real world treatment knowledge for decades, filling gaps left by underfunded research. We surface recurring treatment reports from these communities as hypothesis generating signals. When multiple women independently report that a drug or supplement helped their symptoms, that pattern is worth noting even without a clinical trial to confirm it. All community signals are clearly labeled as preliminary and patient reported rather than clinically verified.
+                </p>
+              </div>
             </div>
           </section>
 
@@ -101,6 +112,10 @@ export default function AboutPage() {
                 {
                   name: "FDA Drug Approvals Database",
                   detail: "Used to verify approval status and labeled indications for all compounds listed.",
+                },
+                {
+                  name: "Reddit Community Forums",
+                  detail: "Condition specific communities including r/Endo, r/endometriosis, r/PCOS, r/PMDD, r/Menopause, r/Perimenopause, and r/vulvodynia. Used exclusively for the Community Forum Reports signal category.",
                 },
               ].map(({ name, detail }) => (
                 <li
@@ -147,7 +162,7 @@ export default function AboutPage() {
                 ],
                 [
                   "No original research.",
-                  "Women\u2019s Health Evidence Lab surfaces and organizes published research. It does not conduct studies or generate new data.",
+                  "WHEL surfaces and organizes published research. It does not conduct studies or generate new data.",
                 ],
                 [
                   "The literature is incomplete.",
@@ -178,7 +193,7 @@ export default function AboutPage() {
                 Endometriosis affects an estimated 190 million people worldwide and takes an average of 7 to 10 years to diagnose. Vulvodynia affects 8 to 16% of women across the lifespan and has no FDA-approved treatment. PMDD was not recognized as a distinct DSM diagnosis until 2013.
               </p>
               <p>
-                Women&apos;s Health Evidence Lab is a small attempt to work within these constraints. To use what already exists in the published literature to surface overlooked evidence and direct attention toward signals that deserve follow-up.
+                WHEL is a small attempt to work within these constraints. To use what already exists in the published literature to surface overlooked evidence and direct attention toward signals that deserve follow-up.
               </p>
             </div>
           </section>

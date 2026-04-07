@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import NoSignalsDisclosure from "./NoSignalsDisclosure";
+import SearchBar from "../components/SearchBar";
 
 export const metadata = { title: "Search" };
 
@@ -103,13 +104,16 @@ export default async function SearchPage({
             <span style={{ color: "#4D5E4D" }}>Search</span>
           </nav>
           <h1
-            className="font-heading text-3xl sm:text-4xl font-bold tracking-tight mb-2"
+            className="font-heading text-3xl sm:text-4xl font-bold tracking-tight mb-6"
             style={{ color: "#1a1a1a" }}
           >
             {isEmpty ? "Search" : <>Results for &ldquo;{q}&rdquo;</>}
           </h1>
+          <div className="max-w-xl">
+            <SearchBar size="lg" />
+          </div>
           {!isEmpty && (
-            <p className="text-sm" style={{ color: "#999" }}>
+            <p className="text-sm mt-3" style={{ color: "#999" }}>
               {total} result{total !== 1 ? "s" : ""} across conditions, medications, and signals
             </p>
           )}
@@ -119,7 +123,7 @@ export default async function SearchPage({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         {isEmpty && (
           <p className="text-sm" style={{ color: "#999" }}>
-            Enter a search term in the navigation bar to see results.
+            Enter a search term above to see results.
           </p>
         )}
 

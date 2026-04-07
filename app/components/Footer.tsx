@@ -4,15 +4,13 @@ export default function Footer() {
   return (
     <footer style={{ backgroundColor: "#2E3B2E", color: "#fff" }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-10">
           {/* Brand */}
           <div className="sm:col-span-1">
-            <p className="font-serif text-base font-bold mb-2" style={{ color: "#fff" }}>
+            <p className="font-serif text-base font-bold mb-1" style={{ color: "#fff" }}>
               Women&apos;s Health Evidence Lab
             </p>
-            <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
-              Research tool for women&apos;s health. Not medical advice.
-            </p>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>WHEL</p>
           </div>
 
           {/* Explore */}
@@ -41,18 +39,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Disclaimer */}
-          <div>
-            <p
-              className="section-label mb-4"
-              style={{ color: "rgba(255,255,255,0.4)" }}
-            >
-              Important Notice
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
-              For research purposes only. Always consult a healthcare provider before making treatment decisions.
-            </p>
-          </div>
         </div>
 
         {/* Bottom row */}
@@ -61,7 +47,7 @@ export default function Footer() {
           style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}
         >
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-            &copy; 2026 Women&apos;s Health Evidence Lab
+            &copy; 2026 WHEL
           </p>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
             For research and educational purposes only.

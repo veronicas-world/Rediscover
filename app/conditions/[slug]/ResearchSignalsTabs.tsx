@@ -686,13 +686,13 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
 
   return (
     <div>
-      {/* Pill tab bar */}
-      <div className="flex flex-wrap gap-2 mb-8">
+      {/* Pill tab bar — horizontal scroll on mobile */}
+      <div className="no-scrollbar flex gap-2 mb-8 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
         {tabs.map(({ key, label, count }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className="px-4 py-2 text-sm font-medium rounded-full transition-all"
+            className="shrink-0 px-4 py-2 text-sm font-medium rounded-full transition-all whitespace-nowrap"
             style={tabStyle(key)}
           >
             {label}

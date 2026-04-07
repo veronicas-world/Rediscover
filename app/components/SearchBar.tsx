@@ -224,16 +224,22 @@ export default function SearchBar({ size = "sm", onNavigate }: SearchBarProps) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") { setOpen(false); return; }
     const items = getNavigableItems();
-    if (!open || items.length === 0) return;
     if (e.key === "ArrowDown") {
+      if (!open || items.length === 0) return;
       e.preventDefault();
       setActiveIndex((i) => (i + 1) % items.length);
     } else if (e.key === "ArrowUp") {
+      if (!open || items.length === 0) return;
       e.preventDefault();
       setActiveIndex((i) => (i <= 0 ? items.length - 1 : i - 1));
-    } else if (e.key === "Enter" && activeIndex >= 0) {
-      e.preventDefault();
-      navigate(items[activeIndex].path);
+    } else if (e.key === "Enter") {
+      if (activeIndex >= 0 && items.length > 0) {
+        e.preventDefault();
+        navigate(items[activeIndex].path);
+      } else if (query.trim().length >= 2) {
+        e.preventDefault();
+        navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+      }
     }
   }
 
