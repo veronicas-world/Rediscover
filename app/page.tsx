@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 
 const CARD_STYLE = {
   border: "1px solid #E0DDD8",
@@ -64,13 +63,7 @@ const METHODOLOGY = [
   },
 ];
 
-export default async function Home() {
-  const { data: featuredConditions } = await supabase
-    .from("conditions")
-    .select("id, name, slug")
-    .order("name")
-    .limit(3);
-
+export default function Home() {
   return (
     <main className="flex-1 flex flex-col">
 
@@ -125,19 +118,13 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            {METHODOLOGY.map(({ title, description, href, icon }) => (
+            {METHODOLOGY.map(({ title, description, href }) => (
               <Link
                 key={title}
                 href={href}
                 className="group flex flex-col bg-white p-6 sm:p-8 transition-shadow hover:shadow-md"
                 style={CARD_STYLE}
               >
-                <div
-                  className="w-11 h-11 flex items-center justify-center mb-5"
-                  style={{ backgroundColor: "#EDEAE4", color: "#4D5E4D", borderRadius: "8px" }}
-                >
-                  {icon}
-                </div>
                 <h3 className="font-heading text-lg mb-2 group-hover:opacity-75 transition-opacity" style={{ color: "#1a1a1a" }}>
                   {title}
                 </h3>
@@ -153,56 +140,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Featured Conditions ───────────────────────────────────────────── */}
-      {featuredConditions && featuredConditions.length > 0 && (
-        <section style={{ backgroundColor: "#F5F3EF", borderBottom: "1px solid #E0DDD8" }}>
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-            <div className="mb-10">
-              <p className="section-label mb-3">Featured Conditions</p>
-              <h2
-                className="font-heading text-2xl sm:text-3xl"
-                style={{ color: "#1a1a1a" }}
-              >
-                Start here
-              </h2>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-10">
-              {featuredConditions.map((condition) => (
-                <Link
-                  key={condition.id}
-                  href={`/conditions/${condition.slug}`}
-                  className="group block bg-white p-6 sm:p-8 transition-shadow hover:shadow-md"
-                  style={CARD_STYLE}
-                >
-                  <h3
-                    className="font-heading text-xl mb-4 group-hover:opacity-75 transition-opacity"
-                    style={{ color: "#1a1a1a" }}
-                  >
-                    {condition.name}
-                  </h3>
-                  <p
-                    className="text-sm font-semibold"
-                    style={{ color: "#4D5E4D" }}
-                  >
-                    View research signals
-                  </p>
-                </Link>
-              ))}
-            </div>
-
-            <div>
-              <Link
-                href="/conditions"
-                className="text-sm font-semibold transition-opacity hover:opacity-70"
-                style={{ color: "#4D5E4D" }}
-              >
-                View all conditions
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
 
     </main>
   );
