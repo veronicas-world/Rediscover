@@ -116,10 +116,19 @@ function CollapsibleSources({
   const [open, setOpen] = useState(false);
   if (!sources.length) return null;
 
-  const pubmedSources  = sources.filter((s) => s.source_type === "pubmed");
-  const faersSources   = sources.filter((s) => s.source_type === "faers");
-  const redditSources  = sources.filter((s) => s.source_type === "reddit");
-  const otherSources   = sources.filter(
+  // Deduplicate by URL — keep first occurrence of each URL
+  const seenUrls = new Set<string>();
+  const dedupedSources = sources.filter((s) => {
+    if (!s.url) return true;
+    if (seenUrls.has(s.url)) return false;
+    seenUrls.add(s.url);
+    return true;
+  });
+
+  const pubmedSources  = dedupedSources.filter((s) => s.source_type === "pubmed");
+  const faersSources   = dedupedSources.filter((s) => s.source_type === "faers");
+  const redditSources  = dedupedSources.filter((s) => s.source_type === "reddit");
+  const otherSources   = dedupedSources.filter(
     (s) => s.source_type !== "pubmed" && s.source_type !== "faers" && s.source_type !== "reddit"
   );
 
@@ -146,7 +155,7 @@ function CollapsibleSources({
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
-        {open ? "Hide" : "View"} Citations ({sources.length})
+        {open ? "Hide" : "View"} Citations ({dedupedSources.length})
       </button>
 
       {open && (

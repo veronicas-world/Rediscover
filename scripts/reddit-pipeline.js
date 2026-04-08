@@ -348,58 +348,45 @@ function generateSQL(condition, conditionId, signals, fetchedSubreddits, posts =
       ? s.contributing_posts
       : [];
 
-    if (contributingPosts.length > 0) {
-      // One source row per contributing post using actual post URL and title
-      for (const cp of contributingPosts) {
-        const postIdx = typeof cp.post_index === 'number' ? cp.post_index - 1 : -1;
-        const post    = postIdx >= 0 && postIdx < posts.length ? posts[postIdx] : null;
-        if (!post) continue;
+    if (contributingPosts.length === 0) {
+      // Claude did not return contributing_posts for this signal — skip sources.
+      // Generic subreddit-level URLs are not useful citations.
+      out.push(`-- No individual post sources for ${esc(s.compound_name)} (contributing_posts was empty)`);
+      out.push('');
+      continue;
+    }
 
-        const subredditSlug = post.subreddit.replace(/^r\//, '');
+    // One source row per contributing post using the actual post permalink.
+    // Only insert if the URL contains "/comments/" (individual post, not subreddit page).
+    for (const cp of contributingPosts) {
+      const postIdx = typeof cp.post_index === 'number' ? cp.post_index - 1 : -1;
+      const post    = postIdx >= 0 && postIdx < posts.length ? posts[postIdx] : null;
+      if (!post) continue;
 
-        out.push(`INSERT INTO sources`);
-        out.push(`  (id, signal_id, source_type, external_id, title, url, key_finding_excerpt)`);
-        out.push(`SELECT`);
-        out.push(`  gen_random_uuid(),`);
-        out.push(`  rs.id,`);
-        out.push(`  'reddit',`);
-        out.push(`  ${esc(subredditSlug)},`);
-        out.push(`  ${esc(post.title)},`);
-        out.push(`  ${esc(post.url)},`);
-        out.push(`  NULL`);
-        out.push(`FROM repurposing_signals rs`);
-        out.push(`JOIN compounds c ON rs.compound_id = c.id`);
-        out.push(`WHERE c.name = ${esc(s.compound_name)}`);
-        out.push(`AND rs.condition_id = ${esc(conditionId)}`);
-        out.push(`ON CONFLICT DO NOTHING;`);
-        out.push('');
+      // Validate: must be an individual post URL, not a subreddit homepage
+      if (!post.url.includes('/comments/')) {
+        log(`   [skip] Non-post URL for ${s.compound_name}: ${post.url}`);
+        continue;
       }
-    } else {
-      // Fallback: one row per subreddit (when Claude did not return contributing_posts)
-      if (s.subreddits.length === 0) continue;
 
-      for (const subreddit of s.subreddits) {
-        const subredditName = subreddit.startsWith('r/') ? subreddit : `r/${subreddit}`;
-        const subredditSlug = subredditName.replace('r/', '');
-        const subredditUrl  = `https://www.reddit.com/${subredditName}`;
+      const subredditSlug = post.subreddit.replace(/^r\//, '');
 
-        out.push(`INSERT INTO sources`);
-        out.push(`  (id, signal_id, source_type, external_id, title, url, key_finding_excerpt)`);
-        out.push(`SELECT`);
-        out.push(`  gen_random_uuid(),`);
-        out.push(`  rs.id,`);
-        out.push(`  'reddit',`);
-        out.push(`  ${esc(subredditSlug)},`);
-        out.push(`  ${esc(`${subredditName} community reports`)},`);
-        out.push(`  ${esc(subredditUrl)},`);
-        out.push(`  ${esc(s.summary ?? null)}`);
-        out.push(`FROM repurposing_signals rs`);
-        out.push(`JOIN compounds c ON rs.compound_id = c.id`);
-        out.push(`WHERE c.name = ${esc(s.compound_name)}`);
-        out.push(`AND rs.condition_id = ${esc(conditionId)}`);
-        out.push(`ON CONFLICT DO NOTHING;`);
-        out.push('');
-      }
+      out.push(`INSERT INTO sources`);
+      out.push(`  (id, signal_id, source_type, external_id, title, url, key_finding_excerpt)`);
+      out.push(`SELECT`);
+      out.push(`  gen_random_uuid(),`);
+      out.push(`  rs.id,`);
+      out.push(`  'reddit',`);
+      out.push(`  ${esc(subredditSlug)},`);
+      out.push(`  ${esc(post.title)},`);
+      out.push(`  ${esc(post.url)},`);
+      out.push(`  NULL`);
+      out.push(`FROM repurposing_signals rs`);
+      out.push(`JOIN compounds c ON rs.compound_id = c.id`);
+      out.push(`WHERE c.name = ${esc(s.compound_name)}`);
+      out.push(`AND rs.condition_id = ${esc(conditionId)}`);
+      out.push(`ON CONFLICT DO NOTHING;`);
+      out.push('');
     }
   }
 
