@@ -82,7 +82,7 @@ export default function Home() {
               className="text-base sm:text-lg mb-8 leading-relaxed"
               style={{ color: "#555" }}
             >
-              Women&apos;s Health Evidence Lab (WHEL) surfaces existing drugs and compounds that published evidence suggests may be relevant to six of the most neglected conditions in women&apos;s medicine. These conditions are chronically underfunded and underresearched. Every signal is drawn from real data sources and linked to its original reference.
+              Women&apos;s Health Evidence Lab (WHEL) investigates overlooked signals across underrecognized and underfunded conditions in women&apos;s health. WHEL integrates data from multiple sources, including published studies, regulatory databases, adverse event reporting systems, and patient reported experiences, to identify patterns that are not captured by traditional research approaches.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
