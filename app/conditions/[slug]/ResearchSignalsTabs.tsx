@@ -436,16 +436,33 @@ const EVIDENCE_LABELS: Record<string, string> = {
  preliminary:"Preliminary Evidence",
 };
 
+// Normalize a compound name for duplicate detection:
+// lowercase, trim, strip parenthetical suffixes like "(Ozempic/Wegovy/...)"
+function normalizeCompoundName(name: string): string {
+ return name
+ .toLowerCase()
+ .replace(/\s*\(.*$/, "") // strip everything from first "(" onward
+ .trim();
+}
+
 function groupByEvidence(signals: Signal[]): { key: string; label: string; signals: Signal[] }[] {
- // Deduplicate by compound name — keep first occurrence per name
- const seenNames = new Set<string>();
- const deduped = signals.filter((s) => {
- const name = (s.compounds?.name ??"").toLowerCase();
- if (!name) return true;
- if (seenNames.has(name)) return false;
- seenNames.add(name);
- return true;
- });
+ // Deduplicate by normalized compound name.
+ // When two signals share the same normalized name, keep the one with the longer (more complete) raw name.
+ const bestByNorm = new Map<string, Signal>();
+ for (const s of signals) {
+ const raw = s.compounds?.name ?? "";
+ if (!raw) { bestByNorm.set(s.id, s); continue; } // no name — keep by unique id
+ const norm = normalizeCompoundName(raw);
+ const existing = bestByNorm.get(norm);
+ if (!existing) {
+ bestByNorm.set(norm, s);
+ } else {
+ // Keep whichever has the longer raw name
+ const existingRaw = existing.compounds?.name ?? "";
+ if (raw.length > existingRaw.length) bestByNorm.set(norm, s);
+ }
+ }
+ const deduped = Array.from(bestByNorm.values());
 
  const buckets: Record<string, Signal[]> = {};
  for (const s of deduped) {
