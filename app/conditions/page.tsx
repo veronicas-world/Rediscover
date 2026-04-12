@@ -20,7 +20,7 @@ export default async function ConditionsPage() {
  {/* Page header */}
  <div style={{ backgroundColor:"#fff", borderBottom:"1px solid #E0DDD8" }}>
  <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
- <nav className="text-xs mb-4" style={{ color:"#999" }}>
+ <nav className="text-xs mb-4" style={{ color:"#111" }}>
  <span>Home</span>
  <span className="mx-2">›</span>
  <span style={{ color:"#4D5E4D" }}>Conditions</span>
@@ -31,7 +31,7 @@ export default async function ConditionsPage() {
  >
  Conditions
  </h1>
- <p className="text-base max-w-xl" style={{ color:"#555" }}>
+ <p className="text-base max-w-xl" style={{ color:"#111" }}>
  Conditions with active drug repurposing signals in the database.
  </p>
  </div>

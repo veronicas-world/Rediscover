@@ -80,7 +80,7 @@ export default function Home() {
  </h1>
  <p
  className="text-base sm:text-lg mb-8 leading-relaxed"
- style={{ color:"#555" }}
+ style={{ color:"#111" }}
  >
  Women&apos;s Health Evidence Lab (WHEL) investigates overlooked signals across underrecognized and underfunded conditions in women&apos;s health. WHEL integrates data from multiple sources, including published studies, regulatory databases, adverse event reporting systems, and patient reported experiences, to identify patterns that are not captured by traditional research approaches.
  </p>
@@ -128,7 +128,7 @@ export default function Home() {
  <h3 className="font-heading text-lg mb-2 group-hover:opacity-75 transition-opacity" style={{ color:"#1a1a1a" }}>
  {title}
  </h3>
- <p className="text-sm leading-relaxed mb-5" style={{ color:"#666" }}>
+ <p className="text-sm leading-relaxed mb-5" style={{ color:"#111" }}>
  {description}
  </p>
  <p className="text-sm font-semibold mt-auto" style={{ color:"#4D5E4D" }}>

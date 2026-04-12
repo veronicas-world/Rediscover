@@ -8,7 +8,7 @@ export default function AboutPage() {
  {/* Page header */}
  <div style={{ backgroundColor:"#fff", borderBottom:"1px solid #E0DDD8" }}>
  <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
- <nav className="text-xs mb-4" style={{ color:"#999" }}>
+ <nav className="text-xs mb-4" style={{ color:"#111" }}>
  <span>Home</span>
  <span className="mx-2">›</span>
  <span style={{ color:"#4D5E4D" }}>About</span>
@@ -30,7 +30,7 @@ export default function AboutPage() {
  <h2 className="font-heading text-xl font-bold mb-5" style={{ color:"#1a1a1a" }}>
  Mission
  </h2>
- <div className="space-y-4 text-sm leading-relaxed" style={{ color:"#555" }}>
+ <div className="space-y-4 text-sm leading-relaxed" style={{ color:"#111" }}>
  <p>
  Women&apos;s health conditions are systematically underfunded relative to their prevalence and severity. Endometriosis, PMDD, vulvodynia, and adenomyosis affect hundreds of millions of people worldwide and receive a fraction of the research investment directed at conditions with comparable disease burden.
  </p>
@@ -50,7 +50,7 @@ export default function AboutPage() {
  <h3 className="text-sm font-semibold mb-1.5" style={{ color:"#1a1a1a" }}>
  Direct Research
  </h3>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  Published studies and trials specifically targeting the condition. Includes randomized controlled trials, preclinical studies, and observational studies where a drug was investigated for its potential effects.
  </p>
  </div>
@@ -58,7 +58,7 @@ export default function AboutPage() {
  <h3 className="text-sm font-semibold mb-1.5" style={{ color:"#1a1a1a" }}>
  Cross-Condition Signals
  </h3>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  Drugs developed for other conditions that showed incidental benefit for related biology. These are hypothesis-generating signals, not treatment evidence. They identify compounds with plausible mechanisms and existing safety data that may warrant dedicated investigation.
  </p>
  </div>
@@ -92,7 +92,7 @@ export default function AboutPage() {
  <h2 className="font-heading text-xl font-bold mb-5" style={{ color:"#1a1a1a" }}>
  Data Sources
  </h2>
- <p className="text-sm leading-relaxed mb-5" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed mb-5" style={{ color:"#111" }}>
  All signals are sourced from peer reviewed literature and regulatory databases. Every finding includes a cited PMID or primary source reference.
  </p>
  <ul className="space-y-3">
@@ -126,7 +126,7 @@ export default function AboutPage() {
  <p className="text-sm font-semibold mb-1" style={{ color:"#1a1a1a" }}>
  {name}
  </p>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  {detail}
  </p>
  </li>
@@ -150,7 +150,7 @@ export default function AboutPage() {
  Nothing on this site is a treatment recommendation, diagnosis, or clinical guideline. Consult a qualified healthcare provider before making any medical decisions.
  </p>
  </div>
- <ul className="space-y-3 text-sm leading-relaxed" style={{ color:"#555" }}>
+ <ul className="space-y-3 text-sm leading-relaxed" style={{ color:"#111" }}>
  {[
  [
 "Signals are not recommendations.",
@@ -170,7 +170,7 @@ export default function AboutPage() {
  ],
  ].map(([title, body]) => (
  <li key={title} className="flex gap-3">
- <span className="mt-0.5 shrink-0" style={{ color:"#ccc" }}>·</span>
+ <span className="mt-0.5 shrink-0" style={{ color:"#111" }}>·</span>
  <span>
  <strong style={{ color:"#1a1a1a" }}>{title}</strong>{""}
  {body}
@@ -185,7 +185,7 @@ export default function AboutPage() {
  <h2 className="font-heading text-xl font-bold mb-5" style={{ color:"#1a1a1a" }}>
  Why Women&apos;s Health?
  </h2>
- <div className="space-y-4 text-sm leading-relaxed" style={{ color:"#555" }}>
+ <div className="space-y-4 text-sm leading-relaxed" style={{ color:"#111" }}>
  <p>
  Until 1993, women were routinely excluded from clinical trials. The NIH Revitalization Act mandated their inclusion for the first time. The downstream effects persist today: dosing guidelines derived from male physiology, diagnostic criteria calibrated on male presentations, and drug safety profiles that didn&apos;t account for hormonal variability.
  </p>

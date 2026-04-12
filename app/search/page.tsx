@@ -98,7 +98,7 @@ export default async function SearchPage({
  {/* Header */}
  <div style={{ backgroundColor:"#fff", borderBottom:"1px solid #E0DDD8" }}>
  <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
- <nav className="text-xs mb-4" style={{ color:"#999" }}>
+ <nav className="text-xs mb-4" style={{ color:"#111" }}>
  <Link href="/" className="hover:underline">Home</Link>
  <span className="mx-2">›</span>
  <span style={{ color:"#4D5E4D" }}>Search</span>
@@ -113,7 +113,7 @@ export default async function SearchPage({
  <SearchBar size="lg" />
  </div>
  {!isEmpty && (
- <p className="text-sm mt-3" style={{ color:"#999" }}>
+ <p className="text-sm mt-3" style={{ color:"#111" }}>
  {total} result{total !== 1 ?"s" :""} across conditions, medications, and signals
  </p>
  )}
@@ -122,13 +122,13 @@ export default async function SearchPage({
 
  <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
  {isEmpty && (
- <p className="text-sm" style={{ color:"#999" }}>
+ <p className="text-sm" style={{ color:"#111" }}>
  Enter a search term above to see results.
  </p>
  )}
 
  {!isEmpty && total === 0 && (
- <p className="text-sm" style={{ color:"#999" }}>
+ <p className="text-sm" style={{ color:"#111" }}>
  No results for &ldquo;{q}&rdquo;. Try a condition name, medication, drug class, or symptom keyword.
  </p>
  )}
@@ -141,7 +141,7 @@ export default async function SearchPage({
  <section>
  <div className="flex items-baseline gap-4 mb-8">
  <h2 className="section-label">Conditions</h2>
- <span className="text-sm" style={{ color:"#999" }}>{conditions.length} result{conditions.length !== 1 ?"s" :""}</span>
+ <span className="text-sm" style={{ color:"#111" }}>{conditions.length} result{conditions.length !== 1 ?"s" :""}</span>
  </div>
  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
  {conditions.map((c) => (
@@ -169,7 +169,7 @@ export default async function SearchPage({
  <section>
  <div className="flex items-baseline gap-4 mb-8">
  <h2 className="section-label">Medications</h2>
- <span className="text-sm" style={{ color:"#999" }}>{linked.length} result{linked.length !== 1 ?"s" :""}</span>
+ <span className="text-sm" style={{ color:"#111" }}>{linked.length} result{linked.length !== 1 ?"s" :""}</span>
  </div>
 
  {linked.length > 0 && (
@@ -178,7 +178,7 @@ export default async function SearchPage({
  <div key={c.id} className="bg-white p-6 sm:p-8" style={{ border:"1px solid #E0DDD8", borderRadius:"0", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
  <p className="font-heading text-xl mb-1" style={{ color:"#1a1a1a" }}>{c.name}</p>
  {(c.generic_name || c.drug_class) && (
- <p className="text-xs mb-3" style={{ color:"#999" }}>
+ <p className="text-xs mb-3" style={{ color:"#111" }}>
  {[c.generic_name, c.drug_class].filter(Boolean).join(" ·")}
  </p>
  )}
@@ -209,7 +209,7 @@ export default async function SearchPage({
  <section>
  <div className="flex items-baseline gap-4 mb-8">
  <h2 className="section-label">Signals</h2>
- <span className="text-sm" style={{ color:"#999" }}>{signals.length} result{signals.length !== 1 ?"s" :""}</span>
+ <span className="text-sm" style={{ color:"#111" }}>{signals.length} result{signals.length !== 1 ?"s" :""}</span>
  </div>
  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
  {signals.map((s) => (

@@ -164,7 +164,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
  <div>
  {/* Search bar */}
  <div className="relative mb-8 max-w-lg">
- <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color:"#999" }}>
+ <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color:"#111" }}>
  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
  <circle cx="9" cy="9" r="6" />
  <line x1="14.5" y1="14.5" x2="19" y2="19" />
@@ -181,14 +181,14 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
  onBlur={(e) => (e.target.style.borderColor ="#D8D5CF")}
  />
  {loading && (
- <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs" style={{ color:"#ccc" }}>…</span>
+ <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs" style={{ color:"#111" }}>…</span>
  )}
  </div>
 
  {/* Not searching: show full conditions grid */}
  {!isSearching && (
  <>
- <p className="text-sm mb-8" style={{ color:"#999" }}>
+ <p className="text-sm mb-8" style={{ color:"#111" }}>
  {conditions.length} condition{conditions.length !== 1 ?"s" :""}
  </p>
  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -216,7 +216,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
 
  {/* Searching: show grouped results */}
  {isSearching && searched && searchResults.length === 0 && (
- <p className="text-sm" style={{ color:"#999" }}>No results for &ldquo;{query}&rdquo;.</p>
+ <p className="text-sm" style={{ color:"#111" }}>No results for &ldquo;{query}&rdquo;.</p>
  )}
 
  {isSearching && searched && searchResults.length > 0 && (
@@ -257,7 +257,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
  <div key={r.id} className="bg-white p-6" style={{ border:"1px solid #E0DDD8", borderRadius:"0", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
  <p className="font-heading text-xl font-bold mb-1" style={{ color:"#1a1a1a" }}>{r.name}</p>
  {(r.generic_name || r.drug_class) && (
- <p className="text-xs mb-3" style={{ color:"#999" }}>
+ <p className="text-xs mb-3" style={{ color:"#111" }}>
  {[r.generic_name, r.drug_class].filter(Boolean).join(" ·")}
  </p>
  )}
@@ -275,7 +275,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
  ))}
  </div>
  ) : (
- <p className="text-xs mt-3" style={{ color:"#999" }}>No active signals yet.</p>
+ <p className="text-xs mt-3" style={{ color:"#111" }}>No active signals yet.</p>
  )}
  </div>
  ))}

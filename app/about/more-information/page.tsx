@@ -9,7 +9,7 @@ export default function MoreInformationPage() {
  <main className="flex-1" style={{ backgroundColor:"#F5F3EF" }}>
  <div style={{ backgroundColor:"#fff", borderBottom:"1px solid #E0DDD8" }}>
  <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
- <nav className="text-xs mb-4" style={{ color:"#999" }}>
+ <nav className="text-xs mb-4" style={{ color:"#111" }}>
  <Link href="/" className="hover:underline">Home</Link>
  <span className="mx-2">›</span>
  <Link href="/about" className="hover:underline">About</Link>
@@ -32,7 +32,7 @@ export default function MoreInformationPage() {
  <h2 className="font-heading text-xl font-bold mb-5" style={{ color:"#1a1a1a" }}>
  Project Background
  </h2>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  A detailed account of how this project was conceived and built is available in the{""}
  <a
  href="https://veronicaagudelo.substack.com/p/my-first-project-womens-health-evidence"
@@ -58,14 +58,14 @@ export default function MoreInformationPage() {
  <h3 className="font-heading text-base font-semibold mb-3" style={{ color:"#1a1a1a" }}>
  Stack and Infrastructure
  </h3>
- <ul className="space-y-2 text-sm leading-relaxed" style={{ color:"#555" }}>
+ <ul className="space-y-2 text-sm leading-relaxed" style={{ color:"#111" }}>
  {[
 "Next.js (TypeScript) frontend deployed on Vercel.",
 "Supabase (PostgreSQL) as the primary database.",
 "GitHub for version control with automatic Vercel deployments on push.",
  ].map((item) => (
  <li key={item} className="flex gap-3">
- <span className="mt-1 shrink-0" style={{ color:"#ccc" }}>·</span>
+ <span className="mt-1 shrink-0" style={{ color:"#111" }}>·</span>
  <span>{item}</span>
  </li>
  ))}
@@ -107,8 +107,8 @@ export default function MoreInformationPage() {
  style={{ border:"1px solid #E0DDD8" }}
  >
  <p className="text-sm font-semibold mb-0.5" style={{ color:"#1a1a1a" }}>{name}</p>
- <p className="text-xs mb-3 font-mono" style={{ color:"#999" }}>{file}</p>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>{body}</p>
+ <p className="text-xs mb-3 font-mono" style={{ color:"#111" }}>{file}</p>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>{body}</p>
  </div>
  ))}
  </div>
@@ -119,7 +119,7 @@ export default function MoreInformationPage() {
  <h3 className="font-heading text-base font-semibold mb-3" style={{ color:"#1a1a1a" }}>
  Signal Selection Logic
  </h3>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  Claude acts as the classification layer across all four pipelines. For each pipeline the model receives raw data (abstracts, reaction frequency tables, trial data, or forum posts) and a system prompt defining what constitutes a signal worth surfacing. The key filtering criteria are: recurrence (a finding must appear in multiple sources or reports, not just once), relevance to one of the six conditions, and whether the compound was originally developed for a different indication. Claude returns structured JSON which the pipeline scripts convert to SQL. Signal type and evidence strength are assigned by Claude based on the data source and the nature of the finding.
  </p>
  </div>
@@ -129,8 +129,8 @@ export default function MoreInformationPage() {
  <h3 className="font-heading text-base font-semibold mb-3" style={{ color:"#1a1a1a" }}>
  Database Schema
  </h3>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
- Five core tables: <span className="font-mono text-xs" style={{ color:"#666" }}>conditions</span>, <span className="font-mono text-xs" style={{ color:"#666" }}>compounds</span>, <span className="font-mono text-xs" style={{ color:"#666" }}>repurposing_signals</span>, <span className="font-mono text-xs" style={{ color:"#666" }}>sources</span>, and <span className="font-mono text-xs" style={{ color:"#666" }}>cross_condition_patterns</span>. Repurposing signals link compounds to conditions via foreign keys. Sources link to signals and carry source type metadata (<span className="font-mono text-xs" style={{ color:"#666" }}>pubmed</span>, <span className="font-mono text-xs" style={{ color:"#666" }}>faers</span>, <span className="font-mono text-xs" style={{ color:"#666" }}>clinical_trial</span>, <span className="font-mono text-xs" style={{ color:"#666" }}>reddit</span>) which determines which frontend tab a signal appears in. A unique constraint on <span className="font-mono text-xs" style={{ color:"#666" }}>(compound_id, condition_id)</span> prevents duplicate signals and enables upsert behavior on pipeline reruns.
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
+ Five core tables: <span className="font-mono text-xs" style={{ color:"#111" }}>conditions</span>, <span className="font-mono text-xs" style={{ color:"#111" }}>compounds</span>, <span className="font-mono text-xs" style={{ color:"#111" }}>repurposing_signals</span>, <span className="font-mono text-xs" style={{ color:"#111" }}>sources</span>, and <span className="font-mono text-xs" style={{ color:"#111" }}>cross_condition_patterns</span>. Repurposing signals link compounds to conditions via foreign keys. Sources link to signals and carry source type metadata (<span className="font-mono text-xs" style={{ color:"#111" }}>pubmed</span>, <span className="font-mono text-xs" style={{ color:"#111" }}>faers</span>, <span className="font-mono text-xs" style={{ color:"#111" }}>clinical_trial</span>, <span className="font-mono text-xs" style={{ color:"#111" }}>reddit</span>) which determines which frontend tab a signal appears in. A unique constraint on <span className="font-mono text-xs" style={{ color:"#111" }}>(compound_id, condition_id)</span> prevents duplicate signals and enables upsert behavior on pipeline reruns.
  </p>
  </div>
 
@@ -139,10 +139,10 @@ export default function MoreInformationPage() {
  <h3 className="font-heading text-base font-semibold mb-3" style={{ color:"#1a1a1a" }}>
  Frontend Signal Routing
  </h3>
- <p className="text-sm leading-relaxed mb-4" style={{ color:"#555" }}>
- Tab assignment on condition detail pages is determined at render time by reading the <span className="font-mono text-xs" style={{ color:"#666" }}>source_type</span> of each signal&apos;s associated sources.
+ <p className="text-sm leading-relaxed mb-4" style={{ color:"#111" }}>
+ Tab assignment on condition detail pages is determined at render time by reading the <span className="font-mono text-xs" style={{ color:"#111" }}>source_type</span> of each signal&apos;s associated sources.
  </p>
- <ul className="space-y-2 text-sm leading-relaxed" style={{ color:"#555" }}>
+ <ul className="space-y-2 text-sm leading-relaxed" style={{ color:"#111" }}>
  {[
  ["pubmed, clinical_trial","Direct Research tab"],
  ["faers, sider","Cross-Condition Signals tab"],
@@ -150,9 +150,9 @@ export default function MoreInformationPage() {
  ["reddit","Community Forum Reports tab"],
  ].map(([source, dest]) => (
  <li key={source} className="flex gap-3 items-baseline">
- <span className="mt-1 shrink-0" style={{ color:"#ccc" }}>·</span>
+ <span className="mt-1 shrink-0" style={{ color:"#111" }}>·</span>
  <span>
- <span className="font-mono text-xs" style={{ color:"#666" }}>{source}</span>
+ <span className="font-mono text-xs" style={{ color:"#111" }}>{source}</span>
  {" →"}
  {dest}
  </span>
@@ -168,7 +168,7 @@ export default function MoreInformationPage() {
  <h2 className="font-heading text-xl font-bold mb-5" style={{ color:"#1a1a1a" }}>
  Contact
  </h2>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  For questions, research collaborations, or feedback, reach out at{""}
  <a
  href="mailto:vla2117@columbia.edu"

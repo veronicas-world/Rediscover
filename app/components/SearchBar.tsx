@@ -254,7 +254,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  <div className="relative">
  <span
  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
- style={{ color: isLg ?"#999" :"rgba(255,255,255,0.5)" }}
+ style={{ color: isLg ?"#111" :"rgba(255,255,255,0.5)" }}
  >
  <svg
  width={isLg ? 17 : 14}
@@ -290,7 +290,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  {loading && (
  <span
  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
- style={{ color: isLg ?"#ccc" :"rgba(255,255,255,0.4)" }}
+ style={{ color: isLg ?"#111" :"rgba(255,255,255,0.4)" }}
  >
  …
  </span>
@@ -308,7 +308,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  {!hasResults && (
  <div className="px-4 py-4">
  <p className="text-sm font-medium mb-1" style={{ color:"#333" }}>No results found</p>
- <p className="text-xs leading-relaxed" style={{ color:"#999" }}>
+ <p className="text-xs leading-relaxed" style={{ color:"#111" }}>
  Try a condition name, medication, drug class, or symptom keyword.
  </p>
  </div>
@@ -353,7 +353,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  >
  <p className="text-sm font-medium" style={{ color:"#1a1a1a" }}>{compound.name}</p>
  {(compound.generic_name || compound.drug_class) && (
- <p className="text-xs mt-0.5" style={{ color:"#999" }}>
+ <p className="text-xs mt-0.5" style={{ color:"#111" }}>
  {[compound.generic_name, compound.drug_class].filter(Boolean).join(" ·")}
  </p>
  )}
@@ -363,7 +363,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  <div className="px-4 pt-2.5 pb-1">
  <p className="text-sm font-medium" style={{ color:"#1a1a1a" }}>{compound.name}</p>
  {(compound.generic_name || compound.drug_class) && (
- <p className="text-xs mt-0.5" style={{ color:"#999" }}>
+ <p className="text-xs mt-0.5" style={{ color:"#111" }}>
  {[compound.generic_name, compound.drug_class].filter(Boolean).join(" ·")}
  </p>
  )}
@@ -379,7 +379,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor ="#F5F3EF")}
  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor ="transparent")}
  >
- <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color:"#bbb", flexShrink: 0 }}>
+ <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color:"#111", flexShrink: 0 }}>
  <polyline points="9 18 15 12 9 6" />
  </svg>
  <span className="text-xs" style={{ color:"#4D5E4D" }}>{cond.name}</span>
@@ -388,7 +388,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  </div>
  )}
  {compound.conditions.length === 0 && (
- <p className="pl-4 pr-4 pb-3 text-xs" style={{ color:"#999" }}>
+ <p className="pl-4 pr-4 pb-3 text-xs" style={{ color:"#111" }}>
  No active signals yet.
  </p>
  )}

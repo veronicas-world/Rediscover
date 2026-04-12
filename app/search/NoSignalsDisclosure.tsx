@@ -19,7 +19,7 @@ export default function NoSignalsDisclosure({ compounds }: { compounds: Compound
  <button
  onClick={() => setOpen((v) => !v)}
  className="flex items-center gap-2 text-sm font-medium mb-2 transition-opacity hover:opacity-70"
- style={{ color:"#888" }}
+ style={{ color:"#111" }}
  >
  <svg
  width="12"
@@ -39,15 +39,15 @@ export default function NoSignalsDisclosure({ compounds }: { compounds: Compound
 
  {open && (
  <div>
- <p className="text-xs mb-4" style={{ color:"#aaa" }}>
+ <p className="text-xs mb-4" style={{ color:"#111" }}>
  These compounds matched your search but have no repurposing signals identified yet.
  </p>
  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
  {compounds.map((c) => (
  <div key={c.id} className="bg-white p-5 sm:p-6" style={{ border:"1px solid #E8E5E0" }}>
- <p className="font-heading text-lg font-bold mb-1" style={{ color:"#555" }}>{c.name}</p>
+ <p className="font-heading text-lg font-bold mb-1" style={{ color:"#111" }}>{c.name}</p>
  {(c.generic_name || c.drug_class) && (
- <p className="text-xs" style={{ color:"#bbb" }}>
+ <p className="text-xs" style={{ color:"#111" }}>
  {[c.generic_name, c.drug_class].filter(Boolean).join(" ·")}
  </p>
  )}

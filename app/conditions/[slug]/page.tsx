@@ -75,7 +75,7 @@ export default async function ConditionDetailPage({
  <div style={{ backgroundColor:"#fff", borderBottom:"1px solid #E0DDD8" }}>
  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
  {/* Breadcrumb */}
- <nav className="flex items-center gap-1.5 text-xs mb-5" style={{ color:"#999" }}>
+ <nav className="flex items-center gap-1.5 text-xs mb-5" style={{ color:"#111" }}>
  <Link href="/" className="transition-colors hover:underline" style={{ color:"#4D5E4D" }}>
  Home
  </Link>
@@ -121,7 +121,7 @@ export default async function ConditionDetailPage({
  <div>
  <p
  className="text-[10px] uppercase tracking-widest font-semibold mb-1"
- style={{ color:"#888" }}
+ style={{ color:"#111" }}
  >
  Prevalence
  </p>
@@ -140,7 +140,7 @@ export default async function ConditionDetailPage({
  <div>
  <p
  className="text-[10px] uppercase tracking-widest font-semibold mb-1"
- style={{ color:"#888" }}
+ style={{ color:"#111" }}
  >
  Treatment Gap
  </p>
@@ -168,11 +168,11 @@ export default async function ConditionDetailPage({
  >
  <p
  className="text-[10px] uppercase tracking-widest font-semibold mb-3"
- style={{ color:"#888" }}
+ style={{ color:"#111" }}
  >
  Biology
  </p>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  {condition.biology_summary}
  </p>
  </div>
@@ -184,11 +184,11 @@ export default async function ConditionDetailPage({
  >
  <p
  className="text-[10px] uppercase tracking-widest font-semibold mb-3"
- style={{ color:"#888" }}
+ style={{ color:"#111" }}
  >
  Research &amp; Funding Context
  </p>
- <p className="text-sm leading-relaxed" style={{ color:"#555" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  {condition.underfunding_notes}
  </p>
  </div>
@@ -205,7 +205,7 @@ export default async function ConditionDetailPage({
  >
  Repurposing Signals
  </h2>
- <p className="text-sm" style={{ color:"#666" }}>
+ <p className="text-sm" style={{ color:"#111" }}>
  Existing drugs with published evidence for this condition.
  </p>
  </div>

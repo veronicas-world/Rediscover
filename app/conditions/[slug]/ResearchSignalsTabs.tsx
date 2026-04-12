@@ -81,7 +81,7 @@ function SourceBadge({ sources }: { sources: Source[] }) {
  return (
  <span
  className="text-[10px] font-semibold px-2 py-0.5 tracking-wide whitespace-nowrap"
- style={{ backgroundColor:"#F0EDE8", color:"#888", border:"1px solid #E0DDD8" }}
+ style={{ backgroundColor:"#F0EDE8", color:"#111", border:"1px solid #E0DDD8" }}
  >
  Source: {label}
  </span>
@@ -91,7 +91,7 @@ function SourceBadge({ sources }: { sources: Source[] }) {
 // Section field label inside cards
 function FieldLabel({ children }: { children: React.ReactNode }) {
  return (
- <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color:"#999" }}>
+ <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color:"#111" }}>
  {children}
  </p>
  );
@@ -384,7 +384,7 @@ function SignalCard({ signal }: { signal: Signal }) {
  {signal.compounds?.drug_class && (
  <span
  className="text-[11px] px-2.5 py-0.5"
- style={{ backgroundColor:"#F5F3EF", color:"#666", border:"1px solid #E0DDD8" }}
+ style={{ backgroundColor:"#F5F3EF", color:"#111", border:"1px solid #E0DDD8" }}
  >
  {signal.compounds.drug_class}
  </span>
@@ -392,7 +392,7 @@ function SignalCard({ signal }: { signal: Signal }) {
  {signal.compounds?.fda_status && (
  <span
  className="text-[11px] px-2.5 py-0.5"
- style={{ backgroundColor:"#F5F3EF", color:"#666", border:"1px solid #E0DDD8" }}
+ style={{ backgroundColor:"#F5F3EF", color:"#111", border:"1px solid #E0DDD8" }}
  >
  {signal.compounds.fda_status}
  </span>
@@ -414,7 +414,7 @@ function SignalCard({ signal }: { signal: Signal }) {
  {signal.mechanism_hypothesis && (
  <div>
  <FieldLabel>Mechanism Hypothesis</FieldLabel>
- <p className="text-sm leading-relaxed" style={{ color:"#666" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  {signal.mechanism_hypothesis}
  </p>
  </div>
@@ -700,7 +700,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
  if (isActive) {
  return { backgroundColor:"#EEF1EE", color:"#5C6B5D", border:"1px solid #7A8B7A" };
  }
- return { backgroundColor:"transparent", color:"#666", border:"1px solid #E0DDD8" };
+ return { backgroundColor:"transparent", color:"#111", border:"1px solid #E0DDD8" };
  }
 
  return (
@@ -725,7 +725,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
  ? { backgroundColor: community.tagBg, color: community.link }
  : activeTab === key
  ? { backgroundColor:"#D8E5D8", color:"#5C6B5D" }
- : { backgroundColor:"#F0EDE8", color:"#888" }
+ : { backgroundColor:"#F0EDE8", color:"#111" }
  }
  >
  {count}
@@ -749,7 +749,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
  )}
  {directSignals.length < 2 && (
  <div className=" p-4" style={{ backgroundColor:"#F5F3EF", border:"1px solid #E0DDD8" }}>
- <p className="text-sm leading-relaxed" style={{ color:"#666" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  Few or no clinical trials exist specifically targeting this condition. The limited research base is itself evidence of the underfunding problem this tool exists to address.
  </p>
  </div>
@@ -795,7 +795,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
  )}
  {crossSignals.length < 2 && (
  <div className=" p-4" style={{ backgroundColor:"#F5F3EF", border:"1px solid #E0DDD8" }}>
- <p className="text-sm leading-relaxed" style={{ color:"#666" }}>
+ <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  Cross-condition signal data for this condition is limited in public databases. This may reflect gaps in how womens health outcomes are tracked in broader drug trials, not an absence of real effects.
  </p>
  </div>
