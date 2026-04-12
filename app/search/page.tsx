@@ -154,7 +154,7 @@ export default async function SearchPage({
  <h3 className="font-heading text-xl mb-4 group-hover:opacity-75 transition-opacity" style={{ color:"#1a1a1a" }}>
  {c.name}
  </h3>
- <p className="text-sm font-medium" style={{ color:"#4D5E4D" }}>View Research Signals →</p>
+ <p className="text-sm font-medium" style={{ color:"#4D5E4D" }}>{"View Research Signals →︎"}</p>
  </Link>
  ))}
  </div>
@@ -190,7 +190,7 @@ export default async function SearchPage({
  className="block text-sm font-medium transition-opacity hover:opacity-70"
  style={{ color:"#4D5E4D" }}
  >
- → {cond.name}
+ {"→︎"} {cond.name}
  </Link>
  ))}
  </div>
@@ -221,7 +221,7 @@ export default async function SearchPage({
  >
  <p className="text-sm leading-relaxed mb-4 line-clamp-4" style={{ color:"#444" }}>{s.summary}</p>
  <p className="text-sm font-medium group-hover:opacity-75 transition-opacity" style={{ color:"#4D5E4D" }}>
- → {s.condition.name}
+ {"→︎"} {s.condition.name}
  </p>
  </Link>
  ))}

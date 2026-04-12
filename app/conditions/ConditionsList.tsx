@@ -239,7 +239,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
  <h2 className="font-heading text-lg mb-3 group-hover:opacity-75 transition-opacity" style={{ color:"#1a1a1a" }}>
  {r.name}
  </h2>
- <p className="text-sm font-medium" style={{ color:"#4D5E4D" }}>View Research Signals →</p>
+ <p className="text-sm font-medium" style={{ color:"#4D5E4D" }}>{"View Research Signals →︎"}</p>
  </Link>
  ))}
  </div>
@@ -270,7 +270,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
  className="block text-sm font-medium transition-opacity hover:opacity-70"
  style={{ color:"#4D5E4D" }}
  >
- → {cond.name}
+ {"→︎"} {cond.name}
  </Link>
  ))}
  </div>
@@ -299,7 +299,7 @@ export default function ConditionsList({ conditions }: { conditions: Condition[]
  >
  <p className="text-sm leading-relaxed mb-3 line-clamp-3" style={{ color:"#444" }}>{r.summary}</p>
  <p className="text-sm font-medium group-hover:opacity-75 transition-opacity" style={{ color:"#4D5E4D" }}>
- → {r.condition.name}
+ {"→︎"} {r.condition.name}
  </p>
  </Link>
  ))}

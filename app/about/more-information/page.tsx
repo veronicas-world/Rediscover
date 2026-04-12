@@ -153,7 +153,7 @@ export default function MoreInformationPage() {
  <span className="mt-1 shrink-0" style={{ color:"#111" }}>·</span>
  <span>
  <span className="font-mono text-xs" style={{ color:"#111" }}>{source}</span>
- {" →"}
+ {" →︎"}
  {dest}
  </span>
  </li>
@@ -187,7 +187,7 @@ export default function MoreInformationPage() {
  className="text-sm font-medium transition-opacity hover:opacity-70"
  style={{ color:"#4D5E4D" }}
  >
- ← Back to home
+ {"←︎"} Back to home
  </Link>
  </div>
 

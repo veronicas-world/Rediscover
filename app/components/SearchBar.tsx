@@ -357,7 +357,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  {[compound.generic_name, compound.drug_class].filter(Boolean).join(" ·")}
  </p>
  )}
- <p className="text-xs mt-1" style={{ color:"#4D5E4D" }}>→ {single.name}</p>
+ <p className="text-xs mt-1" style={{ color:"#4D5E4D" }}>{"→︎"} {single.name}</p>
  </button>
  ) : (
  <div className="px-4 pt-2.5 pb-1">
@@ -413,7 +413,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor ="transparent")}
  >
  <p className="text-xs line-clamp-2 leading-relaxed" style={{ color:"#444" }}>{r.summary}</p>
- <p className="text-xs mt-1" style={{ color:"#4D5E4D" }}>→ {r.condition.name}</p>
+ <p className="text-xs mt-1" style={{ color:"#4D5E4D" }}>{"→︎"} {r.condition.name}</p>
  </button>
  ))}
  </div>
@@ -431,7 +431,7 @@ export default function SearchBar({ size ="sm", onNavigate }: SearchBarProps) {
  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor ="transparent")}
  >
  Show all results
- <span>→</span>
+ <span>{"→︎"}</span>
  </button>
  </div>
  )}

@@ -118,7 +118,7 @@ export default function CommunityReportsPage() {
  className="text-sm font-medium transition-opacity hover:opacity-70"
  style={{ color:"#4D5E4D" }}
  >
- ← Back to home
+ {"←︎"} Back to home
  </Link>
  </div>
 
