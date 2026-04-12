@@ -3,6 +3,7 @@ import { Source_Serif_4, Source_Sans_3, Playfair_Display } from "next/font/googl
 import "./globals.css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
+import { Analytics } from "@vercel/analytics/react";
 
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
@@ -45,6 +46,7 @@ export default function RootLayout({
         <Nav />
         <div className="flex-1 flex flex-col">{children}</div>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
