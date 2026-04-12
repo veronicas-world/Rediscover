@@ -1,4 +1,4 @@
--- Migration 017: Deduplicate compounds with similar names and normalize to title case
+-- Migration 017: Deduplicate compounds with similar names
 --
 -- Problem: The same drug was inserted multiple times with slightly different names
 -- across pipeline runs, e.g.:
@@ -12,7 +12,6 @@
 --   3. Re-point all repurposing_signals from dropped compound IDs to the kept ID
 --   4. Delete duplicate signals that now violate the (compound_id, condition_id) unique constraint
 --   5. Delete the now-unused compound rows
---   6. Normalize remaining compound names to title case (capitalize each word)
 
 BEGIN;
 
@@ -90,15 +89,6 @@ WHERE id IN (
 
 DELETE FROM compounds
 WHERE id IN (SELECT drop_id FROM _compound_merge);
-
--- ── Step 5: Normalize compound names to title case ──────────────────────────
--- Capitalizes the first letter of every word. Leaves existing capitalization
--- patterns (like acronyms) intact only if you remove this step.
--- Adjust or skip if your naming conventions are intentionally mixed-case.
-
-UPDATE compounds
-SET name = initcap(name)
-WHERE name != initcap(name);
 
 -- ── Cleanup ──────────────────────────────────────────────────────────────────
 
