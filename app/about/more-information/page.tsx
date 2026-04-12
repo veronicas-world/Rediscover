@@ -33,7 +33,7 @@ export default function MoreInformationPage() {
  Project Background
  </h2>
  <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
- A detailed account of how this project was conceived and built is available in the{""}
+ A detailed account of how this project was conceived and built is available in the{" "}
  <a
  href="https://veronicaagudelo.substack.com/p/my-first-project-womens-health-evidence"
  target="_blank"
