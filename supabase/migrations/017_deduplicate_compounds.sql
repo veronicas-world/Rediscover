@@ -25,7 +25,7 @@ WITH normalized AS (
     -- base name: strip everything from first '(' onward, lowercase, trim
     lower(trim(regexp_replace(name, '\s*\(.*$', ''))) AS base_name,
     length(name) AS name_len,
-    updated_at
+    created_at
   FROM compounds
 ),
 ranked AS (
@@ -34,10 +34,10 @@ ranked AS (
     name,
     base_name,
     name_len,
-    -- rank within each base_name group: longest name first, then most recent
+    -- rank within each base_name group: longest name first, then most recently created
     ROW_NUMBER() OVER (
       PARTITION BY base_name
-      ORDER BY name_len DESC, updated_at DESC
+      ORDER BY name_len DESC, created_at DESC
     ) AS rn
   FROM normalized
 )
