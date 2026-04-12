@@ -655,7 +655,7 @@ async function generateSQL(drugName, signals, stitchIds, matchedNames, supabaseU
   out.push('-- ── STEP 2: Repurposing signals ─────────────────────────────────');
   for (const s of enriched) {
     if (s.conditionId === 'CONDITION_ID_HERE') {
-      out.push(`-- ⚠  Could not resolve condition "${s.conditionName}" — replace CONDITION_ID_HERE manually.`);
+      out.push(`--   Could not resolve condition "${s.conditionName}" — replace CONDITION_ID_HERE manually.`);
       out.push(`--    SELECT id, name FROM conditions WHERE name ILIKE '%${s.conditionName ?? ''}%';`);
     }
     out.push(`INSERT INTO repurposing_signals`);

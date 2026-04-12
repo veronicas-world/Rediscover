@@ -431,7 +431,7 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
   out.push('');
 
   if (!conditionId) {
-    out.push(`-- ⚠  Condition "${condition}" was not found in your database.`);
+    out.push(`--   Condition "${condition}" was not found in your database.`);
     out.push(`--    Run the query below to find the correct ID, then replace`);
     out.push(`--    every occurrence of 'CONDITION_ID_HERE' in this file.`);
     out.push(`--`);

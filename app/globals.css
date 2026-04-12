@@ -1,88 +1,96 @@
-@import "tailwindcss";
+@import"tailwindcss";
 
 :root {
-  --background: #F5F3EF;
-  --foreground: #1a1a1a;
-  --accent: #4D5E4D;
-  --accent-dark: #3E4E3E;
-  --border: #E0DDD8;
+ --background: #F5F3EF;
+ --foreground: #1a1a1a;
+ --accent: #4D5E4D;
+ --accent-dark: #3E4E3E;
+ --border: #E0DDD8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-cream: #F5F3EF;
-  --color-charcoal: #1a1a1a;
-  --color-muted: #666666;
-  --color-sage: #4D5E4D;
-  --color-sage-dark: #3E4E3E;
-  --color-sage-light: #EDEAE4;
-  --color-warm-border: #E0DDD8;
-  --font-sans: var(--font-source-sans);
-  --font-serif: var(--font-source-serif);
+ --color-background: var(--background);
+ --color-foreground: var(--foreground);
+ --color-cream: #F5F3EF;
+ --color-charcoal: #1a1a1a;
+ --color-muted: #666666;
+ --color-sage: #4D5E4D;
+ --color-sage-dark: #3E4E3E;
+ --color-sage-light: #EDEAE4;
+ --color-warm-border: #E0DDD8;
+ --font-sans: var(--font-source-sans);
+ --font-serif: var(--font-source-serif);
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-source-sans, system-ui, sans-serif);
-  font-size: 16px;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+ background: var(--background);
+ color: var(--foreground);
+ font-family: var(--font-source-sans, system-ui, sans-serif);
+ font-size: 16px;
+ line-height: 1.65;
+ -webkit-font-smoothing: antialiased;
+ -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── Font utilities ────────────────────────────────────────────────────── */
 
 /* Page and section headings — Source Serif 4, medium weight */
 .font-heading {
-  font-family: var(--font-source-serif, Georgia, serif);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+ font-family: var(--font-source-serif, Georgia, serif);
+ font-weight: 600;
+ letter-spacing: -0.01em;
 }
 
 /* Nav site name — Playfair Display */
 .font-serif {
-  font-family: var(--font-playfair, Georgia, serif);
+ font-family: var(--font-playfair, Georgia, serif);
 }
 
 /* Section labels — small, uppercase, spaced, sans-serif, no decoration */
 .section-label {
-  font-family: var(--font-source-sans, system-ui, sans-serif);
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #777;
+ font-family: var(--font-source-sans, system-ui, sans-serif);
+ font-size: 0.7rem;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.08em;
+ color: #777;
 }
 
 /* Breadcrumb nav */
 .font-label {
-  font-family: var(--font-source-sans, system-ui, sans-serif);
-  font-size: 0.75rem;
+ font-family: var(--font-source-sans, system-ui, sans-serif);
+ font-size: 0.75rem;
 }
 
 /* ── Focus ─────────────────────────────────────────────────────────────── */
 
 :focus-visible {
-  outline: 2px solid #4D5E4D;
-  outline-offset: 2px;
+ outline: 2px solid #4D5E4D;
+ outline-offset: 2px;
 }
 
 /* ── Scrollbar hiding (used for horizontal scroll containers) ──────────── */
 
 .no-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+ scrollbar-width: none;
+ -ms-overflow-style: none;
 }
 .no-scrollbar::-webkit-scrollbar {
-  display: none;
+ display: none;
+}
+
+/* ── Sharp corners everywhere ──────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+ border-radius: 0 !important;
 }
 
 /* ── Search input ──────────────────────────────────────────────────────── */
 
 input[type="search"]::-webkit-search-cancel-button {
-  -webkit-appearance: none;
+ -webkit-appearance: none;
 }
