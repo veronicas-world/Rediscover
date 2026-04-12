@@ -169,7 +169,7 @@ export default function MoreInformationPage() {
  Contact
  </h2>
  <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
- For questions, research collaborations, or feedback, reach out at{""}
+ For questions, research collaborations, or feedback, reach out at{" "}
  <a
  href="mailto:vla2117@columbia.edu"
  className="font-medium hover:underline underline-offset-2"
