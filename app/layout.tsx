@@ -1,26 +1,20 @@
 import type { Metadata } from"next";
-import { Source_Serif_4, Source_Sans_3, Playfair_Display } from"next/font/google";
+import { Playfair_Display, DM_Sans } from"next/font/google";
 import"./globals.css";
 import Nav from"./components/Nav";
 import Footer from"./components/Footer";
 import { Analytics } from"@vercel/analytics/react";
 
-const sourceSerif = Source_Serif_4({
- variable:"--font-source-serif",
- subsets: ["latin"],
- weight: ["400","600"],
-});
-
-const sourceSans = Source_Sans_3({
- variable:"--font-source-sans",
- subsets: ["latin"],
- weight: ["400","600"],
-});
-
 const playfairDisplay = Playfair_Display({
  variable:"--font-playfair",
  subsets: ["latin"],
- weight: ["400","600","700"],
+ weight: ["400","500","600","700"],
+});
+
+const dmSans = DM_Sans({
+ variable:"--font-dm-sans",
+ subsets: ["latin"],
+ weight: ["400","500","600"],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +34,7 @@ export default function RootLayout({
  return (
  <html
  lang="en"
- className={`${sourceSerif.variable} ${sourceSans.variable} ${playfairDisplay.variable} h-full antialiased`}
+ className={`${playfairDisplay.variable} ${dmSans.variable} h-full antialiased`}
  >
  <body className="min-h-full flex flex-col" style={{ backgroundColor:"#F5F3EF" }}>
  <Nav />

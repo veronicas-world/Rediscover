@@ -69,34 +69,34 @@ export default function Home() {
 
  {/* ── Hero ──────────────────────────────────────────────────────────── */}
  <section style={{ backgroundColor:"#fff", borderBottom:"1px solid #E0DDD8" }}>
- <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 lg:py-24">
+ <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28 lg:py-32">
  <div className="flex items-center gap-12 lg:gap-20">
  {/* Left: text content */}
  <div className="flex-1 min-w-0">
- <p className="section-label mb-4">Research Tool</p>
+ <p className="section-label mb-5">Research Tool</p>
  <h1
- className="font-heading text-4xl sm:text-5xl mb-6 leading-tight"
+ className="font-heading text-5xl sm:text-6xl font-normal mb-7 leading-tight"
  style={{ color:"#1a1a1a" }}
  >
- Surfacing overlooked drug signals for women&apos;s health
+ What the research says. And what it doesn&apos;t.
  </h1>
  <p
- className="text-base sm:text-lg mb-8 leading-relaxed"
+ className="text-base sm:text-lg mb-9 leading-relaxed max-w-xl"
  style={{ color:"#111" }}
  >
- Women&apos;s Health Evidence Lab (WHEL) investigates overlooked signals across underrecognized and underfunded conditions in women&apos;s health. WHEL integrates data from multiple sources, including published studies, regulatory databases, adverse event reporting systems, and patient reported experiences, to identify patterns that are not captured by traditional research approaches.
+ WHEL mines clinical trials, adverse event databases, and patient communities to surface drug repurposing signals for women&apos;s hormonal conditions — the ones that aren&apos;t getting enough research attention.
  </p>
  <div className="flex flex-col sm:flex-row gap-3">
  <Link
  href="/conditions"
- className="inline-flex items-center justify-center px-6 py-3 text-white text-sm font-semibold transition-opacity hover:opacity-90"
+ className="inline-flex items-center justify-center px-6 py-3 text-white text-sm font-medium transition-opacity hover:opacity-90"
  style={{ backgroundColor:"#4D5E4D", borderRadius:"0" }}
  >
  Browse Conditions
  </Link>
  <Link
  href="/search"
- className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-80"
+ className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium transition-opacity hover:opacity-80"
  style={{ backgroundColor:"transparent", border:"1px solid #4D5E4D", color:"#4D5E4D", borderRadius:"0" }}
  >
  Search Database

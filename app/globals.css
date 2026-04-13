@@ -18,8 +18,9 @@
  --color-sage-dark: #3E4E3E;
  --color-sage-light: #EDEAE4;
  --color-warm-border: #E0DDD8;
- --font-sans: var(--font-source-sans);
- --font-serif: var(--font-source-serif);
+ /* Playfair Display for headings, DM Sans for body/UI */
+ --font-sans: var(--font-dm-sans);
+ --font-serif: var(--font-playfair);
  /* Force all border-radius utilities to 0 except full */
  --radius: 0;
  --radius-sm: 0;
@@ -35,30 +36,34 @@
 body {
  background: var(--background);
  color: var(--foreground);
- font-family: var(--font-source-sans, system-ui, sans-serif);
+ font-family: var(--font-dm-sans, system-ui, sans-serif);
  font-size: 16px;
  line-height: 1.65;
  -webkit-font-smoothing: antialiased;
  -moz-osx-font-smoothing: grayscale;
 }
 
+/* All heading elements use Playfair Display by default */
+h1, h2, h3, h4 {
+ font-family: var(--font-playfair, Georgia, serif);
+}
+
 /* ── Font utilities ────────────────────────────────────────────────────── */
 
-/* Page and section headings — Source Serif 4, medium weight */
+/* Headings — Playfair Display */
 .font-heading {
- font-family: var(--font-source-serif, Georgia, serif);
- font-weight: 600;
+ font-family: var(--font-playfair, Georgia, serif);
  letter-spacing: -0.01em;
 }
 
-/* Nav site name — Playfair Display */
+/* Explicit serif (nav brand, display use) */
 .font-serif {
  font-family: var(--font-playfair, Georgia, serif);
 }
 
-/* Section labels — small, uppercase, spaced, sans-serif, no decoration */
+/* Section labels — small, uppercase, spaced, DM Sans, no decoration */
 .section-label {
- font-family: var(--font-source-sans, system-ui, sans-serif);
+ font-family: var(--font-dm-sans, system-ui, sans-serif);
  font-size: 0.7rem;
  font-weight: 600;
  text-transform: uppercase;
@@ -68,7 +73,7 @@ body {
 
 /* Breadcrumb nav */
 .font-label {
- font-family: var(--font-source-sans, system-ui, sans-serif);
+ font-family: var(--font-dm-sans, system-ui, sans-serif);
  font-size: 0.75rem;
 }
 
