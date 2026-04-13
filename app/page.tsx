@@ -84,7 +84,7 @@ export default function Home() {
  className="text-base sm:text-lg mb-9 leading-relaxed max-w-xl"
  style={{ color:"#111" }}
  >
- WHEL mines clinical trials, adverse event databases, and patient communities to surface drug repurposing signals for women&apos;s hormonal conditions — the ones that aren&apos;t getting enough research attention.
+ WHEL is a drug repurposing research tool that aggregates and analyzes data from published clinical literature, trial registries, regulatory adverse event databases, and patient community forums to identify therapeutic candidates for underresearched female hormonal conditions. Signals are organized by source type and evidence strength, and every result links to its primary source.
  </p>
  <div className="flex flex-col sm:flex-row gap-3">
  <Link
