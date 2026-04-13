@@ -72,6 +72,14 @@ export default function Nav() {
  Browse Conditions
  </Link>
 
+ <Link
+ href="/signal-types"
+ className="text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-75"
+ style={{ color:"rgba(255,255,255,0.92)" }}
+ >
+ Signal Types
+ </Link>
+
  {/* About dropdown */}
  <div
  ref={aboutRef}
@@ -90,7 +98,7 @@ export default function Nav() {
  </button>
  {aboutOpen && (
  /* pt-2 creates a transparent hover bridge over the visual gap */
- <div className="absolute top-full right-0 pt-2" style={{ zIndex: 50, minWidth:"180px" }}>
+ <div className="absolute top-full right-0 pt-2" style={{ zIndex: 50, minWidth:"210px" }}>
  <div
  className=" overflow-hidden"
  style={{
@@ -112,14 +120,24 @@ export default function Nav() {
  Mission
  </Link>
  <Link
- href="/about/more-information"
+ href="/about/technical-architecture"
  onClick={() => setAboutOpen(false)}
  className="block px-4 py-2.5 text-sm font-medium"
  style={{ color:"rgba(255,255,255,0.92)" }}
  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor ="#4D5E4D")}
  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor ="transparent")}
  >
- More Information
+ Technical Architecture
+ </Link>
+ <Link
+ href="/about/contact"
+ onClick={() => setAboutOpen(false)}
+ className="block px-4 py-2.5 text-sm font-medium"
+ style={{ color:"rgba(255,255,255,0.92)" }}
+ onMouseEnter={(e) => (e.currentTarget.style.backgroundColor ="#4D5E4D")}
+ onMouseLeave={(e) => (e.currentTarget.style.backgroundColor ="transparent")}
+ >
+ Contact
  </Link>
  </div>
  </div>
@@ -185,6 +203,14 @@ export default function Nav() {
  Browse Conditions
  </Link>
  <Link
+ href="/signal-types"
+ onClick={() => setMobileOpen(false)}
+ className="flex items-center gap-2 py-3 text-sm font-medium text-white border-b"
+ style={{ borderColor:"rgba(255,255,255,0.1)" }}
+ >
+ Signal Types
+ </Link>
+ <Link
  href="/about"
  onClick={() => setMobileOpen(false)}
  className="flex items-center gap-2 py-3 text-sm font-medium border-b"
@@ -193,12 +219,20 @@ export default function Nav() {
  Mission
  </Link>
  <Link
- href="/about/more-information"
+ href="/about/technical-architecture"
+ onClick={() => setMobileOpen(false)}
+ className="flex items-center gap-2 py-3 text-sm font-medium border-b"
+ style={{ color:"rgba(255,255,255,0.65)", borderColor:"rgba(255,255,255,0.1)" }}
+ >
+ Technical Architecture
+ </Link>
+ <Link
+ href="/about/contact"
  onClick={() => setMobileOpen(false)}
  className="flex items-center gap-2 py-3 text-sm font-medium"
  style={{ color:"rgba(255,255,255,0.65)" }}
  >
- More Information
+ Contact
  </Link>
  </nav>
  </div>
