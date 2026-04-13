@@ -17,14 +17,11 @@ export default function TechnicalArchitecturePage() {
  <span style={{ color: "#4D5E4D" }}>Technical Architecture</span>
  </nav>
  <h1
- className="font-heading text-3xl sm:text-4xl font-bold tracking-tight mb-3"
+ className="font-heading text-3xl sm:text-4xl font-bold tracking-tight"
  style={{ color: "#1a1a1a" }}
  >
  Technical Architecture
  </h1>
- <p className="text-base" style={{ color: "#111" }}>
- How WHEL works under the hood — for researchers, developers, and the curious.
- </p>
  </div>
  </div>
 
