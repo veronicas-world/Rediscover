@@ -78,7 +78,7 @@ export default function Home() {
  className="font-heading text-5xl sm:text-6xl font-normal mb-7 leading-tight"
  style={{ color:"#1a1a1a" }}
  >
- What the research says. And what it doesn&apos;t.
+ Addressing the data gap in underresearched female hormonal conditions
  </h1>
  <p
  className="text-base sm:text-lg mb-9 leading-relaxed max-w-xl"
