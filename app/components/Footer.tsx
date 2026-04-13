@@ -4,7 +4,8 @@ export default function Footer() {
  return (
  <footer style={{ backgroundColor:"#2E3B2E", color:"#fff" }}>
  <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-10">
+ <div className="grid grid-cols-1 sm:grid-cols-4 gap-10 mb-10">
+
  {/* Brand */}
  <div className="sm:col-span-1">
  <p className="font-serif text-base font-bold mb-1" style={{ color:"#fff" }}>
@@ -15,27 +16,73 @@ export default function Footer() {
 
  {/* Explore */}
  <div>
- <p
- className="section-label mb-4"
- style={{ color:"rgba(255,255,255,0.4)" }}
- >
+ <p className="section-label mb-4" style={{ color:"rgba(255,255,255,0.4)" }}>
  Explore
  </p>
  <div className="space-y-3">
+ {[
+ { label:"Browse Conditions", href:"/conditions" },
+ { label:"Search", href:"/search" },
+ { label:"Signal Types", href:"/signal-types" },
+ ].map(({ label, href }) => (
  <Link
- href="/conditions"
+ key={href}
+ href={href}
  className="block text-sm transition-opacity hover:opacity-70"
  style={{ color:"rgba(255,255,255,0.75)" }}
  >
- Browse Conditions
+ {label}
  </Link>
- <Link
- href="/about"
- className="block text-sm transition-opacity hover:opacity-70"
- style={{ color:"rgba(255,255,255,0.75)" }}
- >
+ ))}
+ </div>
+ </div>
+
+ {/* About */}
+ <div>
+ <p className="section-label mb-4" style={{ color:"rgba(255,255,255,0.4)" }}>
  About
+ </p>
+ <div className="space-y-3">
+ {[
+ { label:"Mission", href:"/about" },
+ { label:"Technical Architecture", href:"/about/technical-architecture" },
+ { label:"Contact", href:"/about/contact" },
+ ].map(({ label, href }) => (
+ <Link
+ key={href}
+ href={href}
+ className="block text-sm transition-opacity hover:opacity-70"
+ style={{ color:"rgba(255,255,255,0.75)" }}
+ >
+ {label}
  </Link>
+ ))}
+ </div>
+ </div>
+
+ {/* Conditions */}
+ <div>
+ <p className="section-label mb-4" style={{ color:"rgba(255,255,255,0.4)" }}>
+ Conditions
+ </p>
+ <div className="space-y-3">
+ {[
+ { label:"Endometriosis", href:"/conditions/endometriosis" },
+ { label:"PCOS", href:"/conditions/pcos" },
+ { label:"PMDD", href:"/conditions/pmdd" },
+ { label:"Adenomyosis", href:"/conditions/adenomyosis" },
+ { label:"Vulvodynia", href:"/conditions/vulvodynia" },
+ { label:"Menopause", href:"/conditions/menopause" },
+ ].map(({ label, href }) => (
+ <Link
+ key={href}
+ href={href}
+ className="block text-sm transition-opacity hover:opacity-70"
+ style={{ color:"rgba(255,255,255,0.75)" }}
+ >
+ {label}
+ </Link>
+ ))}
  </div>
  </div>
 
