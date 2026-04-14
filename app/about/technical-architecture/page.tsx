@@ -34,31 +34,41 @@ export default function TechnicalArchitecturePage() {
  Data Pipelines
  </h2>
  <p className="text-sm leading-relaxed mb-6" style={{ color: "#111" }}>
- WHEL runs four automated data pipelines that populate the database on demand.
- </p>
- <div className="space-y-4">
- {[
- {
- name: "PubMed",
- tag: "Direct Research",
- body: "Queries the NCBI Entrez API for published studies directly investigating each condition. Searches are condition specific and filtered for relevance. Results are parsed for study type, date, and abstract, then passed to Claude (claude-sonnet) for signal extraction and evidence strength classification.",
- },
- {
- name: "ClinicalTrials.gov",
- tag: "Direct Research",
- body: "Queries the ClinicalTrials.gov API for active and completed trials targeting each condition. Trial phase, status, and intervention type are captured and stored alongside the primary signal.",
- },
- {
- name: "FDA FAERS",
- tag: "Cross-Condition Signals",
- body: "Queries the FDA Adverse Event Reporting System public API using a two-pass approach — first targeting gynecological and hormonal terms, then broadening to general reaction terms. Female patient reports are filtered and analyzed for signals suggesting off label benefit. URL encoding and pagination are handled to maximize coverage across all six conditions.",
- },
- {
- name: "Reddit",
- tag: "Community Forum Reports",
- body: "Queries condition specific subreddits (r/Endo, r/PCOS, r/PMDD, r/Menopause, r/adenomyosis, r/vulvodynia) using eight treatment focused search queries per subreddit. Individual post permalinks are stored and validated — URLs must contain /comments/ to confirm they are post level, not subreddit level. Posts are grouped by subreddit in citation display. The pipeline looks for consistent patterns across many posts, not individual anecdotes.",
- },
- ].map(({ name, tag, body }) => (
+ WHEL runs six automated data pipelines that populate the database on demand.
+           </p>
+           <div className="space-y-4">
+             {[
+               {
+                 name: "PubMed",
+                 tag: "Direct Research",
+                 body: "Queries the NCBI Entrez API for published studies directly investigating each condition. Searches are condition specific and filtered for relevance. Results are parsed for study type, date, and abstract, then passed to Claude (claude-sonnet) for signal extraction and evidence strength classification.",
+               },
+               {
+                 name: "ClinicalTrials.gov",
+                 tag: "Direct Research",
+                 body: "Queries the ClinicalTrials.gov REST API v2 for active, completed, and recruiting trials targeting each condition. Trial phase, status, and intervention type are captured and stored alongside the primary signal.",
+               },
+               {
+                 name: "FDA FAERS",
+                 tag: "Cross-Condition Signals",
+                 body: "Queries the FDA Adverse Event Reporting System public API using a two-pass approach: first targeting gynecological and hormonal terms, then broadening to general reaction terms. Female patient reports are filtered and analyzed for signals suggesting off label benefit. URL encoding and pagination are handled to maximize coverage across all six conditions.",
+               },
+               {
+                 name: "Open Targets Platform",
+                 tag: "Pathway Insights",
+                 body: "Queries the Open Targets Platform GraphQL API (platform.opentargets.org) for each condition using standardized EFO and MONDO disease ontology identifiers. Retrieves drug candidates, mechanistic associations, and biological target scores aggregated from genetic association data, known drug target interactions, Reactome pathway analysis, and differential gene expression. Results are analyzed by Claude for pathway level repurposing hypotheses. No authentication required.",
+               },
+               {
+                 name: "EudraVigilance EVDAS",
+                 tag: "Cross-Condition Signals",
+                 body: "Queries the European Medicines Agency adverse event database (dap.ema.europa.eu) via the Oracle BI Analytics API. Substance codes are resolved via the public adrreports.eu substance table. Female patient reaction data is filtered and grouped by condition. Requires a free registered EMA account for session authentication.",
+               },
+               {
+                 name: "Reddit",
+                 tag: "Community Forum Reports",
+                 body: "Queries condition specific subreddits (r/Endo, r/PCOS, r/PMDD, r/Menopause, r/adenomyosis, r/vulvodynia) using eight treatment focused search queries per subreddit. Individual post permalinks are stored and validated — URLs must contain /comments/ to confirm they are post level, not subreddit level. Posts are grouped by subreddit in citation display. The pipeline looks for consistent patterns across many posts, not individual anecdotes.",
+               },
+             ].map(({ name, tag, body }) => (
  <div
  key={name}
  className="bg-white p-5"

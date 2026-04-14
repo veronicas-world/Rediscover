@@ -47,6 +47,9 @@ export default function CrossConditionPage() {
  <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
  FDA Adverse Event Reporting System (FAERS), a public database of real world patient reports submitted to the FDA. When a woman on a statin reports that her period pain improved, that appears here. We also pull from published population studies and observational research.
  </p>
+ <p className="text-sm leading-relaxed mt-4" style={{ color: "#111" }}>
+ WHEL also draws on the Open Targets Platform (platform.opentargets.org), a public resource developed by EMBL-EBI, the Wellcome Sanger Institute, and GlaxoSmithKline that aggregates genetic, genomic, and clinical evidence linking drug targets to diseases. Open Targets evidence scores reflect the strength of association between a drug target and a condition across multiple evidence types including genetic association, somatic mutations, known drugs, and literature.
+ </p>
  </section>
 
  <section>
