@@ -69,22 +69,45 @@ function EvidenceBadge({ strength }: { strength: string | null }) {
 // Derive a display label from a signal's sources array
 function getSourceLabel(sources: Source[]): string | null {
  const types = new Set(sources.map((s) => s.source_type));
- if (types.has("faers")) return"FDA FAERS";
- if (types.has("pubmed")) return"PubMed";
+ if (types.has("faers")) return "FDA FAERS";
+ if (types.has("pubmed")) return "PubMed";
+ if (types.has("opentargets")) return "Open Targets";
  return null;
 }
 
 // Small source badge shown on signal cards
+// For Open Targets sources, renders as a link to the evidence page.
 function SourceBadge({ sources }: { sources: Source[] }) {
  const label = getSourceLabel(sources);
  if (!label) return null;
+
+ const badgeStyle = {
+   backgroundColor: "#F0EDE8",
+   color: "#111",
+   border: "1px solid #E0DDD8",
+ };
+ const className = "text-[10px] font-semibold px-2 py-0.5 tracking-wide whitespace-nowrap";
+
+ if (label === "Open Targets") {
+   const otSource = sources.find((s) => s.source_type === "opentargets");
+   const url = otSource?.url ?? "https://platform.opentargets.org";
+   return (
+     <a
+       href={url}
+       target="_blank"
+       rel="noopener noreferrer"
+       className={className}
+       style={{ ...badgeStyle, textDecoration: "none" }}
+     >
+       Source: {label} ↗
+     </a>
+   );
+ }
+
  return (
- <span
- className="text-[10px] font-semibold px-2 py-0.5 tracking-wide whitespace-nowrap"
- style={{ backgroundColor:"#F0EDE8", color:"#111", border:"1px solid #E0DDD8" }}
- >
- Source: {label}
- </span>
+   <span className={className} style={badgeStyle}>
+     Source: {label}
+   </span>
  );
 }
 
@@ -125,11 +148,16 @@ function CollapsibleSources({
  return true;
  });
 
- const pubmedSources = dedupedSources.filter((s) => s.source_type ==="pubmed");
- const faersSources = dedupedSources.filter((s) => s.source_type ==="faers");
- const redditSources = dedupedSources.filter((s) => s.source_type ==="reddit");
+ const pubmedSources = dedupedSources.filter((s) => s.source_type === "pubmed");
+ const faersSources = dedupedSources.filter((s) => s.source_type === "faers");
+ const redditSources = dedupedSources.filter((s) => s.source_type === "reddit");
+ const otSources = dedupedSources.filter((s) => s.source_type === "opentargets");
  const otherSources = dedupedSources.filter(
- (s) => s.source_type !=="pubmed" && s.source_type !=="faers" && s.source_type !=="reddit"
+   (s) =>
+     s.source_type !== "pubmed" &&
+     s.source_type !== "faers" &&
+     s.source_type !== "reddit" &&
+     s.source_type !== "opentargets"
  );
 
  return (
@@ -164,7 +192,7 @@ function CollapsibleSources({
  {/* PubMed sources */}
  {pubmedSources.length > 0 && (
  <div>
- {(faersSources.length > 0 || otherSources.length > 0) && (
+ {(faersSources.length > 0 || otSources.length > 0 || otherSources.length > 0) && (
  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
  Published Research
  </p>
@@ -294,7 +322,7 @@ function CollapsibleSources({
  {/* Reddit post sources — grouped by subreddit */}
  {redditSources.length > 0 && (
  <div>
- {(pubmedSources.length > 0 || faersSources.length > 0 || otherSources.length > 0) && (
+ {(pubmedSources.length > 0 || faersSources.length > 0 || otSources.length > 0 || otherSources.length > 0) && (
  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
  Community Posts
  </p>
@@ -338,6 +366,41 @@ function CollapsibleSources({
  </div>
  ));
  })()}
+ </div>
+ )}
+
+ {/* Open Targets sources */}
+ {otSources.length > 0 && (
+ <div>
+ <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
+ Open Targets Platform
+ </p>
+ <ul className="space-y-3">
+ {otSources.map((source) => (
+ <li key={source.id} className="text-xs leading-relaxed" style={{ color: textColor }}>
+ {source.url ? (
+ <a
+ href={source.url}
+ target="_blank"
+ rel="noopener noreferrer"
+ className="font-medium hover:underline underline-offset-2"
+ style={{ color: linkColor }}
+ >
+ {source.title ?? source.external_id ?? source.url} ↗
+ </a>
+ ) : (
+ <span className="font-medium" style={{ color: '#333' }}>
+ {source.title ?? source.external_id ?? 'Open Targets'}
+ </span>
+ )}
+ {source.key_finding_excerpt && (
+ <p className="mt-1.5 italic leading-relaxed" style={{ color: mutedColor }}>
+ &ldquo;{source.key_finding_excerpt}&rdquo;
+ </p>
+ )}
+ </li>
+ ))}
+ </ul>
  </div>
  )}
 
@@ -845,7 +908,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
  <path d="m14.5 7.5 1.5-1.5M8 14l-1.5 1.5M14.5 14.5l1.5 1.5M8 8 6.5 6.5" />
  </svg>
  <p className="text-sm leading-relaxed" style={{ color: amber.body }}>
- Drugs observed to affect or worsen this condition. These signals reveal which biological pathways are involved and may point toward new treatment approaches.
+ Signals derived from biological pathway and target analysis, including drugs with mechanistic or genetic evidence of relevance to this condition, and adverse event patterns that reveal underlying disease biology.
  </p>
  </div>
  {cautionSignals.length > 0 && (

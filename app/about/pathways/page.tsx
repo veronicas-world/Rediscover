@@ -23,7 +23,7 @@ export default function PathwaysPage() {
  Pathway Insights
  </h1>
  <p className="text-base" style={{ color:"#111" }}>
- What drugs that worsen conditions reveal about their biology
+ Signals derived from biological pathway and target analysis, including drugs with mechanistic or genetic evidence of relevance to this condition, and adverse event patterns that reveal underlying disease biology.
  </p>
  </div>
  </div>

@@ -575,6 +575,15 @@ async function generateSQL(condition, conditionData, signals, supabaseUrl, supab
     out.push('');
   }
 
+  // ── Build drug name → ChEMBL ID map from conditionData ───────────────────
+  // drug.id from Open Targets is the ChEMBL ID (e.g. CHEMBL12345)
+  const drugNameToChembl = new Map();
+  for (const r of (conditionData.disease?.drugAndClinicalCandidates?.rows ?? [])) {
+    if (r.drug?.id && r.drug?.name) {
+      drugNameToChembl.set(r.drug.name.toLowerCase(), r.drug.id);
+    }
+  }
+
   // ── STEP 3: Sources ────────────────────────────────────────────────────────
   out.push('-- ── STEP 3: Open Targets source citations ──────────────────────');
   const seenSigs = new Set();
@@ -600,24 +609,27 @@ async function generateSQL(condition, conditionData, signals, supabaseUrl, supab
       `JOIN compounds c ON c.id = rs.compound_id ` +
       `WHERE c.name = ${esc(s.drug_name)} AND rs.condition_id = ${esc(s.conditionId)} LIMIT 1)`;
 
-    // Link to the specific drug page on Open Targets
-    const drugId    = s.drug_id ?? null;
-    const sourceUrl = drugId
-      ? `https://platform.opentargets.org/drug/${drugId}`
+    // Use evidence URL format when ChEMBL ID and EFO ID are available
+    const chemblId  = drugNameToChembl.get(s.drug_name.toLowerCase()) ?? null;
+    const sourceUrl = (chemblId && efoId)
+      ? `https://platform.opentargets.org/evidence/${chemblId}/${efoId}`
       : efoId
         ? `https://platform.opentargets.org/disease/${efoId}`
         : 'https://platform.opentargets.org';
 
-    const score = s.open_targets_score ?? 0;
+    const score  = s.open_targets_score ?? 0;
     const target = s.target_name ?? 'unknown target';
-    const title = `Open Targets: ${s.drug_name} — ${s.signal_type} for ${s.conditionName ?? condition}` +
+    const title  = `Open Targets: ${s.drug_name} — ${s.signal_type} for ${s.conditionName ?? condition}` +
       ` (target: ${target}, OT score: ${score})`;
+
+    // Store ChEMBL ID as external_id so the UI can construct evidence links
+    const externalId = chemblId ?? `OT-${s.drug_name.toUpperCase().replace(/\s+/g, '-')}`;
 
     out.push(`INSERT INTO sources`);
     out.push(`  (id, signal_id, source_type, external_id, title, authors, journal, publication_date, url)`);
     out.push(`VALUES (`);
     out.push(`  gen_random_uuid(), ${signalSubquery}, 'opentargets',`);
-    out.push(`  ${esc(`OT-${s.drug_name.toUpperCase().replace(/\s+/g, '-')}`)},`);
+    out.push(`  ${esc(externalId)},`);
     out.push(`  ${esc(title)},`);
     out.push(`  NULL, 'Open Targets Platform', ${esc(today)}, ${esc(sourceUrl)}`);
     out.push(`);`);
