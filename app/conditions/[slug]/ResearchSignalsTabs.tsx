@@ -965,7 +965,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
  </svg>
  <p className="text-sm leading-relaxed" style={{ color: community.body }}>
- These signals come from patient communities, not clinical studies. They are hypothesis generating. They reflect the lived experience of women who have shared medical knowledge with each other because formal research has not served them.
+ Consistent treatment patterns reported across condition-specific patient communities. These are community signals, not clinical evidence. They are hypothesis generating.
  </p>
  </div>
 
