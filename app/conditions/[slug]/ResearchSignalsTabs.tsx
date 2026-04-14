@@ -861,7 +861,7 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
  <line x1="12" y1="16" x2="12.01" y2="16" />
  </svg>
  <p className="text-sm leading-relaxed" style={{ color:"#5C6B5D" }}>
- Drugs approved for other conditions that showed incidental benefit for shared biology. Hypothesis-generating, not treatment evidence.
+ Drugs developed for other conditions where women incidentally reported benefit. Hypothesis-generating, not treatment evidence.
  </p>
  </div>
  {crossSignals.length > 0 && (

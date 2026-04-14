@@ -10,7 +10,7 @@ const METHODOLOGY = [
  {
  title:"Direct Research",
  description:
-"Published studies and trials directly testing a drug for this condition.",
+"Published studies and active clinical trials specifically investigating each condition.",
  href:"/about/direct-research",
  icon: (
  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -23,7 +23,7 @@ const METHODOLOGY = [
  {
  title:"Cross-Condition Signals",
  description:
-"Drugs approved for other conditions that showed incidental benefit for shared biology.",
+"Drugs developed for other conditions where women incidentally reported benefit.",
  href:"/about/cross-condition",
  icon: (
  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -37,7 +37,7 @@ const METHODOLOGY = [
  {
  title:"Pathway Insights",
  description:
-"Drugs observed to worsen a condition, revealing which biological pathways are involved.",
+"Signals derived from biological pathway and target analysis, including drugs with mechanistic or genetic evidence of relevance to this condition, and adverse event patterns that reveal underlying disease biology.",
  href:"/about/pathways",
  icon: (
  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -50,7 +50,7 @@ const METHODOLOGY = [
  {
  title:"Community Forum Reports",
  description:
-"Patient communities have generated real world treatment knowledge for decades. We surface recurring treatment reports from condition-specific forums as hypothesis generating signals.",
+"Consistent treatment patterns reported across condition-specific patient communities.",
  href:"/about/community-reports",
  icon: (
  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

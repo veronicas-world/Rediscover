@@ -609,10 +609,10 @@ async function generateSQL(condition, conditionData, signals, supabaseUrl, supab
       `JOIN compounds c ON c.id = rs.compound_id ` +
       `WHERE c.name = ${esc(s.drug_name)} AND rs.condition_id = ${esc(s.conditionId)} LIMIT 1)`;
 
-    // Use evidence URL format when ChEMBL ID and EFO ID are available
+    // Link to the drug page on Open Targets (evidence/{chemblId}/{efoId} route is deprecated)
     const chemblId  = drugNameToChembl.get(s.drug_name.toLowerCase()) ?? null;
-    const sourceUrl = (chemblId && efoId)
-      ? `https://platform.opentargets.org/evidence/${chemblId}/${efoId}`
+    const sourceUrl = chemblId
+      ? `https://platform.opentargets.org/drug/${chemblId}`
       : efoId
         ? `https://platform.opentargets.org/disease/${efoId}`
         : 'https://platform.opentargets.org';

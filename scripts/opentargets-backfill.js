@@ -8,7 +8,7 @@
  * Reads all opentargets sources from Supabase, looks up the ChEMBL ID for each
  * drug via the Open Targets API, then outputs SQL UPDATEs that fix:
  *   - external_id: set to ChEMBL ID (e.g. CHEMBL12345)
- *   - url: set to evidence page (platform.opentargets.org/evidence/{chemblId}/{efoId})
+ *   - url: set to drug page (platform.opentargets.org/drug/{chemblId})
  *
  * The EFO ID is extracted from the current URL stored in the sources table.
  * Outputs SQL to stdout; progress to stderr.
@@ -106,7 +106,7 @@ async function main() {
   const seenDrugs = new Map(); // drug name (lower) -> chemblId
 
   process.stdout.write('-- Open Targets Backfill Migration\n');
-  process.stdout.write('-- Updates external_id to ChEMBL ID and url to evidence page format\n');
+  process.stdout.write('-- Updates external_id to ChEMBL ID and url to drug page format\n');
   process.stdout.write('-- Generated: ' + new Date().toISOString().slice(0, 10) + '\n\n');
 
   for (const source of sources) {
@@ -141,9 +141,9 @@ async function main() {
     if (!chemblId) continue;
 
     const newExternalId = chemblId;
-    const newUrl = (chemblId && efoId)
-      ? `https://platform.opentargets.org/evidence/${chemblId}/${efoId}`
-      : (chemblId ? `https://platform.opentargets.org/drug/${chemblId}` : source.url);
+    const newUrl = chemblId
+      ? `https://platform.opentargets.org/drug/${chemblId}`
+      : source.url;
 
     updates.push({ id: source.id, newExternalId, newUrl, drugName, efoId });
   }
