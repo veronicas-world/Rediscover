@@ -502,6 +502,7 @@ function CollapsibleSources({
 
 function SignalCard({ signal }: { signal: Signal }) {
  const hasScoring = signal.confidence_tier != null;
+ const hasVisibleScore = signal.total_evidence_score != null && signal.total_evidence_score > 0;
  return (
  <div className="bg-white p-6" style={{ border:"1px solid #E0DDD8" }}>
  {/* Compound name + tier badge */}
@@ -516,8 +517,8 @@ function SignalCard({ signal }: { signal: Signal }) {
  {signal.effect_direction && <EffectDirectionPill direction={signal.effect_direction} />}
  </div>
 
- {/* Scoring row */}
- {hasScoring && (
+ {/* Scoring row — only shown when there are non-zero scores */}
+ {hasVisibleScore && (
  <div className="flex flex-wrap gap-x-5 gap-y-2 mb-4 text-[11px]" style={{ color: "#777" }}>
  {signal.replication_level && (
  <span className="flex items-center gap-1.5">
@@ -531,11 +532,9 @@ function SignalCard({ signal }: { signal: Signal }) {
  Plausibility: {signal.plausibility_level}
  </span>
  )}
- {signal.total_evidence_score != null && (
  <span className="flex items-center gap-1" style={{ color: "#5C6B5D", fontWeight: 600 }}>
  Score: {signal.total_evidence_score}/10
  </span>
- )}
  </div>
  )}
 
@@ -752,6 +751,7 @@ const amber = {
 
 function PathwaySignalCard({ signal }: { signal: Signal }) {
  const hasScoring = signal.confidence_tier != null;
+ const hasVisibleScore = signal.total_evidence_score != null && signal.total_evidence_score > 0;
  return (
  <div
  className=" p-6"
@@ -793,8 +793,8 @@ function PathwaySignalCard({ signal }: { signal: Signal }) {
  {signal.effect_direction && <EffectDirectionPill direction={signal.effect_direction} />}
  </div>
 
- {/* Scoring row */}
- {hasScoring && (
+ {/* Scoring row — only shown when there are non-zero scores */}
+ {hasVisibleScore && (
  <div className="flex flex-wrap gap-x-5 gap-y-2 mb-4 text-[11px]" style={{ color: amber.label }}>
  {signal.replication_level && (
  <span className="flex items-center gap-1.5">
@@ -808,11 +808,9 @@ function PathwaySignalCard({ signal }: { signal: Signal }) {
  Plausibility: {signal.plausibility_level}
  </span>
  )}
- {signal.total_evidence_score != null && (
  <span className="flex items-center gap-1" style={{ color: amber.heading, fontWeight: 600 }}>
  Score: {signal.total_evidence_score}/10
  </span>
- )}
  </div>
  )}
 
