@@ -30,7 +30,7 @@ const path = require('path');
 const ADRREPORTS_BASE   = 'https://www.adrreports.eu';
 const EVDAS_BASE        = 'https://dap.ema.europa.eu/analyticsSOAP/saw.dll';
 const ANTHROPIC_BASE    = 'https://api.anthropic.com';
-const MODEL             = 'claude-sonnet-4-5';
+const MODEL             = 'claude-opus-4-6';
 const REQUEST_DELAY_MS  = 2000;
 
 // ── Drug class map (mirrors openfda-pipeline.js) ──────────────────────────────

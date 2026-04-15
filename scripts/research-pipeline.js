@@ -18,7 +18,7 @@ const path = require('path');
 
 const PUBMED_BASE = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
 const ANTHROPIC_BASE = 'https://api.anthropic.com';
-const MODEL = 'claude-sonnet-4-5';   // update if needed
+const MODEL = 'claude-opus-4-6';
 const MAX_RESULTS = 20;
 
 // ── .env.local loader ─────────────────────────────────────────────────────────
@@ -152,7 +152,20 @@ Err strongly on the side of inclusion. A weak or indirect signal that a research
 
 For each signal found, provide: compound_name, original_indication, signal_type (clinical_trial_finding, case_report, mechanism_overlap, review_article, population_study, side_effect_signal, observational_study), evidence_strength (preliminary, moderate, strong), summary, mechanism_hypothesis. Include a "pmids" field listing the PMID(s) supporting the signal.
 
-Only exclude a compound if the abstracts contain no plausible connection whatsoever to any of the six conditions or their underlying biology (hormonal, inflammatory, metabolic, neurological, or pain pathways). Return as JSON array.`;
+Only exclude a compound if the abstracts contain no plausible connection whatsoever to any of the six conditions or their underlying biology (hormonal, inflammatory, metabolic, neurological, or pain pathways).
+
+For each signal, include these evidence scoring fields in addition to the core fields:
+- confidence_tier: "Exploratory" (total 0-3), "Emerging" (4-6), "Moderate" (7-8), or "Strong" (9-10) — derived from the five scores below
+- replication_score: 0 = single source or theoretical; 1 = two independent sources or one moderate study; 2 = multiple independent replications or RCT evidence
+- source_quality_score: 0 = case reports, forum posts, or computational prediction; 1 = observational study, secondary endpoint, or registry data; 2 = RCT, meta-analysis, or large prospective cohort
+- specificity_score: 0 = indirect or pathway-level connection only; 1 = condition-adjacent (related symptoms or mechanism); 2 = direct evidence in this specific condition
+- plausibility_score: 0 = speculative or theoretical mechanism; 1 = biologically plausible with supporting data in related areas; 2 = well-characterized mechanism with direct pathway evidence
+- direction_score: 0 = direction unclear or conflicting; 1 = consistent direction but limited data; 2 = clear directional effect with consistent data
+- effect_direction: "improves", "worsens", "mixed", or "unclear"
+- replication_level: "Low", "Medium", or "High"
+- plausibility_level: "Low", "Medium", or "High"
+
+Return as JSON array.`;
 
 async function analyzeWithClaude(apiKey, condition, articles) {
   const formatted = articles
@@ -472,21 +485,41 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
   for (const s of enriched) {
     // Use SELECT to resolve the compound_id by name — handles pre-existing rows
     out.push(`INSERT INTO repurposing_signals`);
-    out.push(`  (id, condition_id, compound_id, signal_type, evidence_strength, summary, mechanism_hypothesis, status)`);
+    out.push(`  (id, condition_id, compound_id, signal_type, evidence_strength, confidence_tier,`);
+    out.push(`   replication_score, source_quality_score, specificity_score, plausibility_score, direction_score,`);
+    out.push(`   effect_direction, replication_level, plausibility_level, summary, mechanism_hypothesis, status)`);
     out.push(`SELECT`);
     out.push(`  ${esc(s.signalId)},`);
     out.push(`  ${esc(conditionId)},`);
     out.push(`  c.id,`);
     out.push(`  ${esc(s.signal_type)},`);
     out.push(`  ${esc(s.evidence_strength)},`);
+    out.push(`  ${esc(s.confidence_tier ?? null)},`);
+    out.push(`  ${s.replication_score != null ? s.replication_score : 'NULL'},`);
+    out.push(`  ${s.source_quality_score != null ? s.source_quality_score : 'NULL'},`);
+    out.push(`  ${s.specificity_score != null ? s.specificity_score : 'NULL'},`);
+    out.push(`  ${s.plausibility_score != null ? s.plausibility_score : 'NULL'},`);
+    out.push(`  ${s.direction_score != null ? s.direction_score : 'NULL'},`);
+    out.push(`  ${esc(s.effect_direction ?? null)},`);
+    out.push(`  ${esc(s.replication_level ?? null)},`);
+    out.push(`  ${esc(s.plausibility_level ?? null)},`);
     out.push(`  ${esc(s.summary)},`);
     out.push(`  ${esc(s.mechanism_hypothesis)},`);
     out.push(`  'active'`);
     out.push(`FROM compounds c`);
     out.push(`WHERE c.name = ${esc(s.compound_name)}`);
     out.push(`ON CONFLICT (compound_id, condition_id) DO UPDATE SET`);
-    out.push(`  summary           = EXCLUDED.summary,`);
-    out.push(`  evidence_strength = EXCLUDED.evidence_strength;`);
+    out.push(`  summary              = EXCLUDED.summary,`);
+    out.push(`  evidence_strength    = EXCLUDED.evidence_strength,`);
+    out.push(`  confidence_tier      = EXCLUDED.confidence_tier,`);
+    out.push(`  replication_score    = EXCLUDED.replication_score,`);
+    out.push(`  source_quality_score = EXCLUDED.source_quality_score,`);
+    out.push(`  specificity_score    = EXCLUDED.specificity_score,`);
+    out.push(`  plausibility_score   = EXCLUDED.plausibility_score,`);
+    out.push(`  direction_score      = EXCLUDED.direction_score,`);
+    out.push(`  effect_direction     = EXCLUDED.effect_direction,`);
+    out.push(`  replication_level    = EXCLUDED.replication_level,`);
+    out.push(`  plausibility_level   = EXCLUDED.plausibility_level;`);
     out.push('');
   }
 

@@ -89,14 +89,46 @@ export default function TechnicalArchitecturePage() {
  </div>
  </section>
 
- {/* Signal Classification */}
+ {/* Inclusion Criteria and Evidence Scoring */}
  <section>
  <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
- Signal Classification
+ Inclusion Criteria and Evidence Scoring
  </h2>
+ <div className="space-y-4">
  <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
- Each signal extracted by the pipelines is classified by evidence strength: Strong Evidence, Moderate Evidence, Preliminary Evidence, or Theoretical/Mechanistic. Classification is performed by Claude (claude-sonnet) based on study design, sample size, consistency of findings, and source type. Community Forum Reports are always labeled as community signal, not clinical evidence.
+ Each signal is evaluated across five dimensions, each scored 0 to 2, producing a total evidence score of 0 to 10. Scores are assigned by Claude Opus at pipeline run time.
  </p>
+ {[
+ {
+ label: "Replication (0 to 2)",
+ body: "0: single source or theoretical. 1: two independent sources or one moderate quality study. 2: multiple independent replications or randomized controlled trial evidence.",
+ },
+ {
+ label: "Source Quality (0 to 2)",
+ body: "0: case reports, forum posts, or computational prediction. 1: observational study, secondary endpoint, registry data, or pharmacovigilance database (FAERS, EudraVigilance). 2: randomized controlled trial, meta-analysis, or large prospective cohort.",
+ },
+ {
+ label: "Specificity (0 to 2)",
+ body: "0: indirect or pathway level connection only. 1: condition adjacent (related symptoms or shared mechanism). 2: direct evidence in the specific condition being analyzed.",
+ },
+ {
+ label: "Plausibility (0 to 2)",
+ body: "0: speculative or theoretical mechanism. 1: biologically plausible with supporting data in related areas. 2: well characterized mechanism with direct pathway evidence.",
+ },
+ {
+ label: "Direction (0 to 2)",
+ body: "0: direction of effect unclear or conflicting across sources. 1: consistent direction but limited data. 2: clear directional effect with consistent data across multiple sources.",
+ },
+ ].map(({ label, body }) => (
+ <div key={label} className="bg-white p-5" style={{ border: "1px solid #E0DDD8" }}>
+ <p className="text-sm font-semibold mb-1.5" style={{ color: "#1a1a1a" }}>{label}</p>
+ <p className="text-sm leading-relaxed" style={{ color: "#111" }}>{body}</p>
+ </div>
+ ))}
+ <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
+ Total scores map to confidence tiers: Exploratory (0 to 3), Emerging (4 to 6), Moderate (7 to 8), Strong (9 to 10). Each signal also carries an effect direction (improves, worsens, mixed, or unclear) and human readable replication and plausibility labels (Low, Medium, High). Existing signals without scores retain their legacy evidence strength label until the pipeline reruns on that condition.
+ </p>
+ </div>
  </section>
 
  {/* Database and Infrastructure */}
@@ -108,7 +140,7 @@ export default function TechnicalArchitecturePage() {
  {[
  {
  label: "Database",
- body: "Supabase (PostgreSQL) with Row Level Security. Core tables include conditions, compounds, repurposing_signals, and sources. Signals are deduplicated at both the pipeline level (by post ID for Reddit, by compound and condition pair for all sources) and via database constraints.",
+ body: "Supabase (PostgreSQL) with Row Level Security. Core tables include conditions, compounds, repurposing_signals, and sources. The repurposing_signals table stores five scoring dimensions (replication, source quality, specificity, plausibility, direction), a computed total evidence score, confidence tier, effect direction, and human readable level labels. Signals are deduplicated at both the pipeline level (by post ID for Reddit, by compound and condition pair for all sources) and via database constraints.",
  },
  {
  label: "Frontend",

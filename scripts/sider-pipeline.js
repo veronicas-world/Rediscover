@@ -42,7 +42,7 @@ const SIDER_BASE = 'http://sideeffects.embl.de/media/files';
 const SIDER_DRUG_PAGE = 'http://sideeffects.embl.de/drugs';
 const DATA_DIR = path.join(__dirname, '..', 'data', 'sider');
 const ANTHROPIC_BASE = 'https://api.anthropic.com';
-const MODEL = 'claude-sonnet-4-5';
+const MODEL = 'claude-opus-4-6';
 
 // SIDER files to download (only once — cached in data/sider/)
 const SIDER_FILES = {

@@ -18,7 +18,7 @@ const path = require('path');
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const ANTHROPIC_BASE = 'https://api.anthropic.com';
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'claude-opus-4-6';
 // Posts fetched per query per subreddit — keep low since we run many queries
 const POSTS_PER_QUERY = 10;
 
@@ -141,11 +141,22 @@ function buildSystemPrompt(condition) {
     `Identify any drugs, supplements, or compounds that multiple women report as helpful, ` +
     `with emphasis on treatments that were not originally developed for this condition. ` +
     `Look for off label use, unexpected benefits, and treatments that surprised people. ` +
-    `Only include treatments mentioned by 2 or more people. ` +
+    `Only include treatments mentioned by at least 3 or more people — prefer signals with 5 or more independent reports. ` +
+    `Community signals require a higher volume bar than clinical evidence: a pattern mentioned by only 2 people is not enough. ` +
     `Return as JSON array with: compound_name, signal_type (always community_report), ` +
     `evidence_strength (always preliminary), summary, post_count, ` +
     `contributing_posts (array of objects, each with post_index as the integer POST number ` +
-    `from the input and excerpt as a brief quote from that post showing what the person reported).`
+    `from the input and excerpt as a brief quote from that post showing what the person reported). ` +
+    `Also include these evidence scoring fields: ` +
+    `confidence_tier (always "Exploratory" for community signals), ` +
+    `replication_score (0 = 3-4 posts, 1 = 5-9 posts, 2 = 10 or more posts), ` +
+    `source_quality_score (always 0 for community forum), ` +
+    `specificity_score (0 = indirect connection, 1 = condition-adjacent, 2 = direct condition-specific reports), ` +
+    `plausibility_score (0 = no known mechanism, 1 = plausible mechanism, 2 = well-characterized mechanism), ` +
+    `direction_score (0 = unclear, 1 = mostly consistent, 2 = highly consistent across posts), ` +
+    `effect_direction ("improves", "worsens", "mixed", or "unclear"), ` +
+    `replication_level ("Low" for 3-4, "Medium" for 5-9, "High" for 10 or more posts), ` +
+    `plausibility_level ("Low", "Medium", or "High").`
   );
 }
 
@@ -322,21 +333,41 @@ function generateSQL(condition, conditionId, signals, fetchedSubreddits, posts =
   out.push('-- STEP 2: Repurposing signals');
   for (const s of enriched) {
     out.push(`INSERT INTO repurposing_signals`);
-    out.push(`  (id, condition_id, compound_id, signal_type, evidence_strength, summary, mechanism_hypothesis, status)`);
+    out.push(`  (id, condition_id, compound_id, signal_type, evidence_strength, confidence_tier,`);
+    out.push(`   replication_score, source_quality_score, specificity_score, plausibility_score, direction_score,`);
+    out.push(`   effect_direction, replication_level, plausibility_level, summary, mechanism_hypothesis, status)`);
     out.push(`SELECT`);
     out.push(`  ${esc(s.signalId)},`);
     out.push(`  ${esc(conditionId)},`);
     out.push(`  c.id,`);
     out.push(`  'community_report',`);
     out.push(`  'preliminary',`);
+    out.push(`  ${esc(s.confidence_tier ?? 'Exploratory')},`);
+    out.push(`  ${s.replication_score != null ? s.replication_score : 'NULL'},`);
+    out.push(`  ${s.source_quality_score != null ? s.source_quality_score : 0},`);
+    out.push(`  ${s.specificity_score != null ? s.specificity_score : 'NULL'},`);
+    out.push(`  ${s.plausibility_score != null ? s.plausibility_score : 'NULL'},`);
+    out.push(`  ${s.direction_score != null ? s.direction_score : 'NULL'},`);
+    out.push(`  ${esc(s.effect_direction ?? 'unclear')},`);
+    out.push(`  ${esc(s.replication_level ?? null)},`);
+    out.push(`  ${esc(s.plausibility_level ?? null)},`);
     out.push(`  ${esc(s.summary)},`);
     out.push(`  NULL,`);
     out.push(`  'active'`);
     out.push(`FROM compounds c`);
     out.push(`WHERE c.name = ${esc(s.compound_name)}`);
     out.push(`ON CONFLICT (compound_id, condition_id) DO UPDATE SET`);
-    out.push(`  summary           = EXCLUDED.summary,`);
-    out.push(`  evidence_strength = EXCLUDED.evidence_strength;`);
+    out.push(`  summary              = EXCLUDED.summary,`);
+    out.push(`  evidence_strength    = EXCLUDED.evidence_strength,`);
+    out.push(`  confidence_tier      = EXCLUDED.confidence_tier,`);
+    out.push(`  replication_score    = EXCLUDED.replication_score,`);
+    out.push(`  source_quality_score = EXCLUDED.source_quality_score,`);
+    out.push(`  specificity_score    = EXCLUDED.specificity_score,`);
+    out.push(`  plausibility_score   = EXCLUDED.plausibility_score,`);
+    out.push(`  direction_score      = EXCLUDED.direction_score,`);
+    out.push(`  effect_direction     = EXCLUDED.effect_direction,`);
+    out.push(`  replication_level    = EXCLUDED.replication_level,`);
+    out.push(`  plausibility_level   = EXCLUDED.plausibility_level;`);
     out.push('');
   }
 

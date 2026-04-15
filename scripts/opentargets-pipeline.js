@@ -27,7 +27,7 @@ const path             = require('path');
 
 const OT_GRAPHQL     = 'https://api.platform.opentargets.org/api/v4/graphql';
 const ANTHROPIC_BASE = 'https://api.anthropic.com';
-const MODEL          = 'claude-sonnet-4-5';
+const MODEL          = 'claude-opus-4-6';
 
 // ── Condition EFO/MONDO ID map ────────────────────────────────────────────────
 //
@@ -346,7 +346,20 @@ For each signal:
 
 Focus on drugs that have NOT been directly investigated for the condition — the goal is to surface novel pathway hypotheses. Drugs already in late-stage trials for the condition itself are less interesting than drugs approved elsewhere that share molecular machinery.
 
-Generate one entry per (drug, condition) pair where the connection is non-obvious and scientifically interesting. Return ONLY a valid JSON array. If no signals are found, return [].`;
+Generate one entry per (drug, condition) pair where the connection is non-obvious and scientifically interesting.
+
+For each signal, include these evidence scoring fields:
+- confidence_tier: "Exploratory" (total 0-3), "Emerging" (4-6), "Moderate" (7-8), or "Strong" (9-10)
+- replication_score: 0 = single source or theoretical; 1 = two independent sources or one moderate study; 2 = multiple independent replications or RCT evidence
+- source_quality_score: 0 = computational or theoretical; 1 = genetic association or pathway data (Open Targets genetic evidence = 1); 2 = clinical trial evidence or validated drug target
+- specificity_score: 0 = indirect or pathway-level only; 1 = condition-adjacent; 2 = direct evidence in this condition
+- plausibility_score: 0 = speculative mechanism; 1 = biologically plausible with supporting genetic/pathway data; 2 = well-characterized mechanism with strong Open Targets scores (>0.5)
+- direction_score: 0 = unclear or conflicting; 1 = consistent direction but limited data; 2 = clear directional effect with consistent data
+- effect_direction: "improves", "worsens", "mixed", or "unclear"
+- replication_level: "Low", "Medium", or "High"
+- plausibility_level: "Low", "Medium", or "High"
+
+Return ONLY a valid JSON array. If no signals are found, return [].`;
 
 async function analyzeWithClaude(apiKey, content, debug = false) {
   if (debug) {
@@ -554,13 +567,24 @@ async function generateSQL(condition, conditionData, signals, supabaseUrl, supab
       out.push(`--   Could not resolve condition "${s.conditionName}" — replace CONDITION_ID_HERE manually.`);
     }
     out.push(`INSERT INTO repurposing_signals`);
-    out.push(`  (id, condition_id, compound_id, signal_type, evidence_strength, summary, mechanism_hypothesis, status)`);
+    out.push(`  (id, condition_id, compound_id, signal_type, evidence_strength, confidence_tier,`);
+    out.push(`   replication_score, source_quality_score, specificity_score, plausibility_score, direction_score,`);
+    out.push(`   effect_direction, replication_level, plausibility_level, summary, mechanism_hypothesis, status)`);
     out.push(`SELECT`);
     out.push(`  ${esc(s.signalId)},`);
     out.push(`  ${esc(s.conditionId)},`);
     out.push(`  c.id,`);
     out.push(`  ${esc(s.signal_type)},`);
     out.push(`  ${esc(s.evidence_strength)},`);
+    out.push(`  ${esc(s.confidence_tier ?? null)},`);
+    out.push(`  ${s.replication_score != null ? s.replication_score : 'NULL'},`);
+    out.push(`  ${s.source_quality_score != null ? s.source_quality_score : 'NULL'},`);
+    out.push(`  ${s.specificity_score != null ? s.specificity_score : 'NULL'},`);
+    out.push(`  ${s.plausibility_score != null ? s.plausibility_score : 'NULL'},`);
+    out.push(`  ${s.direction_score != null ? s.direction_score : 'NULL'},`);
+    out.push(`  ${esc(s.effect_direction ?? null)},`);
+    out.push(`  ${esc(s.replication_level ?? null)},`);
+    out.push(`  ${esc(s.plausibility_level ?? null)},`);
     out.push(`  ${esc(s.summary)},`);
     out.push(`  ${esc(s.mechanism_hypothesis)},`);
     out.push(`  'active'`);
@@ -569,6 +593,15 @@ async function generateSQL(condition, conditionData, signals, supabaseUrl, supab
     out.push(`ON CONFLICT (compound_id, condition_id) DO UPDATE SET`);
     out.push(`  signal_type          = EXCLUDED.signal_type,`);
     out.push(`  evidence_strength    = EXCLUDED.evidence_strength,`);
+    out.push(`  confidence_tier      = EXCLUDED.confidence_tier,`);
+    out.push(`  replication_score    = EXCLUDED.replication_score,`);
+    out.push(`  source_quality_score = EXCLUDED.source_quality_score,`);
+    out.push(`  specificity_score    = EXCLUDED.specificity_score,`);
+    out.push(`  plausibility_score   = EXCLUDED.plausibility_score,`);
+    out.push(`  direction_score      = EXCLUDED.direction_score,`);
+    out.push(`  effect_direction     = EXCLUDED.effect_direction,`);
+    out.push(`  replication_level    = EXCLUDED.replication_level,`);
+    out.push(`  plausibility_level   = EXCLUDED.plausibility_level,`);
     out.push(`  summary              = EXCLUDED.summary,`);
     out.push(`  mechanism_hypothesis = EXCLUDED.mechanism_hypothesis,`);
     out.push(`  status               = EXCLUDED.status;`);

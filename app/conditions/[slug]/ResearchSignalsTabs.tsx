@@ -18,6 +18,16 @@ export interface Signal {
  id: string;
  signal_type: string | null;
  evidence_strength: string | null;
+ confidence_tier: string | null;
+ replication_score: number | null;
+ source_quality_score: number | null;
+ specificity_score: number | null;
+ plausibility_score: number | null;
+ direction_score: number | null;
+ total_evidence_score: number | null;
+ effect_direction: string | null;
+ replication_level: string | null;
+ plausibility_level: string | null;
  summary: string | null;
  mechanism_hypothesis: string | null;
  status: string | null;
@@ -62,6 +72,68 @@ function EvidenceBadge({ strength }: { strength: string | null }) {
  }}
  >
  {config.label}
+ </span>
+ );
+}
+
+// Confidence tier badge — replaces EvidenceBadge on new scored signals
+function ConfidenceTierBadge({ tier }: { tier: string | null }) {
+ if (!tier) return null;
+ const configs: Record<string, { bg: string; color: string; border?: string }> = {
+ Strong:      { bg: "#5C6B5D", color: "#fff" },
+ Moderate:    { bg: "#7A8B7A", color: "#fff" },
+ Emerging:    { bg: "#EEF1EE", color: "#5C6B5D", border: "#7A8B7A" },
+ Exploratory: { bg: "#F5F3EF", color: "#777", border: "#C8C3BB" },
+ };
+ const cfg = configs[tier] ?? { bg: "#EEF1EE", color: "#5C6B5D", border: "#7A8B7A" };
+ return (
+ <span
+ className="text-[10px] font-bold px-2.5 py-1 tracking-wider whitespace-nowrap uppercase"
+ style={{ backgroundColor: cfg.bg, color: cfg.color, border: cfg.border ? `1px solid ${cfg.border}` : undefined }}
+ >
+ {tier}
+ </span>
+ );
+}
+
+// Score pip row: 0–2 filled dots
+function ScorePips({ value, max = 2 }: { value: number | null; max?: number }) {
+ if (value == null) return null;
+ return (
+ <span className="flex gap-0.5 items-center">
+ {Array.from({ length: max }, (_, i) => (
+ <span
+ key={i}
+ style={{
+ width: 6, height: 6, borderRadius: "50%",
+ backgroundColor: i < value ? "#5C6B5D" : "#D6D1C9",
+ display: "inline-block",
+ }}
+ />
+ ))}
+ </span>
+ );
+}
+
+// Effect direction pill
+function EffectDirectionPill({ direction }: { direction: string | null }) {
+ if (!direction || direction === "unclear") return null;
+ const label: Record<string, string> = {
+ improves: "Improves condition",
+ worsens:  "May worsen condition",
+ mixed:    "Mixed effects",
+ };
+ const color: Record<string, string> = {
+ improves: "#4D5E4D",
+ worsens:  "#8B4513",
+ mixed:    "#7A6B4D",
+ };
+ return (
+ <span
+ className="text-[10px] font-semibold px-2 py-0.5 tracking-wide"
+ style={{ backgroundColor: "#F5F3EF", color: color[direction] ?? "#777", border: "1px solid #E0DDD8" }}
+ >
+ {label[direction] ?? direction}
  </span>
  );
 }
@@ -429,17 +501,43 @@ function CollapsibleSources({
 }
 
 function SignalCard({ signal }: { signal: Signal }) {
+ const hasScoring = signal.confidence_tier != null;
  return (
  <div className="bg-white p-6" style={{ border:"1px solid #E0DDD8" }}>
- {/* Compound name + evidence badge */}
+ {/* Compound name + tier badge */}
  <div className="flex flex-wrap items-start gap-3 mb-4">
  <h3 className="font-heading text-lg font-bold leading-tight" style={{ color:"#333" }}>
  {signal.compounds?.name ??"Unknown compound"}
  </h3>
- {signal.evidence_strength && (
- <EvidenceBadge strength={signal.evidence_strength} />
+ {hasScoring
+ ? <ConfidenceTierBadge tier={signal.confidence_tier} />
+ : signal.evidence_strength && <EvidenceBadge strength={signal.evidence_strength} />
+ }
+ {signal.effect_direction && <EffectDirectionPill direction={signal.effect_direction} />}
+ </div>
+
+ {/* Scoring row */}
+ {hasScoring && (
+ <div className="flex flex-wrap gap-x-5 gap-y-2 mb-4 text-[11px]" style={{ color: "#777" }}>
+ {signal.replication_level && (
+ <span className="flex items-center gap-1.5">
+ <ScorePips value={signal.replication_score} />
+ Replication: {signal.replication_level}
+ </span>
+ )}
+ {signal.plausibility_level && (
+ <span className="flex items-center gap-1.5">
+ <ScorePips value={signal.plausibility_score} />
+ Plausibility: {signal.plausibility_level}
+ </span>
+ )}
+ {signal.total_evidence_score != null && (
+ <span className="flex items-center gap-1" style={{ color: "#5C6B5D", fontWeight: 600 }}>
+ Score: {signal.total_evidence_score}/10
+ </span>
  )}
  </div>
+ )}
 
  {/* Compound meta tags + source badge */}
  {(signal.compounds?.drug_class || signal.compounds?.fda_status || signal.sources.length > 0) && (
@@ -653,6 +751,7 @@ const amber = {
 };
 
 function PathwaySignalCard({ signal }: { signal: Signal }) {
+ const hasScoring = signal.confidence_tier != null;
  return (
  <div
  className=" p-6"
@@ -680,19 +779,42 @@ function PathwaySignalCard({ signal }: { signal: Signal }) {
  <h3 className="font-heading text-lg font-bold leading-tight" style={{ color: amber.heading }}>
  {signal.compounds?.name ??"Unknown compound"}
  </h3>
- {signal.evidence_strength && (
+ {hasScoring
+ ? <ConfidenceTierBadge tier={signal.confidence_tier} />
+ : signal.evidence_strength && (
  <span
  className="text-[10px] font-bold px-2.5 py-1 tracking-wider"
- style={{
- backgroundColor: amber.tagBg,
- color: amber.link,
- border: `1px solid ${amber.tagBorder}`,
- }}
+ style={{ backgroundColor: amber.tagBg, color: amber.link, border: `1px solid ${amber.tagBorder}` }}
  >
  {signal.evidence_strength.toUpperCase()}
  </span>
+ )
+ }
+ {signal.effect_direction && <EffectDirectionPill direction={signal.effect_direction} />}
+ </div>
+
+ {/* Scoring row */}
+ {hasScoring && (
+ <div className="flex flex-wrap gap-x-5 gap-y-2 mb-4 text-[11px]" style={{ color: amber.label }}>
+ {signal.replication_level && (
+ <span className="flex items-center gap-1.5">
+ <ScorePips value={signal.replication_score} />
+ Replication: {signal.replication_level}
+ </span>
+ )}
+ {signal.plausibility_level && (
+ <span className="flex items-center gap-1.5">
+ <ScorePips value={signal.plausibility_score} />
+ Plausibility: {signal.plausibility_level}
+ </span>
+ )}
+ {signal.total_evidence_score != null && (
+ <span className="flex items-center gap-1" style={{ color: amber.heading, fontWeight: 600 }}>
+ Score: {signal.total_evidence_score}/10
+ </span>
  )}
  </div>
+ )}
 
  {/* Meta tags + source badge */}
  {(signal.compounds?.drug_class || signal.compounds?.fda_status || signal.sources.length > 0) && (
