@@ -443,13 +443,13 @@ For each signal, provide:
 - relevant_conditions: array containing the specific condition(s) this signal directly applies to, using these exact names: ["endometriosis", "premenstrual dysphoric disorder", "polycystic ovary syndrome", "adenomyosis", "vulvodynia", "menopause"]
 - reaction_counts: object mapping EVERY relevant reaction term found in the FAERS data to its report count, covering all applicable categories (menstrual, pain, mood, metabolic, vasomotor, inflammatory, sexual/urinary). Include ALL relevant terms — do not limit to a small subset. Sort descending by count in your response. Example: {"vaginal haemorrhage": 12, "pelvic pain": 8, "depression": 6, "dysmenorrhoea": 4, "hot flush": 3}
 
-Err strongly on the side of inclusion. These conditions are chronically understudied — a weak or indirect signal that a researcher can evaluate is more valuable than a missed finding. Flag a signal even when:
-- The connection is indirect (e.g. weight loss relevant to PCOS insulin resistance, sleep improvement relevant to PMDD, fatigue reduction relevant to menopause or endometriosis)
-- The count is low (n=2 or n=3 in a sample of 100 can represent hundreds in the full dataset of tens of thousands)
-- The mechanism is plausible but unconfirmed — label evidence_strength "preliminary" and include it
-- The reaction could reflect hormonal, inflammatory, metabolic, neurological, or pain pathways relevant to any of the six conditions
+MINIMUM INCLUSION STANDARD — Hard exclusion rules. A signal must meet ALL of the following or it must not appear in your output at all (do not include it with low scores — omit it entirely):
+1. The signal must be corroborated across at least TWO independent evidence domains (e.g. gynae-targeted FAERS reports PLUS general FAERS pattern, or FAERS data PLUS a known pharmacological mechanism). A count in a single reaction category alone is insufficient.
+2. OR: three or more independent formal source mentions all pointing in the same direction.
+3. A plausible shared biological mechanism must be identifiable and named — not generic "inflammation" but a specific pathway (e.g. prostaglandin signaling, androgen receptor modulation, HPA axis dysregulation).
+4. The direction of effect must be discernible (improves, worsens, or clearly mixed — not just "present").
 
-If a drug has reactions relevant to multiple conditions, return one array entry per condition. Only skip a drug if there is genuinely no reaction in the data that could plausibly connect to any of the six conditions or their underlying biology.
+If a drug has reactions relevant to multiple conditions, return one array entry per condition. Only skip a drug if the data contains no reaction pattern that could plausibly connect to any of the six conditions or their underlying biology.
 
 For each signal, include these evidence scoring fields:
 - confidence_tier: "Exploratory" (total 0-3), "Emerging" (4-6), "Moderate" (7-8), or "Strong" (9-10)
@@ -617,6 +617,16 @@ function toTitleCase(name) {
     .join('');
 }
 
+function deriveConfidenceTier(replication, sourceQuality, specificity, plausibility, direction) {
+  const total = (replication ?? 0) + (sourceQuality ?? 0) + (specificity ?? 0) +
+                (plausibility ?? 0) + (direction ?? 0);
+  if (total >= 9) return 'Strong';
+  if (total >= 7) return 'Moderate';
+  if (total >= 4) return 'Emerging';
+  if (total >= 1) return 'Exploratory';
+  return null;
+}
+
 // ── SQL generation ────────────────────────────────────────────────────────────
 
 async function generateSQL(drugClass, signals, byDrug, supabaseUrl, supabaseKey) {
@@ -650,15 +660,20 @@ async function generateSQL(drugClass, signals, byDrug, supabaseUrl, supabaseKey)
     }
   }
 
-  // Expand signals: one row per (drug × condition); normalise name to title case
+  // Expand signals: one row per (drug × condition); normalise name; recompute tier; filter failures
   const enriched = [];
   for (const sig of signals) {
+    const tier = deriveConfidenceTier(
+      sig.replication_score, sig.source_quality_score, sig.specificity_score,
+      sig.plausibility_score, sig.direction_score
+    );
+    if (tier === null) continue; // failed inclusion bar
+
     const drug_name = toTitleCase(sig.drug_name);
     const conditions = sig.relevant_conditions ?? [];
     if (conditions.length === 0) {
       enriched.push({
-        ...sig,
-        drug_name,
+        ...sig, drug_name, confidence_tier: tier,
         conditionId: 'CONDITION_ID_HERE',
         conditionName: null,
         compoundId: randomUUID(),
@@ -668,8 +683,7 @@ async function generateSQL(drugClass, signals, byDrug, supabaseUrl, supabaseKey)
     } else {
       for (const cname of conditions) {
         enriched.push({
-          ...sig,
-          drug_name,
+          ...sig, drug_name, confidence_tier: tier,
           conditionId: conditionIdMap[cname] ?? 'CONDITION_ID_HERE',
           conditionName: cname,
           compoundId: randomUUID(),
@@ -742,7 +756,15 @@ async function generateSQL(drugClass, signals, byDrug, supabaseUrl, supabaseKey)
     out.push(`  plausibility_level   = EXCLUDED.plausibility_level,`);
     out.push(`  summary              = EXCLUDED.summary,`);
     out.push(`  mechanism_hypothesis = EXCLUDED.mechanism_hypothesis,`);
-    out.push(`  status               = EXCLUDED.status;`);
+    out.push(`  status               = EXCLUDED.status`);
+    out.push(`WHERE`);
+    out.push(`  COALESCE(EXCLUDED.replication_score,0) + COALESCE(EXCLUDED.source_quality_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.specificity_score,0) + COALESCE(EXCLUDED.plausibility_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.direction_score,0)`);
+    out.push(`  >`);
+    out.push(`  COALESCE(repurposing_signals.replication_score,0) + COALESCE(repurposing_signals.source_quality_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.specificity_score,0) + COALESCE(repurposing_signals.plausibility_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.direction_score,0);`);
     out.push('');
   }
 

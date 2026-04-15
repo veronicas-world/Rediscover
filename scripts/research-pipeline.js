@@ -142,17 +142,18 @@ function parseMedline(text) {
 
 // ── Claude ────────────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a medical research analyst specializing in drug repurposing for women's health conditions — specifically endometriosis, PMDD, PCOS, adenomyosis, vulvodynia, and menopause. These conditions are chronically underfunded and understudied, so your mandate is to surface ANY signal that could plausibly be relevant to a researcher working in this space.
+const SYSTEM_PROMPT = `You are a medical research analyst specializing in drug repurposing for women's health conditions — specifically endometriosis, PMDD, PCOS, adenomyosis, vulvodynia, and menopause.
 
-Err strongly on the side of inclusion. A weak or indirect signal that a researcher can evaluate is more valuable than a missed finding. Include signals even when:
-- The connection is mechanistic rather than direct clinical evidence (e.g. a drug that reduces inflammation or modulates estrogen could be relevant to endometriosis/adenomyosis)
-- The effect was incidental or observed as a side effect in a population that included women with these conditions
-- The evidence is preliminary, a single case report, or computational — label it accurately but still include it
-- The connection is indirect (e.g. improved insulin sensitivity relevant to PCOS, sleep improvement relevant to PMDD, pain reduction relevant to vulvodynia or endometriosis)
+MINIMUM INCLUSION STANDARD — Hard exclusion rules. A signal must meet ALL of the following or it must not appear in your output at all (do not include it with low scores — omit it entirely):
+1. At least one peer-reviewed human study in the abstracts (not mechanistic-only, not animal-only, not computational-only)
+2. Clearly identified patient population (not just "patients" — must specify a condition, sex, or clinical context)
+3. A specific named drug or compound as the intervention
+4. A measurable outcome relevant to one of the six conditions (pelvic pain, cycle regularity, hormonal markers, mood in luteal phase, vulvar pain, vasomotor symptoms, etc.)
+5. A discernible direction of effect (improvement or worsening) — "no significant change" is acceptable as a direction
 
-For each signal found, provide: compound_name, original_indication, signal_type (clinical_trial_finding, case_report, mechanism_overlap, review_article, population_study, side_effect_signal, observational_study), evidence_strength (preliminary, moderate, strong), summary, mechanism_hypothesis. Include a "pmids" field listing the PMID(s) supporting the signal.
+If a compound has mechanistic interest but no human data in these abstracts, exclude it. You are not hypothesis-generating here — you are extracting signals from actual human evidence.
 
-Only exclude a compound if the abstracts contain no plausible connection whatsoever to any of the six conditions or their underlying biology (hormonal, inflammatory, metabolic, neurological, or pain pathways).
+For each qualifying signal, provide: compound_name, original_indication, signal_type (clinical_trial_finding, observational_study, population_study, review_article, case_report, side_effect_signal), evidence_strength (preliminary, moderate, or strong), summary, mechanism_hypothesis. Include a "pmids" field listing the PMID(s) supporting the signal.
 
 For each signal, include these evidence scoring fields in addition to the core fields:
 - confidence_tier: "Exploratory" (total 0-3), "Emerging" (4-6), "Moderate" (7-8), or "Strong" (9-10) — derived from the five scores below
@@ -423,12 +424,25 @@ function toTitleCase(name) {
   if (!name) return name;
   return name
     .split(/(\s+|-)/)
-    .map((part, i, arr) => {
-      // Preserve whitespace/hyphen tokens unchanged
+    .map((part) => {
       if (/^[\s-]+$/.test(part)) return part;
       return part.charAt(0).toUpperCase() + part.slice(1);
     })
     .join('');
+}
+
+/**
+ * Recompute confidence_tier from raw scores, overriding whatever Claude returned.
+ * Returns null (and the signal should be filtered out) if total is 0.
+ */
+function deriveConfidenceTier(replication, sourceQuality, specificity, plausibility, direction) {
+  const total = (replication ?? 0) + (sourceQuality ?? 0) + (specificity ?? 0) +
+                (plausibility ?? 0) + (direction ?? 0);
+  if (total >= 9) return 'Strong';
+  if (total >= 7) return 'Moderate';
+  if (total >= 4) return 'Emerging';
+  if (total >= 1) return 'Exploratory';
+  return null; // total = 0 means failed inclusion bar
 }
 
 function generateSQL(condition, conditionId, signals, articlesByPmid) {
@@ -458,15 +472,24 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
     return out.join('\n');
   }
 
-  // Pre-assign deterministic UUIDs for this run; normalise compound name to title case
-  const enriched = signals.map(sig => ({
-    ...sig,
-    compound_name: toTitleCase(sig.compound_name),
-    compoundId: randomUUID(),
-    signalId:   randomUUID(),
-    pmids:      Array.isArray(sig.pmids) ? sig.pmids : [],
-    sourceIds:  (Array.isArray(sig.pmids) ? sig.pmids : []).map(() => randomUUID()),
-  }));
+  // Pre-assign deterministic UUIDs; normalise compound name; recompute tier; filter failures
+  const enriched = signals
+    .map(sig => {
+      const tier = deriveConfidenceTier(
+        sig.replication_score, sig.source_quality_score, sig.specificity_score,
+        sig.plausibility_score, sig.direction_score
+      );
+      return {
+        ...sig,
+        compound_name:  toTitleCase(sig.compound_name),
+        confidence_tier: tier,
+        compoundId: randomUUID(),
+        signalId:   randomUUID(),
+        pmids:      Array.isArray(sig.pmids) ? sig.pmids : [],
+        sourceIds:  (Array.isArray(sig.pmids) ? sig.pmids : []).map(() => randomUUID()),
+      };
+    })
+    .filter(sig => sig.confidence_tier !== null); // drop 0-score failures
 
   // ── STEP 1: Compounds ──────────────────────────────────────────────────────
   out.push('-- ── STEP 1: Compounds (safe to run multiple times) ──────────────');
@@ -519,7 +542,15 @@ function generateSQL(condition, conditionId, signals, articlesByPmid) {
     out.push(`  direction_score      = EXCLUDED.direction_score,`);
     out.push(`  effect_direction     = EXCLUDED.effect_direction,`);
     out.push(`  replication_level    = EXCLUDED.replication_level,`);
-    out.push(`  plausibility_level   = EXCLUDED.plausibility_level;`);
+    out.push(`  plausibility_level   = EXCLUDED.plausibility_level`);
+    out.push(`WHERE`);
+    out.push(`  COALESCE(EXCLUDED.replication_score,0) + COALESCE(EXCLUDED.source_quality_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.specificity_score,0) + COALESCE(EXCLUDED.plausibility_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.direction_score,0)`);
+    out.push(`  >`);
+    out.push(`  COALESCE(repurposing_signals.replication_score,0) + COALESCE(repurposing_signals.source_quality_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.specificity_score,0) + COALESCE(repurposing_signals.plausibility_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.direction_score,0);`);
     out.push('');
   }
 

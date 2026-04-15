@@ -20,7 +20,7 @@ const path = require('path');
 const ANTHROPIC_BASE = 'https://api.anthropic.com';
 const MODEL = 'claude-opus-4-6';
 // Posts fetched per query per subreddit — keep low since we run many queries
-const POSTS_PER_QUERY = 10;
+const POSTS_PER_QUERY = 25;
 
 // User-Agent required by Reddit API terms of service
 const REDDIT_UA = 'WomensHealthEvidenceLab/1.0 (research tool; contact via github)';
@@ -141,8 +141,12 @@ function buildSystemPrompt(condition) {
     `Identify any drugs, supplements, or compounds that multiple women report as helpful, ` +
     `with emphasis on treatments that were not originally developed for this condition. ` +
     `Look for off label use, unexpected benefits, and treatments that surprised people. ` +
-    `Only include treatments mentioned by at least 3 or more people — prefer signals with 5 or more independent reports. ` +
-    `Community signals require a higher volume bar than clinical evidence: a pattern mentioned by only 2 people is not enough. ` +
+    `MINIMUM INCLUSION STANDARD: Only include a treatment if it is mentioned by at least 20 distinct users ` +
+    `with specific exposure-outcome language (not "metformin changed things" but "after starting metformin, my cycles shortened"). ` +
+    `Raw volume is insufficient — you must see specificity (named symptom), directionality (better or worse), ` +
+    `and user diversity (not the same person posting repeatedly). ` +
+    `Exclude obvious reposts, promotional content, and low-content comments. ` +
+    `If fewer than 20 qualifying posts exist for a treatment, do not include it. ` +
     `Return as JSON array with: compound_name, signal_type (always community_report), ` +
     `evidence_strength (always preliminary), summary, post_count, ` +
     `contributing_posts (array of objects, each with post_index as the integer POST number ` +
@@ -276,6 +280,16 @@ function toTitleCase(name) {
     .join('');
 }
 
+function deriveConfidenceTier(replication, sourceQuality, specificity, plausibility, direction) {
+  const total = (replication ?? 0) + (sourceQuality ?? 0) + (specificity ?? 0) +
+                (plausibility ?? 0) + (direction ?? 0);
+  if (total >= 9) return 'Strong';
+  if (total >= 7) return 'Moderate';
+  if (total >= 4) return 'Emerging';
+  if (total >= 1) return 'Exploratory';
+  return null;
+}
+
 // ── SQL generation ────────────────────────────────────────────────────────────
 
 function generateSQL(condition, conditionId, signals, fetchedSubreddits, posts = []) {
@@ -301,21 +315,28 @@ function generateSQL(condition, conditionId, signals, fetchedSubreddits, posts =
   }
 
   if (signals.length === 0) {
-    out.push('-- No community treatment signals met the 2-post threshold.');
+    out.push('-- No community treatment signals met the minimum inclusion bar.');
     return out.join('\n');
   }
 
-  const enriched = signals.map(sig => ({
-    ...sig,
-    compound_name: toTitleCase(sig.compound_name),
-    compoundId:    randomUUID(),
-    signalId:      randomUUID(),
-    // Claude no longer returns subreddits in the simplified prompt;
-    // fall back to the full list of subreddits fetched for this condition.
-    subreddits: Array.isArray(sig.subreddits) && sig.subreddits.length > 0
-      ? sig.subreddits
-      : fetchedSubreddits,
-  }));
+  const enriched = signals
+    .map(sig => {
+      const tier = deriveConfidenceTier(
+        sig.replication_score, sig.source_quality_score, sig.specificity_score,
+        sig.plausibility_score, sig.direction_score
+      );
+      return {
+        ...sig,
+        compound_name:   toTitleCase(sig.compound_name),
+        confidence_tier: tier,
+        compoundId:      randomUUID(),
+        signalId:        randomUUID(),
+        subreddits: Array.isArray(sig.subreddits) && sig.subreddits.length > 0
+          ? sig.subreddits
+          : fetchedSubreddits,
+      };
+    })
+    .filter(sig => sig.confidence_tier !== null);
 
   // ── STEP 1: Compounds ──────────────────────────────────────────────────────
   out.push('-- STEP 1: Compounds');
@@ -367,7 +388,15 @@ function generateSQL(condition, conditionId, signals, fetchedSubreddits, posts =
     out.push(`  direction_score      = EXCLUDED.direction_score,`);
     out.push(`  effect_direction     = EXCLUDED.effect_direction,`);
     out.push(`  replication_level    = EXCLUDED.replication_level,`);
-    out.push(`  plausibility_level   = EXCLUDED.plausibility_level;`);
+    out.push(`  plausibility_level   = EXCLUDED.plausibility_level`);
+    out.push(`WHERE`);
+    out.push(`  COALESCE(EXCLUDED.replication_score,0) + COALESCE(EXCLUDED.source_quality_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.specificity_score,0) + COALESCE(EXCLUDED.plausibility_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.direction_score,0)`);
+    out.push(`  >`);
+    out.push(`  COALESCE(repurposing_signals.replication_score,0) + COALESCE(repurposing_signals.source_quality_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.specificity_score,0) + COALESCE(repurposing_signals.plausibility_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.direction_score,0);`);
     out.push('');
   }
 

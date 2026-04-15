@@ -308,12 +308,13 @@ For each signal, provide:
 - trial_ids: array of NCT IDs that support this signal (e.g. ["NCT12345678"])
 - ae_terms: object mapping relevant AE terms found across the supporting trials to their total counts. Example: {"vaginal hemorrhage": 12, "depression": 8, "pelvic pain": 4}
 
-Err strongly on the side of inclusion. These conditions are chronically understudied — an indirect or low-count signal that a researcher can evaluate is more valuable than a missed finding. Include signals when:
-- The connection is indirect (e.g. weight change relevant to PCOS, sleep improvement relevant to PMDD)
-- The mechanism is plausible but unconfirmed — label evidence_strength "preliminary"
-- Multiple small trials corroborate the same AE pattern
+MINIMUM INCLUSION STANDARD — Hard exclusion rules. A signal must meet ALL of the following or it must not appear in your output at all (do not include it with low scores — omit it entirely):
+1. At least one peer-reviewed human clinical trial with a clearly identified patient population, drug, and measurable outcome
+2. A specific named outcome relevant to one of the six conditions (not vague AE terms like "pain" — must be specific: pelvic pain, dysmenorrhea, cycle changes, mood lability in luteal phase, vulvar symptoms, vasomotor symptoms)
+3. A discernible direction of effect
+4. A plausible mechanistic explanation that names a specific pathway, not generic "inflammation"
 
-Only skip a signal if there is genuinely no AE pattern that could plausibly connect to any of the six conditions or their underlying biology.
+Only skip a signal if there is genuinely no AE pattern that could plausibly connect to any of the six conditions.
 
 For each signal, include these evidence scoring fields:
 - confidence_tier: "Exploratory" (total 0-3), "Emerging" (4-6), "Moderate" (7-8), or "Strong" (9-10)
@@ -452,6 +453,16 @@ function toTitleCase(name) {
     .join('');
 }
 
+function deriveConfidenceTier(replication, sourceQuality, specificity, plausibility, direction) {
+  const total = (replication ?? 0) + (sourceQuality ?? 0) + (specificity ?? 0) +
+                (plausibility ?? 0) + (direction ?? 0);
+  if (total >= 9) return 'Strong';
+  if (total >= 7) return 'Moderate';
+  if (total >= 4) return 'Emerging';
+  if (total >= 1) return 'Exploratory';
+  return null;
+}
+
 // ── SQL generation ────────────────────────────────────────────────────────────
 
 async function generateSQL(drugName, signals, trialDataByNct, supabaseUrl, supabaseKey) {
@@ -485,15 +496,20 @@ async function generateSQL(drugName, signals, trialDataByNct, supabaseUrl, supab
     }
   }
 
-  // Expand signals: one row per (drug × condition)
+  // Expand signals: one row per (drug × condition); recompute tier; filter failures
   const enriched = [];
   for (const sig of signals) {
+    const tier = deriveConfidenceTier(
+      sig.replication_score, sig.source_quality_score, sig.specificity_score,
+      sig.plausibility_score, sig.direction_score
+    );
+    if (tier === null) continue;
+
     const drug_name = toTitleCase(sig.drug_name ?? drugName);
     const conditions = sig.relevant_conditions ?? [];
     if (conditions.length === 0) {
       enriched.push({
-        ...sig,
-        drug_name,
+        ...sig, drug_name, confidence_tier: tier,
         conditionId: 'CONDITION_ID_HERE',
         conditionName: null,
         compoundId: randomUUID(),
@@ -502,8 +518,7 @@ async function generateSQL(drugName, signals, trialDataByNct, supabaseUrl, supab
     } else {
       for (const cname of conditions) {
         enriched.push({
-          ...sig,
-          drug_name,
+          ...sig, drug_name, confidence_tier: tier,
           conditionId: conditionIdMap[cname] ?? 'CONDITION_ID_HERE',
           conditionName: cname,
           compoundId: randomUUID(),
@@ -571,7 +586,15 @@ async function generateSQL(drugName, signals, trialDataByNct, supabaseUrl, supab
     out.push(`  direction_score      = EXCLUDED.direction_score,`);
     out.push(`  effect_direction     = EXCLUDED.effect_direction,`);
     out.push(`  replication_level    = EXCLUDED.replication_level,`);
-    out.push(`  plausibility_level   = EXCLUDED.plausibility_level;`);
+    out.push(`  plausibility_level   = EXCLUDED.plausibility_level`);
+    out.push(`WHERE`);
+    out.push(`  COALESCE(EXCLUDED.replication_score,0) + COALESCE(EXCLUDED.source_quality_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.specificity_score,0) + COALESCE(EXCLUDED.plausibility_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.direction_score,0)`);
+    out.push(`  >`);
+    out.push(`  COALESCE(repurposing_signals.replication_score,0) + COALESCE(repurposing_signals.source_quality_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.specificity_score,0) + COALESCE(repurposing_signals.plausibility_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.direction_score,0);`);
     out.push('');
   }
 

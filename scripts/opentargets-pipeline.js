@@ -344,7 +344,12 @@ For each signal:
 - open_targets_score: the overall association score from Open Targets (if available; use 0 if not)
 - target_name: the primary biological target (gene/protein) this drug acts on
 
-Focus on drugs that have NOT been directly investigated for the condition — the goal is to surface novel pathway hypotheses. Drugs already in late-stage trials for the condition itself are less interesting than drugs approved elsewhere that share molecular machinery.
+MINIMUM INCLUSION STANDARD — Hard exclusion rules. A signal must meet ALL of the following or it must not appear in your output at all (do not include it with low scores — omit it entirely):
+1. A specific named mechanism — not generic "inflammation" or "immune modulation" but a named pathway, receptor, or molecular target (e.g. prostaglandin E2 signaling, aromatase inhibition, androgen receptor antagonism, mast cell degranulation, GABA-A receptor modulation)
+2. At least one confirmed drug-target link (the drug is known to act on this specific target)
+3. At least one disease-pathway link (the condition is known to involve this specific pathway, supported by genetic or mechanistic evidence)
+
+Focus on drugs that have NOT been directly investigated for the condition — the goal is to surface novel pathway hypotheses.
 
 Generate one entry per (drug, condition) pair where the connection is non-obvious and scientifically interesting.
 
@@ -477,6 +482,16 @@ function toTitleCase(name) {
     .join('');
 }
 
+function deriveConfidenceTier(replication, sourceQuality, specificity, plausibility, direction) {
+  const total = (replication ?? 0) + (sourceQuality ?? 0) + (specificity ?? 0) +
+                (plausibility ?? 0) + (direction ?? 0);
+  if (total >= 9) return 'Strong';
+  if (total >= 7) return 'Moderate';
+  if (total >= 4) return 'Emerging';
+  if (total >= 1) return 'Exploratory';
+  return null;
+}
+
 // ── SQL generation ────────────────────────────────────────────────────────────
 
 async function generateSQL(condition, conditionData, signals, supabaseUrl, supabaseKey) {
@@ -525,17 +540,22 @@ async function generateSQL(condition, conditionData, signals, supabaseUrl, supab
     }
   }
 
-  // Expand signals: one row per (drug, condition)
+  // Expand signals: one row per (drug, condition); recompute tier; filter failures
   const enriched = [];
   for (const sig of signals) {
+    const tier = deriveConfidenceTier(
+      sig.replication_score, sig.source_quality_score, sig.specificity_score,
+      sig.plausibility_score, sig.direction_score
+    );
+    if (tier === null) continue;
+
     const drug_name  = toTitleCase(sig.drug_name);
     const conditions = (sig.relevant_conditions ?? [condition]);
 
     for (const cname of conditions) {
       const resolvedId = conditionIdMap[cname.toLowerCase()] ?? 'CONDITION_ID_HERE';
       enriched.push({
-        ...sig,
-        drug_name,
+        ...sig, drug_name, confidence_tier: tier,
         conditionId:   resolvedId ?? 'CONDITION_ID_HERE',
         conditionName: cname,
         compoundId:    randomUUID(),
@@ -604,7 +624,15 @@ async function generateSQL(condition, conditionData, signals, supabaseUrl, supab
     out.push(`  plausibility_level   = EXCLUDED.plausibility_level,`);
     out.push(`  summary              = EXCLUDED.summary,`);
     out.push(`  mechanism_hypothesis = EXCLUDED.mechanism_hypothesis,`);
-    out.push(`  status               = EXCLUDED.status;`);
+    out.push(`  status               = EXCLUDED.status`);
+    out.push(`WHERE`);
+    out.push(`  COALESCE(EXCLUDED.replication_score,0) + COALESCE(EXCLUDED.source_quality_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.specificity_score,0) + COALESCE(EXCLUDED.plausibility_score,0) +`);
+    out.push(`  COALESCE(EXCLUDED.direction_score,0)`);
+    out.push(`  >`);
+    out.push(`  COALESCE(repurposing_signals.replication_score,0) + COALESCE(repurposing_signals.source_quality_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.specificity_score,0) + COALESCE(repurposing_signals.plausibility_score,0) +`);
+    out.push(`  COALESCE(repurposing_signals.direction_score,0);`);
     out.push('');
   }
 
