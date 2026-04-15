@@ -495,7 +495,7 @@ async function analyzeWithClaude(apiKey, drugClass, content) {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 8192,
+      max_tokens: 16000,
       system: FAERS_SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     }),
@@ -517,7 +517,25 @@ async function analyzeWithClaude(apiKey, drugClass, content) {
   try {
     return JSON.parse(jsonMatch[0]);
   } catch (e) {
-    throw new Error(`Failed to parse Claude JSON: ${e.message}\nRaw: ${jsonMatch[0]}`);
+    // Response may be truncated — extract every complete top-level object
+    const recovered = [];
+    let depth = 0, start = -1;
+    const text = jsonMatch[0];
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '{') { if (depth === 0) start = i; depth++; }
+      else if (text[i] === '}') {
+        depth--;
+        if (depth === 0 && start !== -1) {
+          try { recovered.push(JSON.parse(text.slice(start, i + 1))); } catch { /* skip malformed */ }
+          start = -1;
+        }
+      }
+    }
+    if (recovered.length > 0) {
+      process.stderr.write(`[warn] Claude JSON truncated — recovered ${recovered.length} complete object(s).\n`);
+      return recovered;
+    }
+    throw new Error(`Failed to parse Claude JSON: ${e.message}\nRaw: ${jsonMatch[0].slice(0, 500)}`);
   }
 }
 

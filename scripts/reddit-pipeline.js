@@ -190,7 +190,7 @@ async function analyzeWithClaude(apiKey, condition, posts) {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 4000,
+      max_tokens: 8000,
       system: buildSystemPrompt(condition),
       messages: [{ role: 'user', content: userMessage }],
     }),
@@ -498,8 +498,8 @@ async function main() {
     process.exit(0);
   }
 
-  // Step 2: Claude analysis (cap to 60 posts to stay within context)
-  const cappedPosts = posts.slice(0, 60);
+  // Step 2: Claude analysis (cap to 200 posts — needed to hit 20-mention minimum bar)
+  const cappedPosts = posts.slice(0, 200);
   if (cappedPosts.length < posts.length) {
     log(`        Capped to ${cappedPosts.length} highest-scored posts for Claude.`);
   }
