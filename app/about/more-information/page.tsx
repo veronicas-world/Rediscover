@@ -89,7 +89,7 @@ export default function MoreInformationPage() {
  {
  name:"OpenFDA pipeline",
  file:"scripts/openfda-pipeline.js",
- body:"Queries the FDA Adverse Event Reporting System (FAERS) via the OpenFDA REST API. Uses a two pass approach: Pass 1 queries female patients who reported gynecological or condition relevant reactions while taking the target drug. Pass 2 pulls a general sample of female patient reports for baseline context. Filters for reactions with two or more reports to exclude single report noise. Sends reaction frequency summaries to Claude for analysis. Each signal links directly to the live OpenFDA query URL for verification.",
+ body:"Queries the FDA Adverse Event Monitoring System (AEMS, formerly FAERS) via the OpenFDA REST API. Uses a two pass approach: Pass 1 queries female patients who reported gynecological or condition relevant reactions while taking the target drug. Pass 2 pulls a general sample of female patient reports for baseline context. Filters for reactions with two or more reports to exclude single report noise. Sends reaction frequency summaries to Claude for analysis. Each signal links directly to the live OpenFDA query URL for verification.",
  },
  {
  name:"ClinicalTrials.gov pipeline",

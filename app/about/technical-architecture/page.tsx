@@ -8,7 +8,7 @@ const SECTIONS = [
   {
     key: "pipelines",
     title: "Data Pipelines",
-    summary: "Six automated pipelines across PubMed, ClinicalTrials.gov, FDA FAERS, Open Targets Platform, EudraVigilance, and Reddit.",
+    summary: "Six automated pipelines across PubMed, ClinicalTrials.gov, FDA AEMS, Open Targets Platform, EudraVigilance, and Reddit.",
     content: (
       <div className="space-y-4">
         <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
@@ -26,9 +26,9 @@ const SECTIONS = [
             body: "Queries the ClinicalTrials.gov REST API v2 for active, completed, and recruiting trials targeting each condition. Trial phase, status, and intervention type are captured and stored alongside the primary signal.",
           },
           {
-            name: "FDA FAERS",
+            name: "FDA AEMS (Adverse Event Monitoring System), formerly FAERS, renamed March 11, 2026",
             tag: "Cross-Condition Signals",
-            body: "Queries the FDA Adverse Event Reporting System public API using a two-pass approach: first targeting gynecological and hormonal terms, then broadening to general reaction terms. Female patient reports are filtered and analyzed for signals suggesting off label benefit. URL encoding and pagination are handled to maximize coverage across all six conditions.",
+            body: "Queries the FDA AEMS public API (OpenFDA) using a two-pass approach: first targeting gynecological and hormonal terms, then broadening to general reaction terms. Female patient reports are filtered and analyzed for signals suggesting off label benefit. URL encoding and pagination are handled to maximize coverage across all six conditions.",
           },
           {
             name: "Open Targets Platform",
@@ -176,7 +176,7 @@ const SECTIONS = [
               },
               {
                 label: "Cross-Condition Signals",
-                body: "These signals are hypothesis generating by nature. Minimum requirements: the signal must appear in at least two independent evidence domains (published literature plus FAERS, adverse event data plus community reports, or similar cross-domain corroboration), with the same direction of effect and a plausible shared biological mechanism. Three or more formal source mentions pointing in the same direction also qualify. Vague similarity between conditions is not sufficient — a documented shared pathway is required.",
+                body: "These signals are hypothesis generating by nature. Minimum requirements: the signal must appear in at least two independent evidence domains (published literature plus FDA AEMS, adverse event data plus community reports, or similar cross-domain corroboration), with the same direction of effect and a plausible shared biological mechanism. Three or more formal source mentions pointing in the same direction also qualify. Vague similarity between conditions is not sufficient — a documented shared pathway is required.",
               },
               {
                 label: "Pathway Insights",
@@ -204,7 +204,7 @@ const SECTIONS = [
               { label: "Effect directionality", body: "Every signal must be classified as one of: improves, worsens, mixed, or unclear." },
               { label: "Replication", body: "One source is interesting. Two or more independent sources start to constitute a signal." },
               { label: "Confounding assessment", body: "Known confounders are flagged — drugs with multiple indications where symptom improvement may be indirect, forum populations reporting multiple concurrent therapies, and adverse event data that may reflect reporting bias rather than true incidence." },
-              { label: "Denominator awareness", body: "FAERS and community data do not provide true incidence rates. They are signal generating sources, not causal datasets. All signals from these sources are labeled accordingly and require corroboration before elevation above Emerging." },
+              { label: "Denominator awareness", body: "FDA AEMS and community data do not provide true incidence rates. They are signal generating sources, not causal datasets. All signals from these sources are labeled accordingly and require corroboration before elevation above Emerging." },
             ].map(({ label, body }) => (
               <div key={label} className="bg-white p-5" style={{ border: "1px solid #E0DDD8" }}>
                 <p className="font-semibold mb-1.5" style={{ color: "#1a1a1a" }}>{label}</p>

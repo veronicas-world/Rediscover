@@ -46,7 +46,7 @@ export default function CrossConditionPage() {
  Data sources
  </h2>
  <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
- FDA Adverse Event Reporting System (FAERS), a public database of real world patient reports submitted to the FDA. When a woman on a statin reports that her period pain improved, that appears here. We also pull from published population studies and observational research.
+ FDA Adverse Event Monitoring System (AEMS), a public database of real world patient reports submitted to the FDA (formerly FAERS, renamed March 2026). When a woman on a statin reports that her period pain improved, that appears here. We also pull from published population studies and observational research.
  </p>
  <p className="text-sm leading-relaxed mt-4" style={{ color: "#111" }}>
  WHEL also draws on the Open Targets Platform (platform.opentargets.org), a public resource developed by EMBL-EBI, the Wellcome Sanger Institute, and GlaxoSmithKline that aggregates genetic, genomic, and clinical evidence linking drug targets to diseases. Open Targets evidence scores reflect the strength of association between a drug target and a condition across multiple evidence types including genetic association, somatic mutations, known drugs, and literature.
@@ -58,7 +58,7 @@ export default function CrossConditionPage() {
  How signals are chosen
  </h2>
  <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
- We query FAERS for female patients taking specific drug classes (statins, GLP1 agonists, dopamine agonists, anti TNF biologics, and others) and look for any reported effects related to our six conditions. We then use AI to identify patterns across thousands of reports. Signals with 2 or more supporting reports are included. We err on the side of inclusion because filtering based on current assumptions is exactly the kind of bias this tool exists to counter.
+ We query FDA AEMS for female patients taking specific drug classes (statins, GLP1 agonists, dopamine agonists, anti TNF biologics, and others) and look for any reported effects related to our six conditions. We then use AI to identify patterns across thousands of reports. Signals with 2 or more supporting reports are included. We err on the side of inclusion because filtering based on current assumptions is exactly the kind of bias this tool exists to counter.
  </p>
  </section>
 
@@ -67,7 +67,7 @@ export default function CrossConditionPage() {
  Why it matters
  </h2>
  <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
- This is the least explored category in women&apos;s health research. Women often do not report incidental improvements in clinical trials unless the trial is designed to capture them. FAERS captures real world reports that would otherwise never be aggregated or analyzed.
+ This is the least explored category in women&apos;s health research. Women often do not report incidental improvements in clinical trials unless the trial is designed to capture them. FDA AEMS captures real world reports that would otherwise never be aggregated or analyzed.
  </p>
  </section>
 
@@ -76,7 +76,7 @@ export default function CrossConditionPage() {
  What the raw data looks like
  </h2>
  <p className="text-sm leading-relaxed" style={{ color:"#111" }}>
- Each signal card shows reaction counts (e.g. &ldquo;Pain n=11&rdquo;) drawn from FAERS reports. The n= number reflects how many reports in our sampled dataset mentioned that reaction. Citations link directly to the live FDA database query so anyone can verify.
+ Each signal card shows reaction counts (e.g. &ldquo;Pain n=11&rdquo;) drawn from FDA AEMS reports. The n= number reflects how many reports in our sampled dataset mentioned that reaction. Citations link directly to the live FDA database query so anyone can verify.
  </p>
  </section>
 

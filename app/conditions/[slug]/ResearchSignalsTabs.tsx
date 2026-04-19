@@ -142,7 +142,7 @@ function EffectDirectionPill({ direction }: { direction: string | null }) {
 // Derive a display label from a signal's sources array
 function getSourceLabel(sources: Source[]): string | null {
  const types = new Set(sources.map((s) => s.source_type));
- if (types.has("faers")) return "FDA FAERS";
+ if (types.has("faers")) return "FDA AEMS";
  if (types.has("pubmed")) return "PubMed";
  if (types.has("opentargets")) return "Open Targets";
  return null;
@@ -195,7 +195,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 // Collapsible citations with configurable colors.
 // PubMed sources render as linked paper titles with authors/journal.
-// FAERS sources render as reaction-category rows with report counts.
+// AEMS sources render as reaction-category rows with report counts.
 function CollapsibleSources({
  sources,
  linkColor ="#7A8B7A",
@@ -317,11 +317,11 @@ function CollapsibleSources({
  </div>
  )}
 
- {/* FAERS sources: query summary + reaction categories with counts */}
+ {/* AEMS sources: query summary + reaction categories with counts */}
  {faersSources.length > 0 && (
  <div>
  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: mutedColor }}>
- FDA Adverse Event Reports (FAERS)
+ FDA Adverse Event Monitoring System (AEMS)
  </p>
  {(() => {
  const querySummary = faersSources.find((s) =>
@@ -339,8 +339,8 @@ function CollapsibleSources({
  style={{ backgroundColor:"#F5F3EF", border:"1px solid #E0DDD8", color: textColor }}
  >
  <span style={{ color: mutedColor }}>
- {/* Strip"FDA FAERS Database Query:" prefix for a tighter label */}
- {(querySummary.title ??"").replace(/^FDA FAERS Database Query:\s*/i,"")}
+ {/* Strip stored "FDA FAERS/AEMS Database Query:" prefix for a tighter label */}
+ {(querySummary.title ??"").replace(/^FDA (FAERS|AEMS) Database Query:\s*/i,"")}
  </span>
  {querySummary.url && (
  <a
@@ -350,7 +350,7 @@ function CollapsibleSources({
  className="ml-2 hover:underline underline-offset-2 whitespace-nowrap"
  style={{ color: mutedColor, fontSize:"10px" }}
  >
- FDA FAERS <ExternalLinkIcon /> (raw FDA data)
+ FDA AEMS <ExternalLinkIcon /> (raw FDA data)
  </a>
  )}
  </div>
@@ -365,7 +365,7 @@ function CollapsibleSources({
  style={{ backgroundColor:"#F5F3EF", border:"1px solid #E0DDD8" }}
  >
  <span style={{ color: textColor }}>
- {(source.title ??"").replace(/^FAERS:\s*/i,"")}
+ {(source.title ??"").replace(/^(FAERS|AEMS):\s*/i,"")}
  </span>
  {source.url && (
  <a
@@ -728,7 +728,7 @@ function getSignalTab(signal: Signal):"direct" |"cross" |"caution" |"community" 
 
  const sourceTypes = signal.sources.map((s) => s.source_type).filter(Boolean);
 
- // If any source is FAERS or SIDER → Cross-Condition
+ // If any source is AEMS (formerly FAERS) or SIDER → Cross-Condition
  if (sourceTypes.some((t) => CROSS_SOURCE_TYPES.has(t!))) return"cross";
 
  // If any source is PubMed or ClinicalTrials → Direct Research
