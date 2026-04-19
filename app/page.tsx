@@ -1,4 +1,5 @@
 import Link from"next/link";
+import EvidenceCarousel from"./components/EvidenceCarousel";
 
 const CARD_STYLE = {
  border:"1px solid #E0DDD8",
@@ -115,6 +116,9 @@ export default function Home() {
  </div>
  </div>
  </section>
+
+ {/* ── Evidence Carousel ────────────────────────────────────────────── */}
+ <EvidenceCarousel />
 
  {/* ── Methodology ──────────────────────────────────────────────────── */}
  <section style={{ backgroundColor:"#EDEAE4", borderBottom:"1px solid #E0DDD8" }}>
