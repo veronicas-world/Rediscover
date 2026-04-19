@@ -74,7 +74,6 @@ export default function Home() {
  <div className="flex items-center gap-12 lg:gap-20">
  {/* Left: text content */}
  <div className="flex-1 min-w-0">
- <p className="section-label mb-5">Research Tool</p>
  <h1
  className="font-heading text-5xl sm:text-6xl font-normal mb-7 leading-tight"
  style={{ color:"#1a1a1a" }}
@@ -124,7 +123,6 @@ export default function Home() {
  <section style={{ backgroundColor:"#EDEAE4", borderBottom:"1px solid #E0DDD8" }}>
  <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
  <div className="mb-10">
- <p className="section-label mb-3">Signal Types</p>
  <h2
  className="font-heading text-2xl sm:text-3xl"
  style={{ color:"#1a1a1a" }}

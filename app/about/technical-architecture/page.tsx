@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import BackLink from "../../components/BackLink";
 
 const SECTIONS = [
   {
@@ -344,13 +345,7 @@ export default function TechnicalArchitecturePage() {
         </div>
 
         <div style={{ borderTop: "1px solid #E0DDD8", paddingTop: "2rem", marginTop: "2rem" }}>
-          <Link
-            href="/about"
-            className="text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: "#4D5E4D" }}
-          >
-            {"\u2190\ufe0e"} Back to About
-          </Link>
+          <BackLink href="/about" label="Back to About" />
         </div>
       </div>
     </main>

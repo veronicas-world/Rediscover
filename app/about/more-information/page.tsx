@@ -1,4 +1,5 @@
 import Link from"next/link";
+import BackLink from"../../components/BackLink";
 
 export const metadata = {
  title:"More Information",
@@ -182,13 +183,7 @@ export default function MoreInformationPage() {
  </section>
 
  <div style={{ borderTop:"1px solid #E0DDD8", paddingTop:"2rem" }}>
- <Link
- href="/"
- className="text-sm font-medium transition-opacity hover:opacity-70"
- style={{ color:"#4D5E4D" }}
- >
- {"←︎"} Back to home
- </Link>
+ <BackLink href="/" label="Back to home" />
  </div>
 
  </div>

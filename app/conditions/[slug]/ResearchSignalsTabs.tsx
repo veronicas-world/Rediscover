@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from"react";
+import ExternalLinkIcon from"../../components/ExternalLinkIcon";
 
 interface Source {
  id: string;
@@ -171,7 +172,7 @@ function SourceBadge({ sources }: { sources: Source[] }) {
        className={className}
        style={{ ...badgeStyle, textDecoration: "none" }}
      >
-       Source: {label} ↗
+       Source: {label} <ExternalLinkIcon />
      </a>
    );
  }
@@ -349,7 +350,7 @@ function CollapsibleSources({
  className="ml-2 hover:underline underline-offset-2 whitespace-nowrap"
  style={{ color: mutedColor, fontSize:"10px" }}
  >
- FDA FAERS ↗ (raw FDA data)
+ FDA FAERS <ExternalLinkIcon /> (raw FDA data)
  </a>
  )}
  </div>
@@ -374,7 +375,7 @@ function CollapsibleSources({
  className="ml-3 shrink-0 hover:underline underline-offset-2 whitespace-nowrap"
  style={{ color: mutedColor, fontSize:"10px" }}
  >
- verify ↗ (raw FDA data)
+ verify <ExternalLinkIcon /> (raw FDA data)
  </a>
  )}
  </li>
@@ -458,7 +459,7 @@ function CollapsibleSources({
  className="font-medium hover:underline underline-offset-2"
  style={{ color: linkColor }}
  >
- {source.title ?? source.external_id ?? source.url} ↗
+ {source.title ?? source.external_id ?? source.url} <ExternalLinkIcon />
  </a>
  ) : (
  <span className="font-medium" style={{ color: '#333' }}>

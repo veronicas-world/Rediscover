@@ -249,7 +249,6 @@ export default function EvidenceCarousel() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
         {/* Section heading */}
         <div className="mb-10">
-          <p className="section-label mb-3">Methodology</p>
           <h2
             className="font-heading text-2xl sm:text-3xl mb-2"
             style={{ color: "#1a1a1a" }}
