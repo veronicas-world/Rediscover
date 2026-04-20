@@ -11,10 +11,10 @@ const TIER_COLORS: Record<TierKey, { text: string; bg: string; bar: string }> = 
 };
 
 const TIERS: { key: TierKey; label: string; desc: string; range: string }[] = [
-  { key: "strong",      label: "Strong",      desc: "Multiple independent RCTs with mechanistic support.", range: "8.0–10.0" },
-  { key: "moderate",    label: "Moderate",    desc: "Replicated evidence across 2 or more source arms.",   range: "6.0–7.9"  },
-  { key: "emerging",    label: "Emerging",    desc: "Plausible signal with limited replication.",          range: "4.0–5.9"  },
-  { key: "exploratory", label: "Exploratory", desc: "Hypothesis generating; single arm only.",             range: "1.0–3.9"  },
+  { key: "strong",      label: "Strong",      desc: "Multiple independent RCTs with mechanistic support.", range: "9–10" },
+  { key: "moderate",    label: "Moderate",    desc: "Replicated evidence across 2 or more source arms.",   range: "7–8"  },
+  { key: "emerging",    label: "Emerging",    desc: "Plausible signal with limited replication.",          range: "4–6"  },
+  { key: "exploratory", label: "Exploratory", desc: "Hypothesis generating; single arm only.",             range: "1–3"  },
 ];
 
 const SIGNAL_TYPES = [
@@ -249,13 +249,13 @@ export default async function Home() {
               </h2>
               <p style={{ color: "#444", fontSize: 15, lineHeight: 1.65, maxWidth: "52ch" }}>
                 Every signal in WHEL is scored before it enters the database. Each record is assessed
-                across five dimensions — replication, source quality, specificity, biological
-                plausibility, and consistency of direction — and classified into a confidence tier.
-                Sources and scores are visible on every card.
+                across five dimensions: replication, source quality, specificity, biological
+                plausibility, and consistency of direction. Results are classified into a confidence
+                tier, and sources and scores are visible on every card.
               </p>
               <div style={{ marginTop: 24 }}>
                 <Link
-                  href="/about/direct-research"
+                  href="/technical-architecture"
                   style={{
                     ...MONO,
                     fontSize: "12px",
@@ -284,9 +284,6 @@ export default async function Home() {
               >
                 <span style={{ ...MONO, fontSize: "10.5px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#777" }}>
                   Confidence tiers
-                </span>
-                <span style={{ ...MONO, fontSize: "10.5px", letterSpacing: "0.2em", color: "#777" }}>
-                  5-DIM / 10 pts
                 </span>
               </div>
               {TIERS.map((row, i) => (
@@ -499,12 +496,6 @@ export default async function Home() {
                 How signals are categorized
               </h2>
             </div>
-            <Link
-              href="/about/direct-research"
-              style={{ fontSize: 14, color: "#4D5E4D", whiteSpace: "nowrap" }}
-            >
-              Read methodology →
-            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -555,32 +546,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Scope note ────────────────────────────────────────────────────── */}
-      <section>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-24">
-          <div style={{ borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #1a1a1a", padding: "56px 0" }}>
-            <p
-              className="font-heading"
-              style={{
-                maxWidth: "720px",
-                textAlign: "left",
-                fontSize: "clamp(1.1rem, 2vw, 1.6rem)",
-                lineHeight: 1.4,
-                margin: 0,
-                letterSpacing: "-0.008em",
-                color: "#555",
-              }}
-            >
-              WHEL is a research instrument, not a treatment recommendation engine. It aggregates and
-              scores evidence that already exists in the published literature, trial registries,
-              regulatory adverse event databases, and patient community forums, and links every result
-              back to its primary source. It is intended for researchers, clinicians, and informed
-              patients investigating drug repurposing candidates for conditions that remain
-              structurally underfunded and understudied.
-            </p>
-          </div>
-        </div>
-      </section>
 
     </main>
   );
