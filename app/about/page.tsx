@@ -47,10 +47,14 @@ export default function AboutPage() {
  </h2>
  <div className="space-y-4 text-sm leading-relaxed" style={{ color: "#111" }}>
  <p>
- Medical knowledge has structural blind spots. The NIH did not require inclusion of women in clinical research until 1993, which means the past thirty years have been spent catching up from a standing start. Conditions that affect women most severely have historically been underfunded, and where a research base exists at all, it is thin.
+ Medical knowledge has structural blind spots. The NIH did not require inclusion of women in clinical research until 1993{" "}
+ <a href="https://www.congress.gov/bill/103rd-congress/senate-bill/1" target="_blank" rel="noopener noreferrer" className="hover:underline underline-offset-2" style={{ color: "#4D5E4D" }}>[NIH Revitalization Act of 1993]</a>,{" "}
+ which means the past thirty years have been spent catching up from a standing start. Conditions that affect women most severely have historically been underfunded, and where a research base exists at all, it is thin.
  </p>
  <p>
- The consequences are not abstract. Endometriosis affects up to 10% of women of reproductive age, yet the average diagnostic delay is still 7 to 10 years, and in 2026 there is no pharmaceutical treatment that addresses the underlying condition rather than suppressing symptoms. PMDD is clinically severe and cyclical, yet is still treated primarily with SSRIs prescribed imprecisely. Adenomyosis, vulvodynia, and PCOS are chronically underrepresented in the research literature. Menopause — a biological transition affecting every woman who lives long enough — is widely acknowledged to be poorly managed.
+ The consequences are not abstract. Endometriosis affects up to 10% of women of reproductive age, yet the average diagnostic delay is still 7 to 10 years{" "}
+ <a href="https://pubmed.ncbi.nlm.nih.gov/21718982/" target="_blank" rel="noopener noreferrer" className="hover:underline underline-offset-2" style={{ color: "#4D5E4D" }}>[Nnoaham et al., 2011]</a>,{" "}
+ and in 2026 there is no pharmaceutical treatment that addresses the underlying condition rather than suppressing symptoms. PMDD is clinically severe and cyclical, yet is still treated primarily with SSRIs prescribed imprecisely. Adenomyosis, vulvodynia, and PCOS are chronically underrepresented in the research literature. Menopause — a biological transition affecting every woman who lives long enough — is widely acknowledged to be poorly managed.
  </p>
  <p>
  The problem is not that researchers do not care. It is structural: poorly characterized mechanisms make conditions harder to study, which makes them less fundable, which means the mechanisms remain poorly characterized. It is a feedback loop. WHEL is an attempt to interrupt it.
