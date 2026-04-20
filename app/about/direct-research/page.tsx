@@ -68,6 +68,17 @@ export default function DirectResearchPage() {
             </p>
           </section>
 
+          <section>
+            <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
+              Inclusion criteria
+            </h2>
+            <div className="p-5" style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
+                The highest-confidence category carries the highest bar. Minimum requirements: at least one peer reviewed human study with clearly identified population, drug, outcome, and effect direction. Signals are excluded if they are mechanistic only with no human data. Preferred: at least one prospective study, trial, or meta-analysis. Quality criteria prioritize replication and outcome relevance over citation count — a highly cited older paper with no replication is not equivalent to two recent independent studies with similar findings.
+              </p>
+            </div>
+          </section>
+
           <div style={{ borderTop: "1px solid #E0DDD8", paddingTop: "2rem" }}>
             <BackLink href="/" label="Back to home" />
           </div>

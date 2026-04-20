@@ -68,6 +68,17 @@ export default function PathwaysPage() {
             </p>
           </section>
 
+          <section>
+            <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
+              Inclusion criteria
+            </h2>
+            <div className="p-5" style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
+                Pathway signals are powerful but easy to overinterpret. Minimum requirements: a specific named mechanism (mast cell activation, prostaglandin signaling, androgen receptor modulation — not generic &ldquo;inflammation&rdquo;), at least one known drug target link, and at least one disease pathway link. Pathway-only signals with no human or pharmacovigilance corroboration are classified Exploratory and displayed with explicit framing. Pathway signals paired with human observation are classified Emerging or Moderate. Pathway signals with human observation plus independent replication are classified Strong.
+              </p>
+            </div>
+          </section>
+
           <div style={{ borderTop: "1px solid #E0DDD8", paddingTop: "2rem" }}>
             <BackLink href="/" label="Back to home" />
           </div>

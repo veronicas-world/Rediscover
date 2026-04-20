@@ -13,6 +13,7 @@ const CARDS = [
       "A concrete example: several small randomized controlled trials have examined melatonin supplementation for endometriosis related pain. These appear in the Direct Research arm because they were specifically designed to investigate endometriosis. The evidence is preliminary — small sample sizes, limited follow-up — but the signal is there, and it is the kind of signal that should be informing the next generation of trial designs. The fact that melatonin is rarely mentioned in clinical conversations about endometriosis treatment is exactly what this arm is designed to make visible.",
       "What to look for: A small number of strong evidence signals for a given condition suggests it is genuinely understudied at the trial level. A cluster of preliminary signals may indicate an emerging research area. The evidence strength label on each card reflects study design and sample size, not just whether results were positive.",
     ],
+    inclusionCriteria: "The highest-confidence category carries the highest bar. Minimum requirements: at least one peer reviewed human study with clearly identified population, drug, outcome, and effect direction. Signals are excluded if they are mechanistic only with no human data. Preferred: at least one prospective study, trial, or meta-analysis. Quality criteria prioritize replication and outcome relevance over citation count — a highly cited older paper with no replication is not equivalent to two recent independent studies with similar findings.",
   },
   {
     key: "cross",
@@ -25,6 +26,7 @@ const CARDS = [
       "Drug classes of particular interest in this arm include statins, SSRIs, dopamine agonists (cabergoline, bromocriptine), and GLP-1 receptor agonists. GLP-1s are especially active right now: the wave of Ozempic and Wegovy trials has generated an enormous amount of data about hormonal and inflammatory effects in women, and researchers are only beginning to analyze what that secondary data contains.",
       "What to look for: Cross-condition signals with multiple independent sources (FDA AEMS reports plus a secondary trial endpoint, for example) are stronger candidates for follow-up than signals from a single source.",
     ],
+    inclusionCriteria: "These signals are hypothesis generating by nature. Minimum requirements: the signal must appear in at least two independent evidence domains (published literature plus FDA AEMS, adverse event data plus community reports, or similar cross-domain corroboration), with the same direction of effect and a plausible shared biological mechanism. Three or more formal source mentions pointing in the same direction also qualify. Vague similarity between conditions is not sufficient — a documented shared pathway is required.",
   },
   {
     key: "pathways",
@@ -36,6 +38,7 @@ const CARDS = [
       "Two examples. Tamoxifen is a breast cancer drug that works by blocking estrogen receptors. It is documented to cause or worsen adenomyosis in some patients. This is pharmacologically informative: if blocking estrogen receptors exacerbates adenomyosis, estrogen receptor pathways are central to adenomyosis biology — which tells us what drug classes are worth investigating as treatments. Separately, Filgrastim, a G-CSF receptor agonist approved for neutropenia, appears in the endometriosis arm because G-CSF modulates immune tolerance and has been explored in recurrent implantation failure. The immune dysregulation hypothesis in endometriosis may involve altered myeloid cell function, a connection invisible without target level pathway analysis.",
       "What to look for: Pathway Insights signals that implicate a well characterized biological pathway (estrogen receptors, inflammatory cascades, dopamine signaling, immune tolerance) are more interpretable than purely empirical associations. The Pathway Insight field on each signal card names the specific mechanism. Signals with Open Targets evidence scores above 0.5 reflect stronger genetic or clinical association between the drug target and the condition.",
     ],
+    inclusionCriteria: "Pathway signals are powerful but easy to overinterpret. Minimum requirements: a specific named mechanism (mast cell activation, prostaglandin signaling, androgen receptor modulation — not generic \"inflammation\"), at least one known drug target link, and at least one disease pathway link. Pathway-only signals with no human or pharmacovigilance corroboration are classified Exploratory and displayed with explicit framing. Pathway signals paired with human observation are classified Emerging or Moderate. Pathway signals with human observation plus independent replication are classified Strong.",
   },
   {
     key: "community",
@@ -47,6 +50,7 @@ const CARDS = [
       "One early finding from this arm: Meloxicam, an NSAID, is mentioned consistently across multiple endometriosis communities as more effective for pelvic pain than standard ibuprofen. This is pharmacologically plausible — Meloxicam is a preferential COX-2 inhibitor with a different selectivity profile than ibuprofen, which is a non-selective COX inhibitor. The distinction matters because COX-2 is the isoform primarily responsible for the prostaglandin synthesis that drives endometriosis related pain. There are very few formal studies on Meloxicam specifically for endometriosis. That gap between community reported experience and formal research is exactly what this arm is designed to make visible.",
       "What to look for: Community signals that align with a mechanistically plausible hypothesis are stronger candidates for follow-up than purely anecdotal patterns. A signal appearing across multiple subreddits for the same condition, or across multiple conditions, is more likely to reflect a real pharmacological effect than a single community observation.",
     ],
+    inclusionCriteria: "This category requires the clearest guardrails. Minimum requirements: 25 or more distinct posts with specific exposure-outcome language from unique users. Raw volume is insufficient — the framework requires specificity (not \"metformin changed things\" but \"after starting metformin, my cycles shortened and acne improved\"), directionality (improvement, worsening, or no change), and unique-user diversity across threads. Obvious reposts, promotional content, and low-content comments are excluded. Signals with 50 or more qualifying mentions and consistent directional language are eligible for Moderate classification, particularly when triangulated with a formal source. WHEL also tracks which forums a signal appears in, the time period of discussion, and whether the signal persists over time or reflects a temporary spike.",
   },
 ];
 
@@ -105,6 +109,22 @@ export default function SignalTypesAccordion() {
                   {card.paragraphs.map((p, i) => (
                     <p key={i}>{p}</p>
                   ))}
+                </div>
+
+                {/* Inclusion criteria */}
+                <div
+                  className="mt-6 p-5"
+                  style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}
+                >
+                  <p
+                    className="text-[10px] font-semibold uppercase tracking-widest mb-2"
+                    style={{ color: "#4D5E4D" }}
+                  >
+                    Inclusion criteria
+                  </p>
+                  <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
+                    {card.inclusionCriteria}
+                  </p>
                 </div>
               </div>
             )}

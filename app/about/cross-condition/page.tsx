@@ -80,6 +80,17 @@ export default function CrossConditionPage() {
  </p>
  </section>
 
+ <section>
+ <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
+ Inclusion criteria
+ </h2>
+ <div className="p-5" style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}>
+ <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
+ These signals are hypothesis generating by nature. Minimum requirements: the signal must appear in at least two independent evidence domains (published literature plus FDA AEMS, adverse event data plus community reports, or similar cross-domain corroboration), with the same direction of effect and a plausible shared biological mechanism. Three or more formal source mentions pointing in the same direction also qualify. Vague similarity between conditions is not sufficient — a documented shared pathway is required.
+ </p>
+ </div>
+ </section>
+
  <div style={{ borderTop:"1px solid #E0DDD8", paddingTop:"2rem" }}>
  <BackLink href="/" label="Back to home" />
  </div>

@@ -68,6 +68,17 @@ export default function CommunityReportsPage() {
             </p>
           </section>
 
+          <section>
+            <h2 className="font-heading text-xl font-bold mb-5" style={{ color: "#1a1a1a" }}>
+              Inclusion criteria
+            </h2>
+            <div className="p-5" style={{ backgroundColor: "#F5F3EF", border: "1px solid #E0DDD8" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
+                This category requires the clearest guardrails. Minimum requirements: 25 or more distinct posts with specific exposure-outcome language from unique users. Raw volume is insufficient — the framework requires specificity (not &ldquo;metformin changed things&rdquo; but &ldquo;after starting metformin, my cycles shortened and acne improved&rdquo;), directionality (improvement, worsening, or no change), and unique-user diversity across threads. Obvious reposts, promotional content, and low-content comments are excluded. Signals with 50 or more qualifying mentions and consistent directional language are eligible for Moderate classification, particularly when triangulated with a formal source. WHEL also tracks which forums a signal appears in, the time period of discussion, and whether the signal persists over time or reflects a temporary spike.
+              </p>
+            </div>
+          </section>
+
           <div
             className="p-5"
             style={{ backgroundColor: "#F0F5FB", border: "1px solid #B8CEDD" }}
