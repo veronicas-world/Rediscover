@@ -280,7 +280,7 @@ const SECTIONS = [
             },
             {
               label: "Data freshness",
-              body: "The signal database reflects a point-in-time snapshot based on when pipelines were last run. New literature and adverse event reports are not captured automatically.",
+              body: "The signal database reflects a point-in-time snapshot based on when pipelines were last run. New literature and adverse event reports are not captured automatically. Last pipeline run: March 2026.",
             },
             {
               label: "Reddit data quality",

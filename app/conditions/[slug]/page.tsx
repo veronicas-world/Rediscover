@@ -114,6 +114,11 @@ export default async function ConditionDetailPage({
  {condition.description}
  </p>
  )}
+
+ {/* Freshness timestamp */}
+ <p className="text-xs mt-4" style={{ color:"#999" }}>
+ Signals last updated: March 2026
+ </p>
  </div>
  </div>
 
@@ -220,7 +225,7 @@ export default async function ConditionDetailPage({
  </p>
  </div>
 
- <ResearchSignalsTabs signals={(signals ?? []) as unknown as Signal[]} />
+ <ResearchSignalsTabs signals={(signals ?? []) as unknown as Signal[]} conditionSlug={slug} />
  </div>
 
  </div>

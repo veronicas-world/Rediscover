@@ -568,6 +568,34 @@ function SignalCard({ signal }: { signal: Signal }) {
  </div>
  )}
 
+ {/* Safety note — shown for ulipristal acetate / SPRMs */}
+ {(signal.compounds?.name ?? "").toLowerCase().includes("ulipristal") && (
+ <div
+ className="flex gap-3 items-start p-4 mb-4"
+ style={{ backgroundColor: "#FEF3E2", border: "1px solid #F0C060" }}
+ >
+ <svg
+ width="15"
+ height="15"
+ viewBox="0 0 24 24"
+ fill="none"
+ stroke="currentColor"
+ strokeWidth="2"
+ strokeLinecap="round"
+ strokeLinejoin="round"
+ className="mt-0.5 shrink-0"
+ style={{ color: "#B45309" }}
+ >
+ <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+ <line x1="12" y1="9" x2="12" y2="13" />
+ <line x1="12" y1="17" x2="12.01" y2="17" />
+ </svg>
+ <p className="text-sm leading-relaxed" style={{ color: "#78350F" }}>
+   Ulipristal acetate was suspended in the EU in 2020 following reports of serious liver injury (hepatotoxicity). The European Medicines Agency recommended suspension of all marketing authorizations.
+ </p>
+ </div>
+ )}
+
  {/* Body */}
  <div className="space-y-4">
  {signal.summary && (
@@ -881,7 +909,7 @@ function PathwaySignalCard({ signal }: { signal: Signal }) {
 
 type Tab ="direct" |"cross" |"caution" |"community";
 
-export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) {
+export default function ResearchSignalsTabs({ signals, conditionSlug }: { signals: Signal[]; conditionSlug?: string }) {
  const [activeTab, setActiveTab] = useState<Tab>("direct");
 
  const directSignals = signals.filter((s) => getSignalTab(s) ==="direct");
@@ -953,6 +981,11 @@ export default function ResearchSignalsTabs({ signals }: { signals: Signal[] }) 
  </EvidenceGroup>
  ))}
  </div>
+ )}
+ {conditionSlug === "vulvodynia" && !directSignals.some((s) => s.confidence_tier === "Strong" || (s.evidence_strength ?? "").toLowerCase() === "strong") && (
+ <p className="text-xs leading-relaxed mb-4" style={{ color: "#999" }}>
+ Vulvodynia has no Strong Evidence signals in our database. This reflects the broader research landscape: vulvodynia remains one of the least funded chronic pain conditions affecting women, with few large-scale clinical trials completed to date.
+ </p>
  )}
  {directSignals.length < 2 && (
  <div className=" p-4" style={{ backgroundColor:"#F5F3EF", border:"1px solid #E0DDD8" }}>
