@@ -302,9 +302,15 @@ function CollapsibleSources({
  </span>
  )}
  {source.external_id && (
- <span className="ml-1" style={{ color: mutedColor }}>
+ <a
+ href={`https://pubmed.ncbi.nlm.nih.gov/${source.external_id}`}
+ target="_blank"
+ rel="noopener noreferrer"
+ className="ml-1 hover:underline underline-offset-2"
+ style={{ color: mutedColor }}
+ >
  · PMID {source.external_id}
- </span>
+ </a>
  )}
  {source.key_finding_excerpt && (
  <p className="mt-1.5 italic leading-relaxed" style={{ color: mutedColor }}>
