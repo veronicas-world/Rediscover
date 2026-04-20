@@ -46,7 +46,7 @@ export default function DirectResearchPage() {
               Data sources
             </h2>
             <p className="text-sm leading-relaxed" style={{ color: "#111" }}>
-              WHEL pulls Direct Research signals from two sources. PubMed (via the NCBI Entrez API) is the primary database for published biomedical literature, maintained by the National Library of Medicine. Searches are condition specific and filtered for relevance to drug or therapeutic intervention. ClinicalTrials.gov (via the ClinicalTrials.gov REST API v2) is the NIH registry of publicly and privately funded clinical studies. WHEL captures active, completed, and recruiting trials, including trial phase, intervention type, and enrollment status. Each signal is analyzed by a language model for evidence strength classification: Strong, Moderate, Preliminary, or Theoretical.
+              WHEL pulls Direct Research signals from two sources. PubMed (via the NCBI Entrez API) is the primary database for published biomedical literature, maintained by the National Library of Medicine. Searches are condition specific and filtered for relevance to drug or therapeutic intervention. ClinicalTrials.gov (via the ClinicalTrials.gov REST API v2) is the NIH registry of publicly and privately funded clinical studies. WHEL captures active, completed, and recruiting trials, including trial phase, intervention type, and enrollment status. Each signal is analyzed by a language model for evidence strength classification: Strong, Moderate, Emerging, or Exploratory.
             </p>
           </section>
 

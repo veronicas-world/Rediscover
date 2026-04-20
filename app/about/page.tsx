@@ -84,7 +84,7 @@ export default function AboutPage() {
  WHEL currently covers six conditions — endometriosis, PMDD, PCOS, adenomyosis, vulvodynia, and menopause — and organizes evidence into four research arms. Direct Research pulls published studies and active clinical trials specifically targeting each condition. Cross-Condition Signals identifies drugs developed for other purposes where women incidentally reported benefit, drawing on the FDA adverse event database and secondary endpoints buried in unrelated trials. Pathway Insights surfaces drugs that worsen conditions — because understanding what makes something worse is often a legitimate path to understanding what drives it. Community Forum Reports mines consistent treatment patterns across condition specific subreddits, clearly labeled as community signal rather than clinical evidence.
  </p>
  <p>
- Each signal is classified by evidence strength — Strong, Moderate, Preliminary, or Theoretical — and every result links to its source. The goal is not to tell anyone what to take. It is to make visible the hypotheses that exist in the data but have not yet been formally investigated.
+ Each signal is classified by evidence strength — Strong, Moderate, Emerging, or Exploratory — and every result links to its source. The goal is not to tell anyone what to take. It is to make visible the hypotheses that exist in the data but have not yet been formally investigated.
  </p>
  <p>
  This is a starting point. The plan is to expand the condition set, improve the pipelines, and incorporate feedback from researchers, clinicians, and patients about which gaps matter most.
