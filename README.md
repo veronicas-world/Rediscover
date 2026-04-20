@@ -1,4 +1,4 @@
-This is the WHEL (Women's Health Evidence Lab) research tool — a drug repurposing signal aggregator for underresearched female hormonal conditions.
+This is the WHEL (Women's Health Evidence Lab) research tool — a drug repurposing signal aggregator for under-researched female hormonal conditions.
 
 ## Data Sources
 

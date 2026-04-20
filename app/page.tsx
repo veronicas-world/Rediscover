@@ -156,7 +156,7 @@ export default async function Home() {
             className="font-heading font-normal leading-tight"
             style={{ color: "#1a1a1a", fontSize: "clamp(2.75rem, 6.5vw, 5.75rem)", marginBottom: 32 }}
           >
-            Addressing the data gap in underresearched female hormonal conditions
+            Addressing the data gap in under-researched female hormonal conditions
           </h1>
           <p
             className="text-base sm:text-lg leading-relaxed max-w-2xl"
@@ -164,7 +164,7 @@ export default async function Home() {
           >
             WHEL is a drug repurposing research tool that aggregates and analyzes data from published
             clinical literature, trial registries, regulatory adverse event databases, and patient
-            community forums to identify therapeutic candidates for underresearched female hormonal
+            community forums to identify therapeutic candidates for under-researched female hormonal
             conditions. Signals are organized by source type and evidence strength, and every result
             links to its primary source.
           </p>
@@ -367,8 +367,7 @@ export default async function Home() {
             style={{ borderTop: "1px solid #1a1a1a", borderLeft: "1px solid #1a1a1a" }}
           >
             {conditionsWithStats.map((c, i) => {
-              const firstSentence = c.description?.split(/\.\s+/)[0];
-              const blurb = firstSentence ? firstSentence + "." : "";
+              const blurb = c.description ?? "";
               const total = Object.values(c.tierCounts).reduce((a, b) => a + b, 0);
               const tierOrder: TierKey[] = ["strong", "moderate", "emerging", "exploratory"];
               return (
