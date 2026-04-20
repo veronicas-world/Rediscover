@@ -255,7 +255,7 @@ export default async function Home() {
               </p>
               <div style={{ marginTop: 24 }}>
                 <Link
-                  href="/technical-architecture"
+                  href="/about/technical-architecture"
                   style={{
                     ...MONO,
                     fontSize: "12px",
