@@ -69,19 +69,25 @@ export default function Home() {
  <main className="flex-1 flex flex-col">
 
  {/* ── Hero ──────────────────────────────────────────────────────────── */}
- <section style={{ backgroundColor:"#fff", borderBottom:"1px solid #E0DDD8" }}>
- <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28 lg:py-32">
- <div className="flex items-center gap-12 lg:gap-20">
- {/* Left: text content */}
- <div className="flex-1 min-w-0">
+ <section className="relative overflow-hidden" style={{ backgroundColor:"#fff", borderBottom:"1px solid #E0DDD8" }}>
+ {/* Subtle grain texture overlay */}
+ <div
+ aria-hidden="true"
+ className="absolute inset-0 pointer-events-none"
+ style={{
+ backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E")`,
+ zIndex:0,
+ }}
+ />
+ <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:py-40" style={{ zIndex:1 }}>
  <h1
- className="font-heading text-5xl sm:text-6xl font-normal mb-7 leading-tight"
- style={{ color:"#1a1a1a" }}
+ className="font-heading font-normal mb-8 leading-tight"
+ style={{ color:"#1a1a1a", fontSize:"clamp(2.75rem, 6.5vw, 5.75rem)" }}
  >
  Addressing the data gap in underresearched female hormonal conditions
  </h1>
  <p
- className="text-base sm:text-lg mb-9 leading-relaxed max-w-xl"
+ className="text-base sm:text-lg mb-10 leading-relaxed max-w-2xl"
  style={{ color:"#111" }}
  >
  WHEL is a drug repurposing research tool that aggregates and analyzes data from published clinical literature, trial registries, regulatory adverse event databases, and patient community forums to identify therapeutic candidates for underresearched female hormonal conditions. Signals are organized by source type and evidence strength, and every result links to its primary source.
@@ -92,26 +98,15 @@ export default function Home() {
  className="inline-flex items-center justify-center px-6 py-3 text-white text-sm font-medium transition-opacity hover:opacity-90"
  style={{ backgroundColor:"#4D5E4D", borderRadius:"0" }}
  >
- Browse Conditions
+ Browse conditions →
  </Link>
  <Link
  href="/search"
  className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium transition-opacity hover:opacity-80"
  style={{ backgroundColor:"transparent", border:"1px solid #4D5E4D", color:"#4D5E4D", borderRadius:"0" }}
  >
- Search Database
+ Search database
  </Link>
- </div>
- </div>
-
- {/* Right: Venn logo — hidden on mobile */}
- <div className="hidden lg:flex items-center justify-center shrink-0">
- <svg viewBox="0 0 24 24" width="300" height="300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
- <circle cx="9" cy="9" r="7" stroke="#4D5E4D" strokeWidth="0.75" fillOpacity="0.08" fill="#4D5E4D"/>
- <circle cx="15" cy="9" r="7" stroke="#4D5E4D" strokeWidth="0.75" fillOpacity="0.08" fill="#4D5E4D"/>
- <circle cx="12" cy="15" r="7" stroke="#4D5E4D" strokeWidth="0.75" fillOpacity="0.08" fill="#4D5E4D"/>
- </svg>
- </div>
  </div>
  </div>
  </section>
