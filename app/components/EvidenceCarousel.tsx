@@ -261,35 +261,60 @@ export default function EvidenceCarousel() {
         </div>
 
         {/* Carousel */}
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <ArrowButton
-            direction="left"
-            onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-            disabled={current === 0}
-          />
+        <div className="flex flex-col">
 
-          {/* Viewport */}
-          <div style={{ flex: 1, overflow: "hidden" }}>
-            <div
-              style={{
-                display: "flex",
-                transform: `translateX(-${current * 100}%)`,
-                transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              }}
-            >
-              {CARDS.map((card, i) => (
-                <div key={i} style={{ flex: "0 0 100%", minWidth: 0 }}>
-                  <CardContent card={card} />
-                </div>
-              ))}
+          {/* Card + desktop side arrows */}
+          <div className="flex items-center gap-4">
+            {/* Left arrow: desktop only */}
+            <div className="hidden md:block">
+              <ArrowButton
+                direction="left"
+                onClick={() => setCurrent((c) => Math.max(0, c - 1))}
+                disabled={current === 0}
+              />
+            </div>
+
+            {/* Viewport: full width on mobile, flex-1 on desktop */}
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <div
+                style={{
+                  display: "flex",
+                  transform: `translateX(-${current * 100}%)`,
+                  transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
+                {CARDS.map((card, i) => (
+                  <div key={i} style={{ flex: "0 0 100%", minWidth: 0 }}>
+                    <CardContent card={card} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right arrow: desktop only */}
+            <div className="hidden md:block">
+              <ArrowButton
+                direction="right"
+                onClick={() => setCurrent((c) => Math.min(total - 1, c + 1))}
+                disabled={current === total - 1}
+              />
             </div>
           </div>
 
-          <ArrowButton
-            direction="right"
-            onClick={() => setCurrent((c) => Math.min(total - 1, c + 1))}
-            disabled={current === total - 1}
-          />
+          {/* Mobile arrows: centered below card, hidden on desktop */}
+          <div className="flex md:hidden items-center justify-center gap-6 mt-4">
+            <ArrowButton
+              direction="left"
+              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
+              disabled={current === 0}
+            />
+            <ArrowButton
+              direction="right"
+              onClick={() => setCurrent((c) => Math.min(total - 1, c + 1))}
+              disabled={current === total - 1}
+            />
+          </div>
+
         </div>
 
         {/* Counter + dot indicators */}
