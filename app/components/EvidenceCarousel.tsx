@@ -58,7 +58,7 @@ const CARDS: CarouselCard[] = [
       { label: "Direct Research",           desc: "requires at least one peer-reviewed human study with clear population, drug, outcome, and effect direction" },
       { label: "Cross-Condition Signals",   desc: "requires the signal in at least two independent evidence domains with a shared mechanism" },
       { label: "Pathway Insights",          desc: "requires a specific named mechanism, at least one drug-target link, and one disease-pathway link" },
-      { label: "Community Forum Reports",   desc: "requires 25 or more distinct posts with specific exposure-outcome language from unique users" },
+      { label: "Community Forum Reports",   desc: "requires 5 or more distinct posts with specific exposure-outcome language from unique users" },
     ],
   },
   {

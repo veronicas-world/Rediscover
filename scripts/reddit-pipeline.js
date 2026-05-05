@@ -141,25 +141,25 @@ function buildSystemPrompt(condition) {
     `Identify any drugs, supplements, or compounds that multiple women report as helpful, ` +
     `with emphasis on treatments that were not originally developed for this condition. ` +
     `Look for off label use, unexpected benefits, and treatments that surprised people. ` +
-    `MINIMUM INCLUSION STANDARD: Only include a treatment if it is mentioned by at least 20 distinct users ` +
+    `MINIMUM INCLUSION STANDARD: Only include a treatment if it is mentioned by at least 5 distinct users ` +
     `with specific exposure-outcome language (not "metformin changed things" but "after starting metformin, my cycles shortened"). ` +
-    `Raw volume is insufficient — you must see specificity (named symptom), directionality (better or worse), ` +
+    `Raw volume is insufficient — you must still see specificity (named symptom), directionality (better or worse), ` +
     `and user diversity (not the same person posting repeatedly). ` +
     `Exclude obvious reposts, promotional content, and low-content comments. ` +
-    `If fewer than 20 qualifying posts exist for a treatment, do not include it. ` +
+    `If fewer than 5 qualifying posts exist for a treatment, do not include it. ` +
     `Return as JSON array with: compound_name, signal_type (always community_report), ` +
     `evidence_strength (always preliminary), summary, post_count, ` +
     `contributing_posts (array of objects, each with post_index as the integer POST number ` +
     `from the input and excerpt as a brief quote from that post showing what the person reported). ` +
     `Also include these evidence scoring fields: ` +
     `confidence_tier (always "Exploratory" for community signals), ` +
-    `replication_score (0 = 3-4 posts, 1 = 5-9 posts, 2 = 10 or more posts), ` +
+    `replication_score (0 = 5-7 posts, 1 = 8-14 posts, 2 = 15 or more posts), ` +
     `source_quality_score (always 0 for community forum), ` +
     `specificity_score (0 = indirect connection, 1 = condition-adjacent, 2 = direct condition-specific reports), ` +
     `plausibility_score (0 = no known mechanism, 1 = plausible mechanism, 2 = well-characterized mechanism), ` +
     `direction_score (0 = unclear, 1 = mostly consistent, 2 = highly consistent across posts), ` +
     `effect_direction ("improves", "worsens", "mixed", or "unclear"), ` +
-    `replication_level ("Low" for 3-4, "Medium" for 5-9, "High" for 10 or more posts), ` +
+    `replication_level ("Low" for 5-7, "Medium" for 8-14, "High" for 15 or more posts), ` +
     `plausibility_level ("Low", "Medium", or "High").`
   );
 }
@@ -178,7 +178,7 @@ async function analyzeWithClaude(apiKey, condition, posts) {
   const userMessage =
     `Here are ${posts.length} posts from condition-specific subreddits. ` +
     `Return ONLY a valid JSON array (no markdown, no commentary). ` +
-    `If no treatments meet the 2-post threshold, return [].\n\n` +
+    `If no treatments meet the 5-post threshold described in the system prompt, return [].\n\n` +
     formatted;
 
   const resp = await fetch(`${ANTHROPIC_BASE}/v1/messages`, {
@@ -498,7 +498,7 @@ async function main() {
     process.exit(0);
   }
 
-  // Step 2: Claude analysis (cap to 200 posts — needed to hit 20-mention minimum bar)
+  // Step 2: Claude analysis (cap to 200 posts — large enough to surface 5-mention minimum bar)
   const cappedPosts = posts.slice(0, 200);
   if (cappedPosts.length < posts.length) {
     log(`        Capped to ${cappedPosts.length} highest-scored posts for Claude.`);
