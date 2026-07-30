@@ -1,4 +1,4 @@
-const FULL_TEXT = "The drug repurposing database for female biology.";
+const FULL_TEXT = "A drug repurposing database for female biology.";
 
 // Static hero headline. (Previously typed itself out on first visit; removed so
 // the page reads as a scientific resource rather than a product landing page.)
