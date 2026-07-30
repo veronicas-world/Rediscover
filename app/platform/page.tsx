@@ -120,6 +120,35 @@ export default async function PlatformPage() {
                 and surfaces disagreement, and a signal layer that turns off-label practice
                 into hypotheses worth testing.
               </p>
+
+              {/* What the database is FOR, stated before how it is built. */}
+              <div
+                style={{
+                  marginTop: 30,
+                  paddingLeft: 16,
+                  borderLeft: "2px solid var(--signal)",
+                  maxWidth: "62ch",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-plex-mono, ui-monospace, monospace)",
+                    fontSize: 10.5,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    color: "var(--on-ink-mut)",
+                    marginBottom: 10,
+                  }}
+                >
+                  What it&rsquo;s for
+                </div>
+                <p style={{ fontSize: 15.5, lineHeight: 1.65, color: "var(--on-ink-2)", margin: 0 }}>
+                  Evidence for these conditions is scattered across papers, registries, and drug
+                  labels. Whel gathers it, grades every drug&ndash;condition pair on one scale so
+                  they can be compared, weights each grade by how much of the evidence came from
+                  women, and marks the ones with no route onto a label.
+                </p>
+              </div>
             </div>
             <div>
               <KnowledgeGraph height={420} />
