@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "built": "2026-07-30T00:58:08.814Z",
+    "built": "2026-07-30T01:27:17.652Z",
     "source": "Whel substrate (substrate_signals + entities + claims + compounds) with committed side-layers (MATRIX, DailyMed, Orange Book, ClinicalTrials.gov)",
     "builder": "scripts/build-corpus-snapshot.mjs",
     "note": "Full curated corpus as surfaced on the public site. Descriptive research context, human-in-the-loop; not clinical or regulatory advice. Point-in-time — re-run to refresh.",
@@ -14,10 +14,10 @@
       "vulvodynia"
     ],
     "tier_distribution": {
-      "strong": 11,
-      "moderate": 59,
-      "emerging": 62,
-      "exploratory": 50
+      "strong": 10,
+      "moderate": 53,
+      "emerging": 61,
+      "exploratory": 58
     },
     "curation_distribution": {
       "drug": 98,
@@ -30,23 +30,23 @@
     "by_condition": {
       "pcos": {
         "strong": 3,
-        "moderate": 12,
+        "moderate": 9,
         "emerging": 12,
-        "exploratory": 10,
+        "exploratory": 13,
         "total": 37
       },
       "adenomyosis": {
         "strong": 1,
-        "moderate": 4,
+        "moderate": 3,
         "emerging": 7,
-        "exploratory": 3,
+        "exploratory": 4,
         "total": 15
       },
       "perimenopause-menopause": {
-        "strong": 6,
+        "strong": 5,
         "moderate": 20,
         "emerging": 13,
-        "exploratory": 11,
+        "exploratory": 12,
         "total": 50
       },
       "endometriosis": {
@@ -58,16 +58,16 @@
       },
       "vulvodynia": {
         "strong": 0,
-        "moderate": 11,
+        "moderate": 9,
         "emerging": 10,
-        "exploratory": 9,
+        "exploratory": 11,
         "total": 30
       },
       "pmdd": {
         "strong": 0,
         "moderate": 2,
-        "emerging": 7,
-        "exploratory": 9,
+        "emerging": 6,
+        "exploratory": 10,
         "total": 18
       }
     }
@@ -584,11 +584,12 @@
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "class",
-      "tier": "strong",
+      "tier": "exploratory",
       "score": 9,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
+      "pathway": "Hypothesis-generation · pre-validation",
       "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "Meta-analytic and umbrella-review evidence in postmenopausal women shows MHT effectively reduces vasomotor symptom frequency (RR 0.43) and severity (RR 0.29) and lowers fracture risk (RR 0.72), with additional cardiovascular benefit (improved FMD) when started within 10 years of menopause.",
       "mechanism": "Estrogen replacement improves endothelial function (increased flow-mediated arterial dilation) and counteracts estrogen-deficiency effects on thermoregulation and bone turnover.",
       "dims": {
@@ -2980,11 +2981,12 @@
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "combination",
-      "tier": "moderate",
+      "tier": "exploratory",
       "score": 7,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
+      "pathway": "Hypothesis-generation · pre-validation",
       "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "A meta-analysis of RCTs found anti-androgens plus lifestyle superior to metformin plus lifestyle for hirsutism and SHBG in PCOS, but not superior to placebo plus lifestyle for those outcomes.",
       "mechanism": "Anti-androgens reduce androgen activity and raise SHBG, plausibly improving hirsutism in PCOS.",
       "dims": {
@@ -3125,11 +3127,12 @@
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "combination",
-      "tier": "moderate",
+      "tier": "exploratory",
       "score": 7,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "A systematic review and meta-analysis of RCTs found that adding anti-androgens to metformin + lifestyle lowered testosterone in PCOS, though hirsutism did not differ between combinations.",
       "mechanism": "Anti-androgens reduce circulating/active androgen levels (lower testosterone), potentially augmenting metformin and lifestyle effects in PCOS.",
       "dims": {
@@ -3387,11 +3390,12 @@
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "combination",
-      "tier": "moderate",
+      "tier": "exploratory",
       "score": 7,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "A systematic review and meta-analysis found COCP inferior to combination treatment for FAI and SHBG in PCOS, with no difference in testosterone.",
       "mechanism": "COCP modulates androgen activity via effects on SHBG and free androgen index in PCOS.",
       "dims": {
@@ -9819,11 +9823,12 @@
       "condition": "vulvodynia",
       "conditionId": "vulvodynia",
       "curationClass": "drug",
-      "tier": "moderate",
+      "tier": "exploratory",
       "score": 6,
       "origin": "FDA Approved",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "In a randomized controlled trial, gabapentin (including extended-release) did not reduce tampon test, intercourse, or daily pain compared with placebo in women with vulvodynia, and the data do not support gabapentin alone as treatment.",
       "mechanism": "Mechanism not yet characterized in the substrate.",
       "dims": {
@@ -10474,11 +10479,12 @@
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "class",
-      "tier": "moderate",
+      "tier": "exploratory",
       "score": 6,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "A systematic review and meta-analysis found that GnRHa treatment does not improve IVF outcomes in women with adenomyosis.",
       "mechanism": "Mechanism not yet characterized in the substrate.",
       "dims": {
@@ -10827,11 +10833,12 @@
       "condition": "vulvodynia",
       "conditionId": "vulvodynia",
       "curationClass": "exclude",
-      "tier": "moderate",
+      "tier": "exploratory",
       "score": 6,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "A systematic review and meta-analysis found that interventions for vestibulodynia did not significantly reduce dyspareunia, DVS, or MPQ pain measures (all CIs crossing null).",
       "mechanism": "Mechanism not yet characterized in the substrate.",
       "dims": {
@@ -20627,11 +20634,12 @@
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "supplement",
-      "tier": "emerging",
+      "tier": "exploratory",
       "score": 4,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "A single systematic review suggests essential fatty acids may reduce premenstrual anxiety in the absence of depression, though some included groups showed no effect.",
       "mechanism": "Mechanism not yet characterized in the substrate.",
       "dims": {
@@ -27410,7 +27418,8 @@
       "score": 3,
       "origin": "Existing drug · repurposing candidate",
       "pathway": "Hypothesis-generation · pre-validation",
-      "direction": "silent",
+      "direction": "contradicts",
+      "evidenceCaveat": "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue.",
       "rationale": "A systematic review notes that patient response to drugs for menopausal hot flashes is variable, without quantifying efficacy.",
       "mechanism": "Mechanism not yet characterized in the substrate.",
       "dims": {

@@ -23,6 +23,7 @@ import { getOrangeBookForDrug } from "@/lib/orangebook-status-snapshot";
 import { getIndicationForPair } from "@/lib/dailymed-indication-snapshot";
 import {
   classifyCuration, resolveDrugClass, normalizeDrugName, isCommunityOnly, knownNegativeNote,
+  negativeEvidenceDetected,
 } from "@/lib/curation";
 
 type Row = Record<string, unknown>;
@@ -368,9 +369,13 @@ async function getAllCandidates(): Promise<Candidate[]> {
     //     positive signals: capped and marked as a contradiction.
     const communityOnly = isCommunityOnly(claims);
     const negativeNote = knownNegativeNote(drug, slug);
-    const displayTier = (communityOnly || negativeNote) && anchor.tier !== "exploratory"
-      ? "exploratory"
-      : anchor.tier;
+    // 3. The cited evidence itself reports no benefit: never present as positive.
+    const negativeEvidence = !negativeNote && negativeEvidenceDetected(
+      anchor.synthesis,
+      ...(claims ?? []).map((cl) => cl.text),
+    );
+    const demote = communityOnly || !!negativeNote || negativeEvidence;
+    const displayTier = demote && anchor.tier !== "exploratory" ? "exploratory" : anchor.tier;
 
     n += 1;
     out.push({
@@ -386,13 +391,15 @@ async function getAllCandidates(): Promise<Candidate[]> {
       pathway: displayTier === "exploratory"
         ? "Hypothesis-generation · pre-validation"
         : "505(b)(2) · existing active ingredient, new indication",
-      direction: (anyContradiction || negativeNote)
+      direction: (anyContradiction || negativeNote || negativeEvidence)
         ? "contradicts"
         : displayTier === "exploratory" ? "silent" : "supports",
       evidenceCaveat: negativeNote
-        ?? (communityOnly
-          ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
-          : undefined),
+        ?? (negativeEvidence
+          ? "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue."
+          : communityOnly
+            ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
+            : undefined),
       rationale: negativeNote
         ? `${negativeNote} ${anchor.synthesis ?? ""}`.trim()
         : anchor.synthesis || `${displayDrug} surfaced as a substrate signal for ${condition}.`,

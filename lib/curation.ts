@@ -58,6 +58,57 @@ export function knownNegativeNote(drug: string, conditionId: string): string | n
 }
 
 /**
+ * Detects rationales whose own cited evidence reports a NEGATIVE or NULL result
+ * (the trial found no benefit), so the pair is never presented as a positive
+ * signal. Deliberately conservative: it matches explicit no-effect findings
+ * only.
+ *
+ * It intentionally does NOT match comparative or weak-positive language
+ * ("less effective than", "inferior to", "second-line"), because those describe
+ * a drug that does work, just not best in class. Capping those would be an
+ * over-correction that misrepresents the evidence in the other direction.
+ *
+ * Auto-detection is a safety net, not a substitute for review: anything it
+ * flags is surfaced on the card so a false positive is visible and correctable.
+ */
+const NEGATIVE_EVIDENCE_RE = new RegExp(
+  [
+    // "did not reduce pain", "the data do not support", "does not improve"
+    String.raw`\b(did|do|does|was|were)\s+not\s+(reduce|improve|differ|decrease|change|support|show|demonstrate|outperform|exceed)`,
+    // "no better than placebo", "not superior to placebo"
+    String.raw`no\s+(better|greater)\s+than\s+placebo`,
+    String.raw`not\s+(superior|better)\s+to\s+placebo`,
+    String.raw`no\s+more\s+effective\s+than\s+placebo`,
+    // "no significant difference/improvement/effect/benefit/reduction"
+    String.raw`no\s+(statistically\s+)?significant\s+(difference|improvement|effect|benefit|reduction|change)`,
+    // "failed to demonstrate/meet"
+    String.raw`failed\s+to\s+(show|demonstrate|reduce|improve|meet|achieve)`,
+    // outright null verdicts
+    String.raw`\bineffective\b`,
+    String.raw`(was|were)\s+not\s+effective`,
+    String.raw`no\s+evidence\s+(of|for)\s+(benefit|efficacy|effect)`,
+  ].join("|"),
+  "i",
+);
+
+/**
+ * Preference-ranking idiom: "evidence does not support X preferentially to Y",
+ * "X is not preferred over Y", "not recommended as first-line". These compare
+ * two treatments that BOTH work and must not be read as a null result. Note the
+ * override is deliberately narrow so it cannot swallow a true negative that
+ * merely mentions its placebo comparator ("did not reduce pain compared with
+ * placebo" stays flagged).
+ */
+const PREFERENCE_RANKING_RE =
+  /not\s+(be\s+)?(support(ed)?|prefer(red)?|recommended)[^.]{0,90}?(preferentially|over\s+(the\s+)?\w|rather\s+than|in\s+preference|as\s+(a\s+)?first[- ]line)/i;
+
+export function negativeEvidenceDetected(...text: (string | undefined | null)[]): boolean {
+  const t = text.filter(Boolean).join("  ");
+  if (PREFERENCE_RANKING_RE.test(t)) return false;
+  return NEGATIVE_EVIDENCE_RE.test(t);
+}
+
+/**
  * True when every verbatim claim behind a signal is a community/patient report
  * (no published literature or trial registry source). Such signals are
  * hypothesis-generating only: the rubric's corroboration and rigor dimensions

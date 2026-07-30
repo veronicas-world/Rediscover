@@ -171,6 +171,29 @@ const knownNegativeNote = (drug, conditionId) =>
   KNOWN_NEGATIVE[`${String(drug).trim().toLowerCase()}::${String(conditionId).trim().toLowerCase()}`] ?? null;
 const isCommunityOnly = (claims) =>
   !!claims && claims.length > 0 && claims.every((c) => /community|reddit/i.test(String(c?.src ?? "")));
+// Conservative negative/null-result detector. Does NOT match comparative or
+// weak-positive language ("less effective", "inferior to", "second-line").
+// KEEP IN SYNC with lib/curation.ts.
+const NEGATIVE_EVIDENCE_RE = new RegExp([
+  String.raw`\b(did|do|does|was|were)\s+not\s+(reduce|improve|differ|decrease|change|support|show|demonstrate|outperform|exceed)`,
+  String.raw`no\s+(better|greater)\s+than\s+placebo`,
+  String.raw`not\s+(superior|better)\s+to\s+placebo`,
+  String.raw`no\s+more\s+effective\s+than\s+placebo`,
+  String.raw`no\s+(statistically\s+)?significant\s+(difference|improvement|effect|benefit|reduction|change)`,
+  String.raw`failed\s+to\s+(show|demonstrate|reduce|improve|meet|achieve)`,
+  String.raw`\bineffective\b`,
+  String.raw`(was|were)\s+not\s+effective`,
+  String.raw`no\s+evidence\s+(of|for)\s+(benefit|efficacy|effect)`,
+].join("|"), "i");
+// Preference-ranking idiom ("not supported preferentially to X") compares two
+// working treatments and must not read as a null result. KEEP IN SYNC.
+const PREFERENCE_RANKING_RE =
+  /not\s+(be\s+)?(support(ed)?|prefer(red)?|recommended)[^.]{0,90}?(preferentially|over\s+(the\s+)?\w|rather\s+than|in\s+preference|as\s+(a\s+)?first[- ]line)/i;
+const negativeEvidenceDetected = (...t) => {
+  const s = t.filter(Boolean).join("  ");
+  if (PREFERENCE_RANKING_RE.test(s)) return false;
+  return NEGATIVE_EVIDENCE_RE.test(s);
+};
 function normalizeDrugName(drug) {
   const raw = String(drug ?? "").trim();
   if (!raw) return raw;
@@ -381,7 +404,10 @@ async function build() {
     const curationClass = cls ? (cls.molecule ? "drug" : "class") : classifyCuration(drug);
     const communityOnly = isCommunityOnly(claims);
     const negativeNote = knownNegativeNote(drug, slug);
-    const displayTier = (communityOnly || negativeNote) && anchor.tier !== "exploratory" ? "exploratory" : anchor.tier;
+    const negativeEvidence = !negativeNote && negativeEvidenceDetected(
+      anchor.synthesis, ...(claims ?? []).map((cl) => cl.text));
+    const demote = communityOnly || !!negativeNote || negativeEvidence;
+    const displayTier = demote && anchor.tier !== "exploratory" ? "exploratory" : anchor.tier;
 
     n += 1;
     out.push({
@@ -398,10 +424,12 @@ async function build() {
       pathway: displayTier === "exploratory"
         ? "Hypothesis-generation · pre-validation"
         : "505(b)(2) · existing active ingredient, new indication",
-      direction: (anyContradiction || negativeNote) ? "contradicts" : displayTier === "exploratory" ? "silent" : "supports",
-      evidenceCaveat: negativeNote ?? (communityOnly
-        ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
-        : undefined),
+      direction: (anyContradiction || negativeNote || negativeEvidence) ? "contradicts" : displayTier === "exploratory" ? "silent" : "supports",
+      evidenceCaveat: negativeNote ?? (negativeEvidence
+        ? "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue."
+        : communityOnly
+          ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
+          : undefined),
       rationale: negativeNote
         ? `${negativeNote} ${anchor.synthesis ?? ""}`.trim()
         : anchor.synthesis || `${displayDrug} surfaced as a substrate signal for ${condition}.`,
