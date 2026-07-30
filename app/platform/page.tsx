@@ -458,6 +458,48 @@ export default async function PlatformPage() {
         </div>
       </section>
 
+      {/* Evidence with no route to a label */}
+      <section id="no-sponsor" className="surface-paper section">
+        <div className="container">
+          <div style={wrap}>
+            <div className="eyebrow" style={{ marginBottom: 14 }}>Evidence without a sponsor</div>
+            <h2 className="h2" style={{ marginBottom: 24, maxWidth: "26ch" }}>
+              Some evidence has no route onto the label.
+            </h2>
+            <p style={pBone}>
+              Putting a new indication on a drug&rsquo;s FDA label takes a registration trial, and a
+              registration trial takes a sponsor willing to fund it. That cost is recovered through
+              exclusivity, which a generic molecule no longer has. So when the evidence for a
+              condition is good, the use is off-label, and the molecule is already generic, there is
+              no commercial route by which the label ever changes. The evidence and the label stay
+              apart, not because the science is weak, but because nothing in the system pays for
+              closing the gap.
+            </p>
+            <p style={pBone}>
+              Because Whel records the graded evidence and the regulatory status side by side, this
+              is something the index can simply be asked. Filtering the candidates for{" "}
+              <strong>strong or moderate evidence, off-label use, and an available generic</strong>{" "}
+              returns a set of pairs sitting in exactly that position. Letrozole in PCOS is the
+              clearest illustration: it carries strong graded evidence here and has been studied in
+              dozens of registered trials for the condition, and it remains an off-label use of a
+              generic drug. More trials would not change that. A sponsor would.
+            </p>
+            <p style={pBone}>
+              This is a descriptive observation about incentives, not clinical or regulatory advice.
+              It says nothing about whether any particular drug should be used, and nothing about
+              whether any particular trial should be run. It records a structural reason that
+              evidence in these conditions can accumulate for years without ever reaching a label,
+              and it is offered so that the pattern can be examined rather than assumed.
+            </p>
+            <div style={{ marginTop: 28 }}>
+              <Link href="/candidates" className="btn btn-ghost">
+                Filter the candidates by &ldquo;No sponsor&rdquo; <span className="arr">&rarr;</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* §3060 posture */}
       <section className="surface-sage section tight">
         <div className="container">

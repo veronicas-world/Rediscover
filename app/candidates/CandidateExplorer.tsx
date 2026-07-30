@@ -41,7 +41,7 @@ type ValKey = NonNullable<ExplorerItem["validation"]>;
 type ArmKey = NonNullable<ExplorerItem["signalArm"]>;
 type MarkerKey =
   | "matrix" | "sexpk" | "phase" | "graph" | "trials"
-  | "onlabel" | "offlabel" | "generic";
+  | "onlabel" | "offlabel" | "generic" | "unsponsored";
 
 const TIER_ORDER: TierKey[] = ["strong", "moderate", "emerging", "exploratory"];
 const TIER_LABELS: Record<TierKey, string> = {
@@ -67,7 +67,7 @@ const ARM_LABELS: Record<ArmKey, string> = {
 };
 
 const MARKER_ORDER: MarkerKey[] = ["matrix", "sexpk", "phase", "graph", "trials"];
-const REG_ORDER: MarkerKey[] = ["onlabel", "offlabel", "generic"];
+const REG_ORDER: MarkerKey[] = ["onlabel", "offlabel", "generic", "unsponsored"];
 const ALL_MARKERS: MarkerKey[] = [...MARKER_ORDER, ...REG_ORDER];
 const MARKER_LABELS: Record<MarkerKey, string> = {
   matrix: "Matrix match",
@@ -78,6 +78,7 @@ const MARKER_LABELS: Record<MarkerKey, string> = {
   onlabel: "On-label",
   offlabel: "Off-label",
   generic: "Generic",
+  unsponsored: "No sponsor",
 };
 
 const MATRIX_THRESHOLDS = [10, 25, 50] as const;
@@ -100,6 +101,15 @@ function markerActive(it: ExplorerItem, m: MarkerKey): boolean {
     case "onlabel": return it.onLabel;
     case "offlabel": return it.offLabel;
     case "generic": return it.genericAvailable;
+    // Evidence with no route to a label: the condition is an off-label use, the
+    // molecule is already generic, and the evidence is graded strong or
+    // moderate. Nobody can recoup the cost of a registration trial on a
+    // generic, so these stay off-label however good the evidence gets. This is
+    // a structural observation about the incentive, not a claim that the drug
+    // should be used or that a trial should be run.
+    case "unsponsored":
+      return it.offLabel && it.genericAvailable
+        && (it.tier === "strong" || it.tier === "moderate");
   }
 }
 
@@ -358,6 +368,25 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
             />
           ))}
         </FacetRow>
+        {markers.has("unsponsored") && (
+          <p
+            style={{
+              fontFamily: "var(--font-plex-mono, ui-monospace, monospace)",
+              fontSize: 11,
+              lineHeight: 1.6,
+              color: "var(--muted)",
+              maxWidth: "72ch",
+              margin: "-6px 0 0",
+            }}
+          >
+            <strong style={{ color: "var(--ink)" }}>No sponsor.</strong> Graded strong or
+            moderate for this condition, used off-label, and already generic. A registration
+            trial is what moves an indication onto the label, and its cost cannot be recouped on
+            a generic, so these pairs tend to stay off-label however strong the evidence becomes.
+            Descriptive context about the incentive structure. Not a recommendation to use a
+            drug, and not a claim that a trial should be run.
+          </p>
+        )}
 
         <FacetRow label="Matrix %">
           {MATRIX_THRESHOLDS.map((t) => (
