@@ -38,8 +38,10 @@ function WhelMark({ size = 30 }: { size?: number }) {
   );
 }
 
+// Top-level nav leads with the data (candidates, conditions) and the method
+// (platform), so the site reads as a research resource on arrival. The
+// manifesto sits one click away under About → Company.
 const NAV_LINKS: { label: string; href: string; hideSm?: boolean }[] = [
-  { label: "Manifesto",  href: "/manifesto" },
   { label: "Platform",   href: "/platform" },
   { label: "Conditions", href: "/conditions" },
 ];
@@ -51,9 +53,10 @@ const ABOUT_GROUPS: { label: string; items: { label: string; href: string }[] }[
   {
     label: "Company",
     items: [
-      { label: "About",   href: "/about" },
-      { label: "Roadmap", href: "/about/roadmap" },
-      { label: "Contact", href: "/about/contact" },
+      { label: "About",     href: "/about" },
+      { label: "Manifesto", href: "/manifesto" },
+      { label: "Roadmap",   href: "/about/roadmap" },
+      { label: "Contact",   href: "/about/contact" },
     ],
   },
   {

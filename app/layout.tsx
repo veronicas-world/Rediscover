@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     template: "%s | Whel",
   },
   description:
-    "The drug repurposing platform for female biology. Whel surfaces approved drugs that already work for women's health conditions and validates them against mechanistic and clinical evidence.",
+    "An open, graded database of approved drugs with published evidence in under-researched women's health conditions. Each drug-condition pair is scored across five evidence dimensions, weighted for how far the evidence was generated in women, and pinned to verbatim quotes from its sources.",
 };
 
 export default function RootLayout({

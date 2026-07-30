@@ -151,16 +151,40 @@ export default async function Home() {
           <div style={{ display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 48, alignItems: "start", marginTop: 28 }} className="hero-grid">
             <div style={{ paddingTop: 8 }}>
               <p className="lede" style={{ color: "var(--on-ink-2)" }}>
-                Whel is building a drug-repurposing platform for female biology that surfaces
-                approved drugs already working for women&apos;s health conditions, validates them
-                against mechanistic and clinical evidence, and maps each to the 505(b)(2) regulatory pathway.
+                An open, graded index of approved drugs with published evidence in
+                under-researched women&apos;s health conditions. Each drug&ndash;condition pair is
+                scored across five evidence dimensions, weighted for how far the evidence was
+                generated in women, and pinned to verbatim quotes from its sources.
               </p>
-              <div className="row" style={{ marginTop: 32, gap: 12 }}>
-                <Link href="/manifesto" className="btn btn-on-ink">
-                  Read the manifesto <span className="arr">→</span>
+
+              {/* Scope line — what the database actually holds, read live from the substrate. */}
+              <p
+                style={{
+                  fontFamily: "var(--font-plex-mono, ui-monospace, monospace)",
+                  fontSize: 11.5,
+                  letterSpacing: "0.04em",
+                  lineHeight: 1.7,
+                  color: "var(--on-ink-mut)",
+                  marginTop: 22,
+                }}
+              >
+                {totalSignals > 0 ? totalSignals : "—"} graded drug&ndash;condition pairs ·{" "}
+                {totalConditions} conditions · {citationsLabel} verbatim claims, each pinned to its
+                source ·{" "}
+                <Link
+                  href="/about/methodology/changelog"
+                  style={{ color: "var(--on-ink-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
+                >
+                  methodology v4.1
                 </Link>
-                <Link href="/candidates" className="btn btn-ghost-ink">
-                  See the candidates <span className="arr">→</span>
+              </p>
+
+              <div className="row" style={{ marginTop: 28, gap: 12 }}>
+                <Link href="/candidates" className="btn btn-on-ink">
+                  Browse the candidates <span className="arr">→</span>
+                </Link>
+                <Link href="/signal-types" className="btn btn-ghost-ink">
+                  How signals are scored <span className="arr">→</span>
                 </Link>
               </div>
             </div>

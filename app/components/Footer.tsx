@@ -59,8 +59,9 @@ export default function Footer() {
               </span>
             </span>
             <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--on-ink-2)", maxWidth: "38ch", marginTop: 20 }}>
-              The drug repurposing platform for female biology. We surface the approved drugs that
-              already work for women&apos;s health conditions and prove it rigorously enough to act on.
+              The drug repurposing database for female biology. An open, graded index of approved
+              drugs with published evidence in under-researched women&apos;s health conditions,
+              every claim pinned to its source.
             </p>
           </div>
 
