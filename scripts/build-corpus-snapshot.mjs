@@ -153,12 +153,36 @@ function classifyCuration(drug) {
   return "drug";
 }
 const CLASS_TO_MOLECULE = { "aromatase inhibitors": "Letrozole", "anti-androgens": "Spironolactone" };
-const CLASS_ROLLUP = new Set(["ssris","snris","ssri/snris","snri/ssris","gnrh agonist","gnrh agonists","gnrha"]);
+const CLASS_ROLLUP = new Set(["ssris","snris","ssri/snris","snri/ssris","gnrh agonist","gnrh agonists","gnrha",
+  "hormonal therapy","nonhormonal therapy","hormone replacement therapy","menopausal hormone therapy",
+  "menopause hormone therapy","estrogen therapy","estrogen monotherapy","estrogen","bioidentical estrogens",
+  "vaginal estrogen","vaginal oestrogen","low-dose vaginal estrogen","estrogen therapy (intravaginal)"]);
 function resolveDrugClass(drug) {
   const s = String(drug ?? "").trim().toLowerCase();
   if (s in CLASS_TO_MOLECULE) return { molecule: CLASS_TO_MOLECULE[s] };
   if (CLASS_ROLLUP.has(s)) return { rollup: true };
   return null;
+}
+// Pairs with NEGATIVE published randomized evidence — never present as positive.
+const KNOWN_NEGATIVE = {
+  "progesterone::pmdd": "Randomized placebo-controlled trials have consistently found progesterone no better than placebo for severe PMS/PMDD. Retained as a documented negative result, not a candidate.",
+};
+const knownNegativeNote = (drug, conditionId) =>
+  KNOWN_NEGATIVE[`${String(drug).trim().toLowerCase()}::${String(conditionId).trim().toLowerCase()}`] ?? null;
+const isCommunityOnly = (claims) =>
+  !!claims && claims.length > 0 && claims.every((c) => /community|reddit/i.test(String(c?.src ?? "")));
+function normalizeDrugName(drug) {
+  const raw = String(drug ?? "").trim();
+  if (!raw) return raw;
+  const letters = raw.replace(/[^A-Za-z]/g, "");
+  if (!letters || letters !== letters.toUpperCase()) return raw;
+  let s = raw;
+  const parts = s.split(",").map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 2 && !/\d/.test(parts[1])) s = `${parts[1]} ${parts[0]}`;
+  const KEEP_UPPER = /^(HCG|FSH|LH|DHEA|CoQ10|TENS|SMC021|G-CSF)$/i;
+  return s.toLowerCase().split(/\s+/)
+    .map((w) => (KEEP_UPPER.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
 }
 
 function toArm(sig) {
@@ -353,8 +377,11 @@ async function build() {
     const indication = getIndicationForPair(drug, condition);
 
     const cls = resolveDrugClass(drug);
-    const displayDrug = cls && cls.molecule ? cls.molecule : drug;
+    const displayDrug = normalizeDrugName(cls && cls.molecule ? cls.molecule : drug);
     const curationClass = cls ? (cls.molecule ? "drug" : "class") : classifyCuration(drug);
+    const communityOnly = isCommunityOnly(claims);
+    const negativeNote = knownNegativeNote(drug, slug);
+    const displayTier = (communityOnly || negativeNote) && anchor.tier !== "exploratory" ? "exploratory" : anchor.tier;
 
     n += 1;
     out.push({
@@ -364,15 +391,20 @@ async function build() {
       condition,
       conditionId: slug,
       curationClass,
-      tier: anchor.tier,
+      tier: displayTier,
       score: Math.round(anchor.armScore * 10) / 10,
       origin,
       drugClass: comp && comp.drug_class ? String(comp.drug_class) : undefined,
-      pathway: anchor.tier === "exploratory"
+      pathway: displayTier === "exploratory"
         ? "Hypothesis-generation · pre-validation"
         : "505(b)(2) · existing active ingredient, new indication",
-      direction: anyContradiction ? "contradicts" : anchor.tier === "exploratory" ? "silent" : "supports",
-      rationale: anchor.synthesis || `${displayDrug} surfaced as a substrate signal for ${condition}.`,
+      direction: (anyContradiction || negativeNote) ? "contradicts" : displayTier === "exploratory" ? "silent" : "supports",
+      evidenceCaveat: negativeNote ?? (communityOnly
+        ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
+        : undefined),
+      rationale: negativeNote
+        ? `${negativeNote} ${anchor.synthesis ?? ""}`.trim()
+        : anchor.synthesis || `${displayDrug} surfaced as a substrate signal for ${condition}.`,
       mechanism: anchor.mechanism || "Mechanism not yet characterized in the substrate.",
       dims,
       dimBreakdown: anchor.dimensions.map((d) => ({ key: d.key, label: d.label, score: d.score, level: lvl(d.score), rationale: d.rationale })),

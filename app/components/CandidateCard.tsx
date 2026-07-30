@@ -33,6 +33,9 @@ export interface Candidate {
   origin: string;
   pathway: string;
   direction: "supports" | "contradicts" | "silent";
+  /** Evidence-integrity note shown beside the grade: set when the signal rests only on
+   *  anecdotal community reports, or when published randomized evidence is negative. */
+  evidenceCaveat?: string;
   rationale: string;
   mechanism: string;
   dims: Record<string, string>;
@@ -518,6 +521,22 @@ export default function CandidateCard({ c }: { c: Candidate }) {
         {isSubstrate && c.femaleApplicability && <FemaleLens fa={c.femaleApplicability} />}
 
         <p className="c-rationale">{c.rationale}</p>
+
+        {c.evidenceCaveat && (
+          <p
+            style={{
+              fontFamily: "var(--font-plex-mono, ui-monospace, monospace)",
+              fontSize: 11,
+              lineHeight: 1.55,
+              color: "var(--brick)",
+              borderLeft: "2px solid var(--brick)",
+              paddingLeft: 10,
+              margin: "10px 0 0",
+            }}
+          >
+            {c.evidenceCaveat}
+          </p>
+        )}
 
         {isSubstrate && c.arms ? (
           <>

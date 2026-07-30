@@ -33,7 +33,69 @@ export const CLASS_TO_MOLECULE: Record<string, string> = {
 const CLASS_ROLLUP = new Set([
   "ssris", "snris", "ssri/snris", "snri/ssris",
   "gnrh agonist", "gnrh agonists", "gnrha",
+  // Vague hormone-therapy rollups. The specific molecules (estradiol, estriol,
+  // conjugated equine estrogen, etc.) are graded on their own rows, so keeping
+  // these class labels double-counts and reads as un-curated.
+  "hormonal therapy", "nonhormonal therapy", "hormone replacement therapy",
+  "menopausal hormone therapy", "menopause hormone therapy",
+  "estrogen therapy", "estrogen monotherapy", "estrogen",
+  "bioidentical estrogens", "vaginal estrogen", "vaginal oestrogen",
+  "low-dose vaginal estrogen", "estrogen therapy (intravaginal)",
 ]);
+
+/**
+ * Drug–condition pairs where the published randomized evidence is NEGATIVE.
+ * These must never present as positive signals, however enthusiastic the
+ * community reports are. Keyed `drug::conditionId` (lowercased).
+ */
+export const KNOWN_NEGATIVE: Record<string, string> = {
+  "progesterone::pmdd":
+    "Randomized placebo-controlled trials have consistently found progesterone no better than placebo for severe PMS/PMDD. Retained as a documented negative result, not a candidate.",
+};
+
+export function knownNegativeNote(drug: string, conditionId: string): string | null {
+  return KNOWN_NEGATIVE[`${String(drug).trim().toLowerCase()}::${String(conditionId).trim().toLowerCase()}`] ?? null;
+}
+
+/**
+ * True when every verbatim claim behind a signal is a community/patient report
+ * (no published literature or trial registry source). Such signals are
+ * hypothesis-generating only: the rubric's corroboration and rigor dimensions
+ * cannot be satisfied by anecdote, so they are capped at `exploratory`.
+ */
+export function isCommunityOnly(claims: { src?: string }[] | undefined): boolean {
+  if (!claims || claims.length === 0) return false;
+  return claims.every((c) => /community|reddit/i.test(String(c?.src ?? "")));
+}
+
+/**
+ * Normalize a raw drug label for display. Upstream drug databases store names
+ * in ALL CAPS ("DIENOGEST", "GONADOTROPIN, CHORIONIC"); the substrate's own
+ * labels are lowercase. Presenting both side by side reads as a database dump,
+ * so all-caps names are title-cased and inverted "SURNAME, MODIFIER" forms are
+ * flipped back into reading order. Mixed-case labels are left untouched.
+ */
+export function normalizeDrugName(drug: string | null | undefined): string {
+  const raw = String(drug ?? "").trim();
+  if (!raw) return raw;
+  // Only touch labels that are entirely upper-case (ignoring punctuation/digits).
+  const letters = raw.replace(/[^A-Za-z]/g, "");
+  if (!letters || letters !== letters.toUpperCase()) return raw;
+
+  // "GONADOTROPIN, CHORIONIC" -> "Chorionic Gonadotropin"
+  let s = raw;
+  const parts = s.split(",").map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 2 && !/\d/.test(parts[1])) s = `${parts[1]} ${parts[0]}`;
+
+  const KEEP_UPPER = /^(HCG|FSH|LH|DHEA|CoQ10|TENS|SMC021|G-CSF)$/i;
+  return s
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) =>
+      KEEP_UPPER.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1),
+    )
+    .join(" ");
+}
 
 /** Resolve a drug-class label. Returns {molecule} to relabel, {rollup:true} to
  *  segregate as "class", or null if the label is not a handled class. */

@@ -21,7 +21,9 @@ import { MATRIX_PAIR_SNAPSHOT, formatMatrixPercentile } from "@/lib/matrix-pair-
 import { getTrialStatusForPair } from "@/lib/clinicaltrials-status-snapshot";
 import { getOrangeBookForDrug } from "@/lib/orangebook-status-snapshot";
 import { getIndicationForPair } from "@/lib/dailymed-indication-snapshot";
-import { classifyCuration, resolveDrugClass } from "@/lib/curation";
+import {
+  classifyCuration, resolveDrugClass, normalizeDrugName, isCommunityOnly, knownNegativeNote,
+} from "@/lib/curation";
 
 type Row = Record<string, unknown>;
 type ArmKey = "direct" | "pathway" | "community";
@@ -353,10 +355,22 @@ async function getAllCandidates(): Promise<Candidate[]> {
     // representative molecule, or mark a multi-molecule rollup as "class".
     // All lookups above used the original `drug`; only the display label changes.
     const cls = resolveDrugClass(drug);
-    const displayDrug = cls && "molecule" in cls ? cls.molecule : drug;
+    const displayDrug = normalizeDrugName(cls && "molecule" in cls ? cls.molecule : drug);
     const curationClass = cls
       ? ("molecule" in cls ? "drug" : "class")
       : classifyCuration(drug);
+
+    // Evidence-integrity guards, applied to the headline the site shows.
+    //  1. Community-only signals (every claim an anecdotal patient report) are
+    //     hypothesis-generating; they cannot satisfy corroboration/rigor, so they
+    //     are capped at `exploratory` however enthusiastic the reports are.
+    //  2. Pairs with negative published randomized evidence never present as
+    //     positive signals: capped and marked as a contradiction.
+    const communityOnly = isCommunityOnly(claims);
+    const negativeNote = knownNegativeNote(drug, slug);
+    const displayTier = (communityOnly || negativeNote) && anchor.tier !== "exploratory"
+      ? "exploratory"
+      : anchor.tier;
 
     n += 1;
     out.push({
@@ -366,19 +380,27 @@ async function getAllCandidates(): Promise<Candidate[]> {
       condition,
       conditionId: slug,
       curationClass,
-      tier: anchor.tier,
+      tier: displayTier,
       score: Math.round(anchor.armScore * 10) / 10,
       origin,
-      pathway: anchor.tier === "exploratory"
+      pathway: displayTier === "exploratory"
         ? "Hypothesis-generation · pre-validation"
         : "505(b)(2) · existing active ingredient, new indication",
-      direction: anyContradiction ? "contradicts" : anchor.tier === "exploratory" ? "silent" : "supports",
-      rationale: anchor.synthesis || `${displayDrug} surfaced as a substrate signal for ${condition}.`,
+      direction: (anyContradiction || negativeNote)
+        ? "contradicts"
+        : displayTier === "exploratory" ? "silent" : "supports",
+      evidenceCaveat: negativeNote
+        ?? (communityOnly
+          ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
+          : undefined),
+      rationale: negativeNote
+        ? `${negativeNote} ${anchor.synthesis ?? ""}`.trim()
+        : anchor.synthesis || `${displayDrug} surfaced as a substrate signal for ${condition}.`,
       mechanism: anchor.mechanism || "Mechanism not yet characterized in the substrate.",
       dims,
       dimBreakdown: anchor.dimensions.map((d) => ({ key: d.key, label: d.label, score: d.score, level: lvl(d.score) })),
       signalType: anchor.arm,
-      evidenceStrength: anchor.tier,
+      evidenceStrength: displayTier,
       claims,
       // ── substrate fields ──
       validationStatus: status,

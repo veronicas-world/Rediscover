@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "built": "2026-07-06T23:40:08.126Z",
+    "built": "2026-07-30T00:58:08.814Z",
     "source": "Whel substrate (substrate_signals + entities + claims + compounds) with committed side-layers (MATRIX, DailyMed, Orange Book, ClinicalTrials.gov)",
     "builder": "scripts/build-corpus-snapshot.mjs",
     "note": "Full curated corpus as surfaced on the public site. Descriptive research context, human-in-the-loop; not clinical or regulatory advice. Point-in-time — re-run to refresh.",
@@ -16,15 +16,15 @@
     "tier_distribution": {
       "strong": 11,
       "moderate": 59,
-      "emerging": 68,
-      "exploratory": 44
+      "emerging": 62,
+      "exploratory": 50
     },
     "curation_distribution": {
-      "drug": 111,
+      "drug": 98,
       "combination": 21,
       "supplement": 16,
       "exclude": 28,
-      "class": 6
+      "class": 19
     },
     "curation_note": "curationClass: 'drug' = clean single-agent candidate (the public index); 'combination' = multi-agent regimen; 'supplement' = supplement/herbal (adjunct); 'exclude' = non-drug/procedure/junk. All are kept here so a client sees the full picture; the site shows only 'drug'.",
     "by_condition": {
@@ -45,15 +45,15 @@
       "perimenopause-menopause": {
         "strong": 6,
         "moderate": 20,
-        "emerging": 16,
-        "exploratory": 8,
+        "emerging": 13,
+        "exploratory": 11,
         "total": 50
       },
       "endometriosis": {
         "strong": 1,
         "moderate": 10,
-        "emerging": 14,
-        "exploratory": 7,
+        "emerging": 13,
+        "exploratory": 8,
         "total": 32
       },
       "vulvodynia": {
@@ -66,8 +66,8 @@
       "pmdd": {
         "strong": 0,
         "moderate": 2,
-        "emerging": 9,
-        "exploratory": 7,
+        "emerging": 7,
+        "exploratory": 9,
         "total": 18
       }
     }
@@ -281,7 +281,7 @@
     {
       "id": "WHEL-C-002",
       "signalId": "dcd5ca46-ee57-4d35-b7e1-07b887d30b22__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "DIENOGEST",
+      "drug": "Dienogest",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -583,7 +583,7 @@
       "drug": "menopausal hormone therapy",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "strong",
       "score": 9,
       "origin": "Existing drug · repurposing candidate",
@@ -2138,7 +2138,7 @@
     {
       "id": "WHEL-C-009",
       "signalId": "97cc587b-f617-4589-b1df-9139f8a7ca7d__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "LETROZOLE",
+      "drug": "Letrozole",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -3383,7 +3383,7 @@
     {
       "id": "WHEL-C-015",
       "signalId": "fcf54880-cd97-4795-b81a-7025aa1c62ef__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "COCP",
+      "drug": "Cocp",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "combination",
@@ -4776,7 +4776,7 @@
       "drug": "estrogen therapy (intravaginal)",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "moderate",
       "score": 7,
       "origin": "Existing drug · repurposing candidate",
@@ -4904,7 +4904,7 @@
       "drug": "hormonal therapy",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "moderate",
       "score": 7,
       "origin": "Existing drug · repurposing candidate",
@@ -5551,7 +5551,7 @@
       "drug": "low-dose vaginal estrogen",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "moderate",
       "score": 7,
       "origin": "Existing drug · repurposing candidate",
@@ -5700,7 +5700,7 @@
       "drug": "menopause hormone therapy",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "moderate",
       "score": 7,
       "origin": "Existing drug · repurposing candidate",
@@ -8880,7 +8880,7 @@
       "drug": "estrogen",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "moderate",
       "score": 6,
       "origin": "Existing drug · repurposing candidate",
@@ -9253,7 +9253,7 @@
       "drug": "estrogen monotherapy",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "moderate",
       "score": 6,
       "origin": "Existing drug · repurposing candidate",
@@ -11590,7 +11590,7 @@
     {
       "id": "WHEL-C-062",
       "signalId": "db0aec5d-242a-4c53-96ed-ca375ee6b025__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "PRASTERONE",
+      "drug": "Prasterone",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -12178,7 +12178,7 @@
     {
       "id": "WHEL-C-065",
       "signalId": "7f6ed8f9-842a-42ca-b224-7ca9e3fcf95a__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "SERTRALINE",
+      "drug": "Sertraline",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -12677,7 +12677,7 @@
     {
       "id": "WHEL-C-068",
       "signalId": "a3c9739b-34d2-471b-b55a-67410e2f6672__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "GONADOTROPIN, CHORIONIC",
+      "drug": "Chorionic Gonadotropin",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -12843,7 +12843,7 @@
     {
       "id": "WHEL-C-069",
       "signalId": "e4ea5770-4d2c-4e3d-8b95-defada7816b8__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "ULIPRISTAL ACETATE",
+      "drug": "Ulipristal Acetate",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
@@ -13010,7 +13010,7 @@
     {
       "id": "WHEL-C-070",
       "signalId": "fd1e03a2-ac14-4f25-a321-04f067467983__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "VILAPRISAN",
+      "drug": "Vilaprisan",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -13176,7 +13176,7 @@
     {
       "id": "WHEL-C-071",
       "signalId": "df468fdc-297f-4a39-913c-8f0cf50ee3e5__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "BAZEDOXIFENE",
+      "drug": "Bazedoxifene",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -13434,7 +13434,7 @@
     {
       "id": "WHEL-C-072",
       "signalId": "4f298539-db26-48e8-b86e-bbc7c69884a9__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "ESTRADIOL VALERATE",
+      "drug": "Estradiol Valerate",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -13721,7 +13721,7 @@
     {
       "id": "WHEL-C-073",
       "signalId": "6e201d9b-35ae-4ce9-b337-7124dfc0455e__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "MIFEPRISTONE",
+      "drug": "Mifepristone",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -13938,7 +13938,7 @@
       "drug": "bioidentical estrogens",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "emerging",
       "score": 5,
       "origin": "Existing drug · repurposing candidate",
@@ -14668,7 +14668,7 @@
     {
       "id": "WHEL-C-079",
       "signalId": "dcd5ca46-ee57-4d35-b7e1-07b887d30b22__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "DIENOGEST",
+      "drug": "Dienogest",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -15028,7 +15028,7 @@
       "drug": "estrogen therapy",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "emerging",
       "score": 5,
       "origin": "Existing drug · repurposing candidate",
@@ -15704,7 +15704,7 @@
       "drug": "nonhormonal therapy",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "emerging",
       "score": 5,
       "origin": "Existing drug · repurposing candidate",
@@ -16472,11 +16472,12 @@
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
-      "tier": "emerging",
+      "tier": "exploratory",
       "score": 5,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single patient reports that bupropion (Wellbutrin) substantially helped their PMDD symptoms.",
       "mechanism": "Bupropion's norepinephrine-dopamine reuptake inhibition may improve PMDD-related mood symptoms.",
       "dims": {
@@ -16663,7 +16664,7 @@
     {
       "id": "WHEL-C-091",
       "signalId": "afe89892-83af-4c18-a34a-02c048f8e7e8__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "GANIRELIX ACETATE",
+      "drug": "Ganirelix Acetate",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -16880,12 +16881,13 @@
       "drug": "hormone replacement therapy",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
-      "tier": "emerging",
+      "curationClass": "class",
+      "tier": "exploratory",
       "score": 5,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single user reported that one year of HRT including testosterone reversed their severe osteoporosis.",
       "mechanism": "Estrogen and testosterone in HRT may restore bone mineral density by reducing bone resorption and supporting bone formation during menopause.",
       "dims": {
@@ -17004,7 +17006,7 @@
     {
       "id": "WHEL-C-093",
       "signalId": "70176fbe-64a8-401a-b4e4-36a3fd33ab43__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "PAVINETANT",
+      "drug": "Pavinetant",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -17158,12 +17160,13 @@
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
-      "tier": "emerging",
+      "tier": "exploratory",
       "score": 5,
       "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
-      "rationale": "Two anecdotal community reports describe near-elimination of PMDD symptoms after taking progesterone, with no dosing or timing details.",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "contradicts",
+      "evidenceCaveat": "Randomized placebo-controlled trials have consistently found progesterone no better than placebo for severe PMS/PMDD. Retained as a documented negative result, not a candidate.",
+      "rationale": "Randomized placebo-controlled trials have consistently found progesterone no better than placebo for severe PMS/PMDD. Retained as a documented negative result, not a candidate. Two anecdotal community reports describe near-elimination of PMDD symptoms after taking progesterone, with no dosing or timing details.",
       "mechanism": "Progesterone supplementation may stabilize luteal-phase hormonal fluctuations thought to drive PMDD symptoms.",
       "dims": {
         "corroboration": "Medium",
@@ -17349,7 +17352,7 @@
     {
       "id": "WHEL-C-095",
       "signalId": "7f6ed8f9-842a-42ca-b224-7ca9e3fcf95a__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "SERTRALINE",
+      "drug": "Sertraline",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
@@ -17630,7 +17633,7 @@
     {
       "id": "WHEL-C-096",
       "signalId": "7cdba395-c486-4218-80d1-e51cbece31cd__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "SIMVASTATIN",
+      "drug": "Simvastatin",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -17850,8 +17853,174 @@
     },
     {
       "id": "WHEL-C-097",
+      "signalId": "297161b0-0686-4c6c-9236-6d816525aa21__e3758034-fa92-40a3-af17-80fbbdecb0d6",
+      "drug": "B Synthetic Conjugated Estrogens",
+      "condition": "menopause",
+      "conditionId": "perimenopause-menopause",
+      "curationClass": "drug",
+      "tier": "emerging",
+      "score": 4.5,
+      "origin": "Existing drug · repurposing candidate",
+      "pathway": "505(b)(2) · existing active ingredient, new indication",
+      "direction": "supports",
+      "rationale": "Per an Open Targets annotation, synthetic conjugated estrogens, B is an approved estrogen receptor agonist (ESR2) indicated for menopause.",
+      "mechanism": "The drug acts as an estrogen receptor agonist on estrogen receptor 2 (ESR2), restoring estrogenic signaling lost during menopause to relieve symptoms.",
+      "dims": {
+        "corroboration": "Low",
+        "rigor": "Medium",
+        "specificity": "High",
+        "plausibility": "High",
+        "consistency": "Medium"
+      },
+      "dimBreakdown": [
+        {
+          "key": "corroboration",
+          "label": "Corroboration",
+          "score": 0,
+          "level": "Low",
+          "rationale": "Only a single mechanistic line is provided: an Open Targets annotation describing SYNTHETIC CONJUGATED ESTROGENS, B as an estrogen receptor agonist (ESR2). No independent converging lines of evidence are cited."
+        },
+        {
+          "key": "rigor",
+          "label": "Rigor",
+          "score": 1,
+          "level": "Medium",
+          "rationale": "The claim cites a curated database entry (Open Targets) noting maximum clinical stage of APPROVAL, implying human-relevant clinical use, but no actual study models, data, or trials are described. The evidence is a database annotation rather than experimental rigor."
+        },
+        {
+          "key": "specificity",
+          "label": "Specificity",
+          "score": 2,
+          "level": "High",
+          "rationale": "The mechanism is precisely specified as an estrogen receptor agonist acting on a named target, estrogen receptor 2 (ESR2). This is a clearly defined drug-target action."
+        },
+        {
+          "key": "plausibility",
+          "label": "Plausibility",
+          "score": 2,
+          "level": "High",
+          "rationale": "Estrogen receptor agonism is highly plausible for menopause, where estrogen decline drives symptoms; replacing estrogenic signaling via ER agonism directly fits the phenotype. The named target (ESR2) is consistent with estrogenic therapy for menopausal indications."
+        },
+        {
+          "key": "consistency",
+          "label": "Consistency",
+          "score": 1,
+          "level": "Medium",
+          "rationale": "There is only one signal (ER agonism toward menopause approval), so directionality is internally consistent but cannot be cross-confirmed against other independent mechanistic claims. A single annotation limits assessment of consistency."
+        }
+      ],
+      "signalType": "pathway",
+      "evidenceStrength": "emerging",
+      "claims": [
+        {
+          "type": "extract",
+          "text": "Per Open Targets (retrieved 2026-06-16), SYNTHETIC CONJUGATED ESTROGENS, B is a clinical candidate for menopause (maximum clinical stage APPROVAL); its mechanism of action is Estrogen receptor agonist on target estrogen receptor 2.",
+          "src": "Open Targets · mechanistic",
+          "href": "https://platform.opentargets.org/drug/CHEMBL1201467"
+        }
+      ],
+      "validationStatus": "unvalidated_signal",
+      "femaleApplicability": {
+        "band": "F4",
+        "multiplier": 0.75,
+        "rationale": "Female representation not stated — applicability to women uncertain (flagged for full text)."
+      },
+      "arms": [
+        {
+          "arm": "pathway",
+          "aspect": "other",
+          "armScore": 4.5,
+          "strength": 6,
+          "tier": "emerging",
+          "isAnchor": true,
+          "dimensions": [
+            {
+              "key": "corroboration",
+              "label": "Corroboration",
+              "score": 0,
+              "rationale": "Only a single mechanistic line is provided: an Open Targets annotation describing SYNTHETIC CONJUGATED ESTROGENS, B as an estrogen receptor agonist (ESR2). No independent converging lines of evidence are cited."
+            },
+            {
+              "key": "rigor",
+              "label": "Rigor",
+              "score": 1,
+              "rationale": "The claim cites a curated database entry (Open Targets) noting maximum clinical stage of APPROVAL, implying human-relevant clinical use, but no actual study models, data, or trials are described. The evidence is a database annotation rather than experimental rigor."
+            },
+            {
+              "key": "specificity",
+              "label": "Specificity",
+              "score": 2,
+              "rationale": "The mechanism is precisely specified as an estrogen receptor agonist acting on a named target, estrogen receptor 2 (ESR2). This is a clearly defined drug-target action."
+            },
+            {
+              "key": "plausibility",
+              "label": "Plausibility",
+              "score": 2,
+              "rationale": "Estrogen receptor agonism is highly plausible for menopause, where estrogen decline drives symptoms; replacing estrogenic signaling via ER agonism directly fits the phenotype. The named target (ESR2) is consistent with estrogenic therapy for menopausal indications."
+            },
+            {
+              "key": "consistency",
+              "label": "Consistency",
+              "score": 1,
+              "rationale": "There is only one signal (ER agonism toward menopause approval), so directionality is internally consistent but cannot be cross-confirmed against other independent mechanistic claims. A single annotation limits assessment of consistency."
+            }
+          ],
+          "female": {
+            "band": "F4",
+            "multiplier": 0.75,
+            "rationale": "Female representation not stated — applicability to women uncertain (flagged for full text)."
+          },
+          "synthesis": "Per an Open Targets annotation, synthetic conjugated estrogens, B is an approved estrogen receptor agonist (ESR2) indicated for menopause.",
+          "mechanism": "The drug acts as an estrogen receptor agonist on estrogen receptor 2 (ESR2), restoring estrogenic signaling lost during menopause to relieve symptoms.",
+          "precisionNote": "no sample size or CI in source — precision unknown, flagged for full text",
+          "needsFulltext": true,
+          "contradictionFlag": false,
+          "numContradictions": 0
+        }
+      ],
+      "trialStatus": {
+        "compound_name": "SYNTHETIC CONJUGATED ESTROGENS, B",
+        "condition_name": "perimenopause & menopause",
+        "trial_count": 1,
+        "highest_phase": "PHASE3",
+        "highest_phase_label": "Phase 3",
+        "activity": "completed",
+        "top_trials": [
+          {
+            "nctId": "NCT00196378",
+            "title": "A Clinical Trial to Evaluate the Safety and Efficacy of Enjuvia 0.3 mg for the Treatment of Vulvovaginal Atrophy",
+            "phase": "PHASE3",
+            "status": "COMPLETED",
+            "url": "https://clinicaltrials.gov/study/NCT00196378"
+          }
+        ]
+      },
+      "orangeBook": {
+        "compound_name": "SYNTHETIC CONJUGATED ESTROGENS, B",
+        "fda_listed": false,
+        "supply": "not_listed",
+        "generic_available": false,
+        "marketed": false,
+        "latest_patent_expiry": null,
+        "marketing_status": "not_in_orange_book",
+        "products_sampled": []
+      },
+      "indication": {
+        "compound_name": "SYNTHETIC CONJUGATED ESTROGENS, B",
+        "condition_name": "perimenopause & menopause",
+        "has_fda_label": true,
+        "fda_approved_for_condition": true,
+        "label_relationship": "on_label",
+        "approved_indication_excerpt": "DICATIONS AND USAGE ENJUVIA tablets are indicated in the: Treatment of moderate to severe vasomotor symptoms associated with menopause. Treatment of moderate to severe vaginal dryness and pain with in",
+        "label_setid": "c0625060-29c7-4cda-b6f9-cfa15e59775e",
+        "label_title": "ENJUVIA (SYNTHETIC CONJUGATED ESTROGENS, B) TABLET [PHYSICIANS TOTAL CARE, INC.]",
+        "label_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=c0625060-29c7-4cda-b6f9-cfa15e59775e"
+      }
+    },
+    {
+      "id": "WHEL-C-098",
       "signalId": "d0459f01-02b2-41b4-ac46-47d365868a7d__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "DESOGESTREL",
+      "drug": "Desogestrel",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -18074,9 +18243,9 @@
       }
     },
     {
-      "id": "WHEL-C-098",
+      "id": "WHEL-C-099",
       "signalId": "04feb95d-0eb2-47ce-8904-25fd0616941b__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "ELAGOLIX SODIUM",
+      "drug": "Elagolix Sodium",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -18278,9 +18447,9 @@
       }
     },
     {
-      "id": "WHEL-C-099",
+      "id": "WHEL-C-100",
       "signalId": "041510d6-ac3c-4f73-8511-df8e44d5eb60__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "ESTRADIOL",
+      "drug": "Estradiol",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -18576,9 +18745,9 @@
       }
     },
     {
-      "id": "WHEL-C-100",
+      "id": "WHEL-C-101",
       "signalId": "54c47e3b-d531-48be-963f-26682921e21d__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "GOSERELIN",
+      "drug": "Goserelin",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -18830,9 +18999,9 @@
       }
     },
     {
-      "id": "WHEL-C-101",
+      "id": "WHEL-C-102",
       "signalId": "376c48da-11ba-43a2-90c3-80220b6699a7__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "HISTRELIN",
+      "drug": "Histrelin",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -19020,9 +19189,9 @@
       }
     },
     {
-      "id": "WHEL-C-102",
+      "id": "WHEL-C-103",
       "signalId": "26845ee7-fb72-4b09-a638-d053e291f837__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "RALOXIFENE",
+      "drug": "Raloxifene",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -19248,9 +19417,9 @@
       }
     },
     {
-      "id": "WHEL-C-103",
+      "id": "WHEL-C-104",
       "signalId": "8d5e712f-cc58-432d-a8d0-0c4a63b3ee9e__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "RELUGOLIX",
+      "drug": "Relugolix",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -19441,172 +19610,6 @@
         "label_setid": "fc3feb73-cc84-43a8-aa32-b262460495e8",
         "label_title": "MYFEMBREE (RELUGOLIX, ESTRADIOL HEMIHYDRATE, AND NORETHINDRONE ACETATE) TABLET, FILM COATED [SUMITOMO PHARMA AMERICA, INC]",
         "label_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=fc3feb73-cc84-43a8-aa32-b262460495e8"
-      }
-    },
-    {
-      "id": "WHEL-C-104",
-      "signalId": "297161b0-0686-4c6c-9236-6d816525aa21__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "SYNTHETIC CONJUGATED ESTROGENS, B",
-      "condition": "menopause",
-      "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
-      "tier": "emerging",
-      "score": 4.5,
-      "origin": "Existing drug · repurposing candidate",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
-      "rationale": "Per an Open Targets annotation, synthetic conjugated estrogens, B is an approved estrogen receptor agonist (ESR2) indicated for menopause.",
-      "mechanism": "The drug acts as an estrogen receptor agonist on estrogen receptor 2 (ESR2), restoring estrogenic signaling lost during menopause to relieve symptoms.",
-      "dims": {
-        "corroboration": "Low",
-        "rigor": "Medium",
-        "specificity": "High",
-        "plausibility": "High",
-        "consistency": "Medium"
-      },
-      "dimBreakdown": [
-        {
-          "key": "corroboration",
-          "label": "Corroboration",
-          "score": 0,
-          "level": "Low",
-          "rationale": "Only a single mechanistic line is provided: an Open Targets annotation describing SYNTHETIC CONJUGATED ESTROGENS, B as an estrogen receptor agonist (ESR2). No independent converging lines of evidence are cited."
-        },
-        {
-          "key": "rigor",
-          "label": "Rigor",
-          "score": 1,
-          "level": "Medium",
-          "rationale": "The claim cites a curated database entry (Open Targets) noting maximum clinical stage of APPROVAL, implying human-relevant clinical use, but no actual study models, data, or trials are described. The evidence is a database annotation rather than experimental rigor."
-        },
-        {
-          "key": "specificity",
-          "label": "Specificity",
-          "score": 2,
-          "level": "High",
-          "rationale": "The mechanism is precisely specified as an estrogen receptor agonist acting on a named target, estrogen receptor 2 (ESR2). This is a clearly defined drug-target action."
-        },
-        {
-          "key": "plausibility",
-          "label": "Plausibility",
-          "score": 2,
-          "level": "High",
-          "rationale": "Estrogen receptor agonism is highly plausible for menopause, where estrogen decline drives symptoms; replacing estrogenic signaling via ER agonism directly fits the phenotype. The named target (ESR2) is consistent with estrogenic therapy for menopausal indications."
-        },
-        {
-          "key": "consistency",
-          "label": "Consistency",
-          "score": 1,
-          "level": "Medium",
-          "rationale": "There is only one signal (ER agonism toward menopause approval), so directionality is internally consistent but cannot be cross-confirmed against other independent mechanistic claims. A single annotation limits assessment of consistency."
-        }
-      ],
-      "signalType": "pathway",
-      "evidenceStrength": "emerging",
-      "claims": [
-        {
-          "type": "extract",
-          "text": "Per Open Targets (retrieved 2026-06-16), SYNTHETIC CONJUGATED ESTROGENS, B is a clinical candidate for menopause (maximum clinical stage APPROVAL); its mechanism of action is Estrogen receptor agonist on target estrogen receptor 2.",
-          "src": "Open Targets · mechanistic",
-          "href": "https://platform.opentargets.org/drug/CHEMBL1201467"
-        }
-      ],
-      "validationStatus": "unvalidated_signal",
-      "femaleApplicability": {
-        "band": "F4",
-        "multiplier": 0.75,
-        "rationale": "Female representation not stated — applicability to women uncertain (flagged for full text)."
-      },
-      "arms": [
-        {
-          "arm": "pathway",
-          "aspect": "other",
-          "armScore": 4.5,
-          "strength": 6,
-          "tier": "emerging",
-          "isAnchor": true,
-          "dimensions": [
-            {
-              "key": "corroboration",
-              "label": "Corroboration",
-              "score": 0,
-              "rationale": "Only a single mechanistic line is provided: an Open Targets annotation describing SYNTHETIC CONJUGATED ESTROGENS, B as an estrogen receptor agonist (ESR2). No independent converging lines of evidence are cited."
-            },
-            {
-              "key": "rigor",
-              "label": "Rigor",
-              "score": 1,
-              "rationale": "The claim cites a curated database entry (Open Targets) noting maximum clinical stage of APPROVAL, implying human-relevant clinical use, but no actual study models, data, or trials are described. The evidence is a database annotation rather than experimental rigor."
-            },
-            {
-              "key": "specificity",
-              "label": "Specificity",
-              "score": 2,
-              "rationale": "The mechanism is precisely specified as an estrogen receptor agonist acting on a named target, estrogen receptor 2 (ESR2). This is a clearly defined drug-target action."
-            },
-            {
-              "key": "plausibility",
-              "label": "Plausibility",
-              "score": 2,
-              "rationale": "Estrogen receptor agonism is highly plausible for menopause, where estrogen decline drives symptoms; replacing estrogenic signaling via ER agonism directly fits the phenotype. The named target (ESR2) is consistent with estrogenic therapy for menopausal indications."
-            },
-            {
-              "key": "consistency",
-              "label": "Consistency",
-              "score": 1,
-              "rationale": "There is only one signal (ER agonism toward menopause approval), so directionality is internally consistent but cannot be cross-confirmed against other independent mechanistic claims. A single annotation limits assessment of consistency."
-            }
-          ],
-          "female": {
-            "band": "F4",
-            "multiplier": 0.75,
-            "rationale": "Female representation not stated — applicability to women uncertain (flagged for full text)."
-          },
-          "synthesis": "Per an Open Targets annotation, synthetic conjugated estrogens, B is an approved estrogen receptor agonist (ESR2) indicated for menopause.",
-          "mechanism": "The drug acts as an estrogen receptor agonist on estrogen receptor 2 (ESR2), restoring estrogenic signaling lost during menopause to relieve symptoms.",
-          "precisionNote": "no sample size or CI in source — precision unknown, flagged for full text",
-          "needsFulltext": true,
-          "contradictionFlag": false,
-          "numContradictions": 0
-        }
-      ],
-      "trialStatus": {
-        "compound_name": "SYNTHETIC CONJUGATED ESTROGENS, B",
-        "condition_name": "perimenopause & menopause",
-        "trial_count": 1,
-        "highest_phase": "PHASE3",
-        "highest_phase_label": "Phase 3",
-        "activity": "completed",
-        "top_trials": [
-          {
-            "nctId": "NCT00196378",
-            "title": "A Clinical Trial to Evaluate the Safety and Efficacy of Enjuvia 0.3 mg for the Treatment of Vulvovaginal Atrophy",
-            "phase": "PHASE3",
-            "status": "COMPLETED",
-            "url": "https://clinicaltrials.gov/study/NCT00196378"
-          }
-        ]
-      },
-      "orangeBook": {
-        "compound_name": "SYNTHETIC CONJUGATED ESTROGENS, B",
-        "fda_listed": false,
-        "supply": "not_listed",
-        "generic_available": false,
-        "marketed": false,
-        "latest_patent_expiry": null,
-        "marketing_status": "not_in_orange_book",
-        "products_sampled": []
-      },
-      "indication": {
-        "compound_name": "SYNTHETIC CONJUGATED ESTROGENS, B",
-        "condition_name": "perimenopause & menopause",
-        "has_fda_label": true,
-        "fda_approved_for_condition": true,
-        "label_relationship": "on_label",
-        "approved_indication_excerpt": "DICATIONS AND USAGE ENJUVIA tablets are indicated in the: Treatment of moderate to severe vasomotor symptoms associated with menopause. Treatment of moderate to severe vaginal dryness and pain with in",
-        "label_setid": "c0625060-29c7-4cda-b6f9-cfa15e59775e",
-        "label_title": "ENJUVIA (SYNTHETIC CONJUGATED ESTROGENS, B) TABLET [PHYSICIANS TOTAL CARE, INC.]",
-        "label_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=c0625060-29c7-4cda-b6f9-cfa15e59775e"
       }
     },
     {
@@ -21778,11 +21781,12 @@
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "supplement",
-      "tier": "emerging",
+      "tier": "exploratory",
       "score": 4,
       "origin": "Approved",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single user reported creatine had no effect on menopause-related brain fog until the dosage was substantially increased.",
       "mechanism": "Higher creatine doses may raise brain phosphocreatine stores enough to support cognitive energy metabolism, potentially relieving menopause-associated brain fog.",
       "dims": {
@@ -21939,7 +21943,7 @@
     {
       "id": "WHEL-C-118",
       "signalId": "e9003ea1-ee30-4de7-96ff-158a42eed2ce__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "ETHINYL ESTRADIOL",
+      "drug": "Ethinyl Estradiol",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
@@ -22220,12 +22224,13 @@
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
-      "tier": "emerging",
+      "tier": "exploratory",
       "score": 4,
       "origin": "FDA Approved",
       "drugClass": "nsaids",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single patient anecdote describes meloxicam as highly effective ('a miracle drug') for their endometriosis.",
       "mechanism": "As an NSAID, meloxicam may reduce endometriosis-associated pain by inhibiting prostaglandin synthesis and inflammation.",
       "dims": {
@@ -22415,13 +22420,14 @@
       "drug": "vaginal estrogen",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
-      "tier": "emerging",
+      "curationClass": "class",
+      "tier": "exploratory",
       "score": 4,
       "origin": "FDA Approved",
       "drugClass": "Menopausal hormone therapy (local)",
-      "pathway": "505(b)(2) · existing active ingredient, new indication",
-      "direction": "supports",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single community account reports that vaginal estrogen resolved their bladder issues, consistent with genitourinary symptoms of menopause.",
       "mechanism": "Local vaginal estrogen restores urogenital epithelial tissue and may thereby improve bladder/urinary symptoms associated with menopause.",
       "dims": {
@@ -22596,7 +22602,7 @@
     {
       "id": "WHEL-C-121",
       "signalId": "6ac3c4b2-178a-4b38-9c40-6adef793e2b8__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "CABERGOLINE",
+      "drug": "Cabergoline",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -22895,7 +22901,7 @@
     {
       "id": "WHEL-C-122",
       "signalId": "8db8c878-b6f6-4c3a-8916-67ca943ad4da__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "DANAZOL",
+      "drug": "Danazol",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -23189,7 +23195,7 @@
     {
       "id": "WHEL-C-123",
       "signalId": "bc13ec6f-16f8-4001-b8b1-a7b165519dc1__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "DESVENLAFAXINE SUCCINATE",
+      "drug": "Desvenlafaxine Succinate",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -23480,7 +23486,7 @@
     {
       "id": "WHEL-C-124",
       "signalId": "b95a02c5-6a61-4087-9694-8ed237f007d9__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "EPELSIBAN",
+      "drug": "Epelsiban",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -23647,7 +23653,7 @@
     {
       "id": "WHEL-C-125",
       "signalId": "b059b3fd-6222-499b-87bb-f6fd3d6cce63__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "ERGOCALCIFEROL",
+      "drug": "Ergocalciferol",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "supplement",
@@ -23855,7 +23861,7 @@
     {
       "id": "WHEL-C-126",
       "signalId": "4f298539-db26-48e8-b86e-bbc7c69884a9__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "ESTRADIOL VALERATE",
+      "drug": "Estradiol Valerate",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -24083,7 +24089,7 @@
     {
       "id": "WHEL-C-127",
       "signalId": "13998085-3d51-40d8-807f-ad408d63ac4e__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "ESTRIOL",
+      "drug": "Estriol",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -24270,7 +24276,7 @@
     {
       "id": "WHEL-C-128",
       "signalId": "a1fd3f26-6434-4c31-a1d3-20b171dd66f4__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "ESTRONE",
+      "drug": "Estrone",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
@@ -24531,7 +24537,7 @@
     {
       "id": "WHEL-C-129",
       "signalId": "e566f424-c6ab-4fbd-9cdd-98821fcd8788__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "GONADORELIN ACETATE",
+      "drug": "Gonadorelin Acetate",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -24721,7 +24727,7 @@
     {
       "id": "WHEL-C-130",
       "signalId": "97cc587b-f617-4589-b1df-9139f8a7ca7d__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "LETROZOLE",
+      "drug": "Letrozole",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -25006,7 +25012,7 @@
     {
       "id": "WHEL-C-131",
       "signalId": "f0a7e4d8-9652-4a5e-b1a3-572fc87c4048__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "LEUPROLIDE",
+      "drug": "Leuprolide",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -25213,7 +25219,7 @@
     {
       "id": "WHEL-C-132",
       "signalId": "2e979d12-b11d-4e77-99d7-6171b6fda089__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "LEVONORGESTREL",
+      "drug": "Levonorgestrel",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
@@ -25473,7 +25479,7 @@
     {
       "id": "WHEL-C-133",
       "signalId": "901054e4-34cb-4773-ac71-e9bfb2efbee0__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "MENOTROPINS",
+      "drug": "Menotropins",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -25622,7 +25628,7 @@
     {
       "id": "WHEL-C-134",
       "signalId": "6f07bf3d-46a6-408b-b253-a6bd96a6d4d7__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "NORETHINDRONE",
+      "drug": "Norethindrone",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -25829,7 +25835,7 @@
     {
       "id": "WHEL-C-135",
       "signalId": "c89c26d2-a9e5-42b2-b3bf-7b71ca24e957__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "ROSIGLITAZONE",
+      "drug": "Rosiglitazone",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -26048,7 +26054,7 @@
     {
       "id": "WHEL-C-136",
       "signalId": "7f4eee9f-14b2-4d55-984b-800d9658ce94__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "TANEZUMAB",
+      "drug": "Tanezumab",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -26198,7 +26204,7 @@
     {
       "id": "WHEL-C-137",
       "signalId": "150b12a0-d4fd-41b2-9616-54bba3d38fc4__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "TRIPTORELIN",
+      "drug": "Triptorelin",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -26404,7 +26410,7 @@
     {
       "id": "WHEL-C-138",
       "signalId": "e4ea5770-4d2c-4e3d-8b95-defada7816b8__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "ULIPRISTAL ACETATE",
+      "drug": "Ulipristal Acetate",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -28465,7 +28471,7 @@
     {
       "id": "WHEL-C-150",
       "signalId": "7330eec6-af95-4731-a824-f9eca7fc8ae6__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "ASPIRIN",
+      "drug": "Aspirin",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -28719,7 +28725,7 @@
     {
       "id": "WHEL-C-151",
       "signalId": "9c1bbc74-1113-49bf-bde7-6a4839ba970a__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "CORTICOTROPIN",
+      "drug": "Corticotropin",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -28909,7 +28915,7 @@
     {
       "id": "WHEL-C-152",
       "signalId": "e5e1c9ed-6926-4b12-a042-0ad4890672b2__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "DROSPIRENONE",
+      "drug": "Drospirenone",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
@@ -29181,6 +29187,7 @@
       "origin": "Existing drug · repurposing candidate",
       "pathway": "Hypothesis-generation · pre-validation",
       "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single patient reported that duloxetine (Cymbalta) worsened their vulvodynia symptoms.",
       "mechanism": "Mechanism not yet characterized in the substrate.",
       "dims": {
@@ -29360,7 +29367,7 @@
     {
       "id": "WHEL-C-154",
       "signalId": "ef8517a1-3e6a-4e8b-940d-e9d4dcb8a9f9__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "PENTOXIFYLLINE",
+      "drug": "Pentoxifylline",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -29774,7 +29781,7 @@
     {
       "id": "WHEL-C-156",
       "signalId": "417c1bfd-e910-49d5-9e17-fb7e399abf2d__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "BENTAMAPIMOD",
+      "drug": "Bentamapimod",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -29924,7 +29931,7 @@
     {
       "id": "WHEL-C-157",
       "signalId": "c1bdf08b-2fd2-4d31-9ec9-a88972fa1322__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "BROMOCRIPTINE",
+      "drug": "Bromocriptine",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -30148,6 +30155,7 @@
       "drugClass": "Major depressive disorder / generalized anxiety disorder",
       "pathway": "Hypothesis-generation · pre-validation",
       "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single community report describes complete resolution of tight pelvic floor issues after taking Lexapro (escitalopram).",
       "mechanism": "Serotonergic SSRI activity may reduce pelvic floor muscle tension and pain sensitivity, easing vulvodynia-related symptoms.",
       "dims": {
@@ -30492,6 +30500,7 @@
       "origin": "Existing drug · repurposing candidate",
       "pathway": "Hypothesis-generation · pre-validation",
       "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single anecdote reports markedly reduced PMDD symptoms in one month while taking lysine for a cold sore.",
       "mechanism": "Mechanism not yet characterized in the substrate.",
       "dims": {
@@ -30807,6 +30816,7 @@
       "origin": "Approved",
       "pathway": "Hypothesis-generation · pre-validation",
       "direction": "silent",
+      "evidenceCaveat": "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory.",
       "rationale": "A single patient anecdote claims testosterone 'cured' their endometriosis, with no supporting detail.",
       "mechanism": "Androgens may suppress estrogen-dependent endometrial tissue growth, potentially reducing endometriosis activity.",
       "dims": {
@@ -31173,7 +31183,7 @@
       "drug": "vaginal oestrogen",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
-      "curationClass": "drug",
+      "curationClass": "class",
       "tier": "exploratory",
       "score": 2,
       "origin": "Existing drug · repurposing candidate",
@@ -31549,7 +31559,7 @@
     {
       "id": "WHEL-C-166",
       "signalId": "e5e1c9ed-6926-4b12-a042-0ad4890672b2__61143789-de48-488b-968b-f3f71189f1bc",
-      "drug": "DROSPIRENONE",
+      "drug": "Drospirenone",
       "condition": "adenomyosis",
       "conditionId": "adenomyosis",
       "curationClass": "drug",
@@ -31786,7 +31796,7 @@
     {
       "id": "WHEL-C-167",
       "signalId": "3147af2c-fe61-47d5-b495-a524f8116833__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "MARVELON",
+      "drug": "Marvelon",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
@@ -31934,7 +31944,7 @@
     {
       "id": "WHEL-C-168",
       "signalId": "d7a2a7e6-ec6f-47b9-be6e-9e9497963a9d__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "ACETYLCYSTEINE",
+      "drug": "Acetylcysteine",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -32187,156 +32197,8 @@
     },
     {
       "id": "WHEL-C-169",
-      "signalId": "cbda9ece-a1a7-45c2-8b23-897540675281__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "CLOVER, RED",
-      "condition": "menopause",
-      "conditionId": "perimenopause-menopause",
-      "curationClass": "supplement",
-      "tier": "exploratory",
-      "score": 0,
-      "origin": "Existing drug · repurposing candidate",
-      "pathway": "Hypothesis-generation · pre-validation",
-      "direction": "silent",
-      "rationale": "Per Open Targets, red clover is registered as a Phase 1 clinical candidate for menopause, but no mechanistic data are provided.",
-      "mechanism": "Mechanism not yet characterized in the substrate.",
-      "dims": {
-        "corroboration": "Low",
-        "rigor": "Low",
-        "specificity": "Low",
-        "plausibility": "Low",
-        "consistency": "Low"
-      },
-      "dimBreakdown": [
-        {
-          "key": "corroboration",
-          "label": "Corroboration",
-          "score": 0,
-          "level": "Low",
-          "rationale": "Only a single registry-level claim is provided, stating that red clover is a Phase 1 clinical candidate for menopause. No independent mechanistic lines are described, so there is no convergence of evidence."
-        },
-        {
-          "key": "rigor",
-          "label": "Rigor",
-          "score": 0,
-          "level": "Low",
-          "rationale": "The lone claim is a database annotation of clinical development stage, not a mechanistic model. No human, animal, or in-vitro mechanistic data are cited to assess rigor."
-        },
-        {
-          "key": "specificity",
-          "label": "Specificity",
-          "score": 0,
-          "level": "Low",
-          "rationale": "Nothing in the claim describes a molecular target or the specificity of red clover's action. The only information is a maximum clinical stage of PHASE_1."
-        },
-        {
-          "key": "plausibility",
-          "label": "Plausibility",
-          "score": 0,
-          "level": "Low",
-          "rationale": "The claim provides no target-phenotype link or mechanism connecting red clover to menopausal symptoms. Without any pathway detail, plausibility cannot be supported."
-        },
-        {
-          "key": "consistency",
-          "label": "Consistency",
-          "score": 0,
-          "level": "Low",
-          "rationale": "There is only one signal, a registry status note, so directional consistency across mechanistic signals cannot be evaluated. No converging or conflicting evidence is present."
-        }
-      ],
-      "signalType": "pathway",
-      "evidenceStrength": "exploratory",
-      "claims": [
-        {
-          "type": "extract",
-          "text": "Per Open Targets (retrieved 2026-06-16), CLOVER, RED is a clinical candidate for menopause (maximum clinical stage PHASE_1).",
-          "src": "Open Targets · mechanistic",
-          "href": "https://platform.opentargets.org/drug/CHEMBL2108933"
-        }
-      ],
-      "validationStatus": "preliminary",
-      "femaleApplicability": {
-        "band": "F4",
-        "multiplier": 0.75,
-        "rationale": "Female representation not stated — applicability to women uncertain (flagged for full text)."
-      },
-      "arms": [
-        {
-          "arm": "pathway",
-          "aspect": "other",
-          "armScore": 0,
-          "strength": 0,
-          "tier": "exploratory",
-          "isAnchor": true,
-          "dimensions": [
-            {
-              "key": "corroboration",
-              "label": "Corroboration",
-              "score": 0,
-              "rationale": "Only a single registry-level claim is provided, stating that red clover is a Phase 1 clinical candidate for menopause. No independent mechanistic lines are described, so there is no convergence of evidence."
-            },
-            {
-              "key": "rigor",
-              "label": "Rigor",
-              "score": 0,
-              "rationale": "The lone claim is a database annotation of clinical development stage, not a mechanistic model. No human, animal, or in-vitro mechanistic data are cited to assess rigor."
-            },
-            {
-              "key": "specificity",
-              "label": "Specificity",
-              "score": 0,
-              "rationale": "Nothing in the claim describes a molecular target or the specificity of red clover's action. The only information is a maximum clinical stage of PHASE_1."
-            },
-            {
-              "key": "plausibility",
-              "label": "Plausibility",
-              "score": 0,
-              "rationale": "The claim provides no target-phenotype link or mechanism connecting red clover to menopausal symptoms. Without any pathway detail, plausibility cannot be supported."
-            },
-            {
-              "key": "consistency",
-              "label": "Consistency",
-              "score": 0,
-              "rationale": "There is only one signal, a registry status note, so directional consistency across mechanistic signals cannot be evaluated. No converging or conflicting evidence is present."
-            }
-          ],
-          "female": {
-            "band": "F4",
-            "multiplier": 0.75,
-            "rationale": "Female representation not stated — applicability to women uncertain (flagged for full text)."
-          },
-          "synthesis": "Per Open Targets, red clover is registered as a Phase 1 clinical candidate for menopause, but no mechanistic data are provided.",
-          "precisionNote": "no sample size or CI in source — precision unknown, flagged for full text",
-          "needsFulltext": true,
-          "contradictionFlag": false,
-          "numContradictions": 0
-        }
-      ],
-      "orangeBook": {
-        "compound_name": "CLOVER, RED",
-        "fda_listed": false,
-        "supply": "not_listed",
-        "generic_available": false,
-        "marketed": false,
-        "latest_patent_expiry": null,
-        "marketing_status": "not_in_orange_book",
-        "products_sampled": []
-      },
-      "indication": {
-        "compound_name": "CLOVER, RED",
-        "condition_name": "perimenopause & menopause",
-        "has_fda_label": true,
-        "fda_approved_for_condition": false,
-        "label_relationship": "off_label",
-        "approved_indication_excerpt": null,
-        "label_setid": null,
-        "label_title": null,
-        "label_url": null
-      }
-    },
-    {
-      "id": "WHEL-C-170",
       "signalId": "605761e1-fdf8-44ee-a47a-8f63a841f1bc__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "ELTANOLONE",
+      "drug": "Eltanolone",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "drug",
@@ -32483,9 +32345,9 @@
       }
     },
     {
-      "id": "WHEL-C-171",
+      "id": "WHEL-C-170",
       "signalId": "b8bd8ac0-d7d0-4721-ba06-f0426223fe8c__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "ENCLOMIPHENE CITRATE",
+      "drug": "Enclomiphene Citrate",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -32710,9 +32572,9 @@
       }
     },
     {
-      "id": "WHEL-C-172",
+      "id": "WHEL-C-171",
       "signalId": "9f3b74e7-a669-4df9-9e4e-dd9e7c45f475__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "FOLIC ACID",
+      "drug": "Folic Acid",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "supplement",
@@ -32937,9 +32799,9 @@
       }
     },
     {
-      "id": "WHEL-C-173",
+      "id": "WHEL-C-172",
       "signalId": "c9e66c9d-9d97-4244-98f1-0061b47da1e0__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "INTERFERON ALFA",
+      "drug": "Interferon Alfa",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -33085,9 +32947,9 @@
       }
     },
     {
-      "id": "WHEL-C-174",
+      "id": "WHEL-C-173",
       "signalId": "d735fc43-3ce2-4d25-864b-7766bf050f78__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "ISOFLAVONE",
+      "drug": "Isoflavone",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "supplement",
@@ -33271,9 +33133,9 @@
       }
     },
     {
-      "id": "WHEL-C-175",
+      "id": "WHEL-C-174",
       "signalId": "5f2390ac-13e2-4e33-8c98-515e7f1fe1a7__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "KISSPEPTIN-10",
+      "drug": "Kisspeptin-10",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -33419,9 +33281,9 @@
       }
     },
     {
-      "id": "WHEL-C-176",
+      "id": "WHEL-C-175",
       "signalId": "272ac39b-67c6-4415-8380-49a142741863__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "LACTULOSE",
+      "drug": "Lactulose",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "drug",
@@ -33608,9 +33470,9 @@
       }
     },
     {
-      "id": "WHEL-C-177",
+      "id": "WHEL-C-176",
       "signalId": "afa0f645-cd9d-46fa-b11a-38e0b0d5071a__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "NITRIC ACID",
+      "drug": "Nitric Acid",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "drug",
@@ -33756,9 +33618,9 @@
       }
     },
     {
-      "id": "WHEL-C-178",
+      "id": "WHEL-C-177",
       "signalId": "85c5dd1c-ce80-48db-97fd-dc5797579875__fc6df098-33bb-45d7-a203-fdb0dc5095b1",
-      "drug": "NUX VOMICA EXTRACT",
+      "drug": "Nux Vomica Extract",
       "condition": "PMDD",
       "conditionId": "pmdd",
       "curationClass": "supplement",
@@ -33904,9 +33766,9 @@
       }
     },
     {
-      "id": "WHEL-C-179",
+      "id": "WHEL-C-178",
       "signalId": "13540a78-d75c-4e96-9055-ab97b26c2771__e3758034-fa92-40a3-af17-80fbbdecb0d6",
-      "drug": "PTEROSTILBENE",
+      "drug": "Pterostilbene",
       "condition": "menopause",
       "conditionId": "perimenopause-menopause",
       "curationClass": "supplement",
@@ -34069,9 +33931,157 @@
       }
     },
     {
+      "id": "WHEL-C-179",
+      "signalId": "cbda9ece-a1a7-45c2-8b23-897540675281__e3758034-fa92-40a3-af17-80fbbdecb0d6",
+      "drug": "Red Clover",
+      "condition": "menopause",
+      "conditionId": "perimenopause-menopause",
+      "curationClass": "supplement",
+      "tier": "exploratory",
+      "score": 0,
+      "origin": "Existing drug · repurposing candidate",
+      "pathway": "Hypothesis-generation · pre-validation",
+      "direction": "silent",
+      "rationale": "Per Open Targets, red clover is registered as a Phase 1 clinical candidate for menopause, but no mechanistic data are provided.",
+      "mechanism": "Mechanism not yet characterized in the substrate.",
+      "dims": {
+        "corroboration": "Low",
+        "rigor": "Low",
+        "specificity": "Low",
+        "plausibility": "Low",
+        "consistency": "Low"
+      },
+      "dimBreakdown": [
+        {
+          "key": "corroboration",
+          "label": "Corroboration",
+          "score": 0,
+          "level": "Low",
+          "rationale": "Only a single registry-level claim is provided, stating that red clover is a Phase 1 clinical candidate for menopause. No independent mechanistic lines are described, so there is no convergence of evidence."
+        },
+        {
+          "key": "rigor",
+          "label": "Rigor",
+          "score": 0,
+          "level": "Low",
+          "rationale": "The lone claim is a database annotation of clinical development stage, not a mechanistic model. No human, animal, or in-vitro mechanistic data are cited to assess rigor."
+        },
+        {
+          "key": "specificity",
+          "label": "Specificity",
+          "score": 0,
+          "level": "Low",
+          "rationale": "Nothing in the claim describes a molecular target or the specificity of red clover's action. The only information is a maximum clinical stage of PHASE_1."
+        },
+        {
+          "key": "plausibility",
+          "label": "Plausibility",
+          "score": 0,
+          "level": "Low",
+          "rationale": "The claim provides no target-phenotype link or mechanism connecting red clover to menopausal symptoms. Without any pathway detail, plausibility cannot be supported."
+        },
+        {
+          "key": "consistency",
+          "label": "Consistency",
+          "score": 0,
+          "level": "Low",
+          "rationale": "There is only one signal, a registry status note, so directional consistency across mechanistic signals cannot be evaluated. No converging or conflicting evidence is present."
+        }
+      ],
+      "signalType": "pathway",
+      "evidenceStrength": "exploratory",
+      "claims": [
+        {
+          "type": "extract",
+          "text": "Per Open Targets (retrieved 2026-06-16), CLOVER, RED is a clinical candidate for menopause (maximum clinical stage PHASE_1).",
+          "src": "Open Targets · mechanistic",
+          "href": "https://platform.opentargets.org/drug/CHEMBL2108933"
+        }
+      ],
+      "validationStatus": "preliminary",
+      "femaleApplicability": {
+        "band": "F4",
+        "multiplier": 0.75,
+        "rationale": "Female representation not stated — applicability to women uncertain (flagged for full text)."
+      },
+      "arms": [
+        {
+          "arm": "pathway",
+          "aspect": "other",
+          "armScore": 0,
+          "strength": 0,
+          "tier": "exploratory",
+          "isAnchor": true,
+          "dimensions": [
+            {
+              "key": "corroboration",
+              "label": "Corroboration",
+              "score": 0,
+              "rationale": "Only a single registry-level claim is provided, stating that red clover is a Phase 1 clinical candidate for menopause. No independent mechanistic lines are described, so there is no convergence of evidence."
+            },
+            {
+              "key": "rigor",
+              "label": "Rigor",
+              "score": 0,
+              "rationale": "The lone claim is a database annotation of clinical development stage, not a mechanistic model. No human, animal, or in-vitro mechanistic data are cited to assess rigor."
+            },
+            {
+              "key": "specificity",
+              "label": "Specificity",
+              "score": 0,
+              "rationale": "Nothing in the claim describes a molecular target or the specificity of red clover's action. The only information is a maximum clinical stage of PHASE_1."
+            },
+            {
+              "key": "plausibility",
+              "label": "Plausibility",
+              "score": 0,
+              "rationale": "The claim provides no target-phenotype link or mechanism connecting red clover to menopausal symptoms. Without any pathway detail, plausibility cannot be supported."
+            },
+            {
+              "key": "consistency",
+              "label": "Consistency",
+              "score": 0,
+              "rationale": "There is only one signal, a registry status note, so directional consistency across mechanistic signals cannot be evaluated. No converging or conflicting evidence is present."
+            }
+          ],
+          "female": {
+            "band": "F4",
+            "multiplier": 0.75,
+            "rationale": "Female representation not stated — applicability to women uncertain (flagged for full text)."
+          },
+          "synthesis": "Per Open Targets, red clover is registered as a Phase 1 clinical candidate for menopause, but no mechanistic data are provided.",
+          "precisionNote": "no sample size or CI in source — precision unknown, flagged for full text",
+          "needsFulltext": true,
+          "contradictionFlag": false,
+          "numContradictions": 0
+        }
+      ],
+      "orangeBook": {
+        "compound_name": "CLOVER, RED",
+        "fda_listed": false,
+        "supply": "not_listed",
+        "generic_available": false,
+        "marketed": false,
+        "latest_patent_expiry": null,
+        "marketing_status": "not_in_orange_book",
+        "products_sampled": []
+      },
+      "indication": {
+        "compound_name": "CLOVER, RED",
+        "condition_name": "perimenopause & menopause",
+        "has_fda_label": true,
+        "fda_approved_for_condition": false,
+        "label_relationship": "off_label",
+        "approved_indication_excerpt": null,
+        "label_setid": null,
+        "label_title": null,
+        "label_url": null
+      }
+    },
+    {
       "id": "WHEL-C-180",
       "signalId": "175b57e3-8e5d-4ad5-ac01-664358e0820d__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "TILDACERFONT",
+      "drug": "Tildacerfont",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "drug",
@@ -34236,7 +34246,7 @@
     {
       "id": "WHEL-C-181",
       "signalId": "e75c7096-244d-48fc-a574-1ff3c1e1d135__3d08eafb-9ddd-4669-a3bc-f80164f7f1c5",
-      "drug": "UBIDECARENONE",
+      "drug": "Ubidecarenone",
       "condition": "PCOS",
       "conditionId": "pcos",
       "curationClass": "supplement",
@@ -34384,7 +34394,7 @@
     {
       "id": "WHEL-C-182",
       "signalId": "aedfa810-bac6-4c5b-a525-52046b55f356__13c33c1b-98d6-4ef0-bb1a-add1344261a5",
-      "drug": "VITAMIN E",
+      "drug": "Vitamin E",
       "condition": "endometriosis",
       "conditionId": "endometriosis",
       "curationClass": "supplement",

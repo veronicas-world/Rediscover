@@ -520,18 +520,6 @@ details.disclose-block[open] > summary .disclose-chev { transform: rotate(180deg
 @media (max-width: 640px){ .pipeline-grid { grid-template-columns: 1fr !important; } .stack-640 { grid-template-columns: 1fr !important; gap: 6px !important; } }
 @media (max-width: 560px){ .arc-grid, .exp-grid, .tier-grid { grid-template-columns: 1fr !important; } }
 
-/* ── Typewriter cursor ───────────────────────────────────────────────── */
-/* Typing caret painted as the typed-span's right border. A border (unlike a
-   separate inline-block element) adds no line-break opportunity, so the word
-   being typed never breaks onto the line above. The -2px margin cancels the
-   border's width so the caret has zero effect on where the text wraps. */
-.type-caret {
-  border-right: 2px solid var(--on-ink);
-  margin-right: -2px;
-  animation: caret-blink 0.65s step-end infinite;
-}
-@keyframes caret-blink { 50% { border-right-color: transparent; } }
-
 /* ── Scroll dynamics ─────────────────────────────────────────────────── */
 body.scroll-effects-ready .scroll-section {
   position: relative;
