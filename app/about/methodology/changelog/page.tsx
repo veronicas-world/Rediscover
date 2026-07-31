@@ -132,8 +132,51 @@ export default function MethodologyChangelogPage() {
           }}
         >
 
-          {/* v4.1 — regulatory & development-status layer */}
+          {/* v4.2 — claim span repair and entailment re-score */}
           <EntryWrapper isFirst>
+            <div style={ENTRY_EYEBROW}>
+              Methodology v4.2 &middot; July 31, 2026
+            </div>
+            <p style={ENTRY_PARA}>
+              Repaired the quoted evidence behind a group of claims and re-ran the
+              entailment check. An audit of every language-model-extracted claim
+              sitting behind an active signal found 78 scored{" "}
+              <code style={{ fontFamily: "inherit", color: "var(--ink-2)" }}>neutral</code>,
+              meaning the quote attached to the claim neither supported nor contradicted
+              it. Inspection showed these were not fabricated claims. The stored quote had
+              been cropped so tightly that it no longer carried the direction of the
+              effect. One claim stated that a therapy was beneficial for vertebral
+              fracture while its quote read only &ldquo;sexual function, vertebral and
+              nonvertebral fracture&rdquo;, naming the outcome and omitting the finding.
+            </p>
+            <p style={ENTRY_PARA_NEXT}>
+              Each affected quote was re-extracted from the stored source text, widened to
+              the passage containing the finding, and verified to occur character for
+              character in that source before being written. Mean quote length went from 72
+              to 248 characters. Nine claims whose stored character offsets no longer
+              resolved to their quote were repaired at the same time. Entailment across
+              extracted claims rose from 72.4 percent to 97.3 percent, and the figure now
+              shown on the home page is computed from that population at request time.
+            </p>
+            <p style={ENTRY_PARA_NEXT}>
+              Two further corrections came out of the same audit. A small number of claims
+              were supported by a quote that turned out to be the title of the paper rather
+              than a result; a title states what was studied, not what was found, so those
+              were re-pointed at the reported outcome. And reported entailment figures now
+              exclude the pathway readouts rendered from structured records, since checking
+              a generated sentence against the data it was generated from proves nothing.
+              What remains neutral is documented on the{" "}
+              <Link href="/about/technical-architecture#limitations" style={ENTRY_LINK}>
+                technical architecture
+              </Link>{" "}
+              page under claim atomization: where a source reports several outcomes in one
+              sentence and the pipeline records a claim for each, no single passage isolates
+              any one of them.
+            </p>
+          </EntryWrapper>
+
+          {/* v4.1 — regulatory & development-status layer */}
+          <EntryWrapper>
             <div style={ENTRY_EYEBROW}>
               Methodology v4.1 &middot; June 28, 2026
             </div>
