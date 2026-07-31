@@ -331,19 +331,24 @@ h1, h2, h3, h4 {
 
 /* ── Stat grid (dark surface) ─────────────────────────────────────────── */
 
-.statgrid { display: grid; grid-template-columns: repeat(4,1fr); }
-.statgrid .s { padding: 26px; border-right: 1px solid var(--ink-line-2); }
+/* Five stats across one row on the homepage. The numerals are sized down from
+   the original four-column setting so the fifth cell fits without wrapping. */
+.statgrid { display: grid; grid-template-columns: repeat(5,1fr); }
+.statgrid .s { padding: 22px 20px; border-right: 1px solid var(--ink-line-2); }
 .statgrid .s:last-child { border-right: none; }
 .statgrid .s .v {
   font-family: var(--font-newsreader, Georgia, serif); font-weight: 400;
-  font-size: clamp(34px,3.4vw,48px); line-height: 1; letter-spacing: -0.02em; color: var(--on-ink);
+  font-size: clamp(26px,2.5vw,38px); line-height: 1; letter-spacing: -0.02em; color: var(--on-ink);
 }
 .statgrid .s .v .mk { color: var(--signal); }
-.statgrid .s .l { font-family: var(--font-plex-mono, monospace); font-size: 11px; letter-spacing: 0.04em; color: var(--on-ink-mut); margin-top: 13px; line-height: 1.55; }
+.statgrid .s .l { font-family: var(--font-plex-mono, monospace); font-size: 10.5px; letter-spacing: 0.03em; color: var(--on-ink-mut); margin-top: 11px; line-height: 1.5; }
 .statgrid.light .s { border-right-color: var(--line-2); }
 .statgrid.light .s .v { color: var(--body); }
 .statgrid.light .s .v .mk { color: var(--moss); }
 .statgrid.light .s .l { color: var(--muted); }
+/* Five columns get too narrow below a wide desktop, so step down to three and
+   then two rather than letting a single cell strand on its own row. */
+@media (max-width: 1180px){ .statgrid { grid-template-columns: repeat(3,1fr); } .statgrid .s:nth-child(3n) { border-right: none; } }
 @media (max-width: 820px){ .statgrid { grid-template-columns: 1fr 1fr; } .statgrid .s { padding: 20px; border: none; border-bottom: 1px solid var(--ink-line-2); } }
 
 /* ── Candidate card ───────────────────────────────────────────────────── */
