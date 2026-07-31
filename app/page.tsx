@@ -216,7 +216,14 @@ export default async function Home() {
             <div className="s">
               <div className="v">{entailedLabel}</div>
               <div className="l">
-                of {ent.scored} quotes checked actually support the claim they back
+                of {ent.scored} quotes checked support the claim they back.{" "}
+                {ent.neutral > 0 && (
+                  <>
+                    {ent.neutral === 1 ? "One is" : `${ent.neutral} are`} vaguer than the
+                    claim but still relevant
+                    {ent.contradicted === 0 ? ", and none are contradictory" : ""}.
+                  </>
+                )}
               </div>
             </div>
             {FACTS.map((f) => (
