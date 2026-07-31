@@ -296,6 +296,10 @@ def main() -> int:
     parser.add_argument("--resume", action="store_true", help="Reuse results from the previous run log.")
     parser.add_argument("--label", default="neutral",
                         help="Entailment label to repair. Default: neutral.")
+    parser.add_argument("--claim-ids", default=None,
+                        help="Comma-separated claim ids to repair, ignoring --label. Use for "
+                             "targeted fixes, e.g. claims that scored entailed against a quote "
+                             "that turns out to be the paper title rather than a finding.")
     args = parser.parse_args()
 
     load_dotenv()
@@ -318,14 +322,22 @@ def main() -> int:
             referenced.add(str(cid))
     print(f"  {len(referenced)} claim ids referenced by active signals")
 
-    print(f"loading claims labelled '{args.label}'…")
-    claims = sb_get(
-        base, headers, "claims",
-        "select=id,text,exact_quote,quote_start_char,quote_end_char,"
-        f"entailment_label,entailment_score,document_id&entailment_label=eq.{args.label}",
-    )
-    claims = [c for c in claims if str(c["id"]) in referenced]
-    print(f"  {len(claims)} '{args.label}' claims behind active signals")
+    cols = ("select=id,text,exact_quote,quote_start_char,quote_end_char,"
+            "entailment_label,entailment_score,document_id")
+    if args.claim_ids:
+        wanted = [c.strip() for c in args.claim_ids.split(",") if c.strip()]
+        print(f"loading {len(wanted)} claim(s) by id…")
+        in_list = ",".join(f'"{c}"' for c in wanted)
+        claims = sb_get(base, headers, "claims", f"{cols}&id=in.({in_list})")
+        missing = set(wanted) - {str(c["id"]) for c in claims}
+        if missing:
+            print(f"  warning: {len(missing)} id(s) not found: {', '.join(sorted(missing))}")
+        print(f"  {len(claims)} claim(s) loaded")
+    else:
+        print(f"loading claims labelled '{args.label}'…")
+        claims = sb_get(base, headers, "claims", f"{cols}&entailment_label=eq.{args.label}")
+        claims = [c for c in claims if str(c["id"]) in referenced]
+        print(f"  {len(claims)} '{args.label}' claims behind active signals")
 
     doc_ids = sorted({c["document_id"] for c in claims if c.get("document_id")})
     docs: dict[str, dict] = {}
