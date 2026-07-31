@@ -121,6 +121,13 @@ export default async function Home() {
   // Provenance volume: distinct verbatim claims behind the active signals.
   const citationsLabel = home.claims > 0 ? home.claims.toLocaleString("en-US") : "–";
 
+  // Provenance QUALITY, not just volume: the share of language-model-extracted
+  // claims whose quoted passage an entailment check confirms actually supports
+  // the claim. Template-rendered pathway readouts are excluded upstream, since
+  // checking those against their own source record would be circular.
+  const ent = home.entailment;
+  const entailedLabel = ent.entailedPct != null ? `${ent.entailedPct}%` : "–";
+
   // Showcase contrast card: when its independent readings disagree — a strong
   // MATRIX cross-reference present while Whel's own ingested-evidence tier is
   // lower — surface that disagreement explicitly as a teaching "key" under the
@@ -205,6 +212,13 @@ export default async function Home() {
             <div className="s">
               <div className="v">{citationsLabel}</div>
               <div className="l">verbatim claims, each pinned to a source quote</div>
+            </div>
+            <div className="s">
+              <div className="v">{entailedLabel}</div>
+              <div className="l">
+                of {ent.scored} extracted claims confirmed entailed by their own quoted
+                passage{ent.contradicted === 0 ? ", none contradicted" : ""}
+              </div>
             </div>
             {FACTS.map((f) => (
               <div className="s" key={f.n}>

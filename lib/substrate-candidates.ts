@@ -540,6 +540,21 @@ export async function getSubstrateHomeData(): Promise<{
   byCondition: Map<string, HomeConditionStat>;
   claims: number;
   documents: number;
+  /**
+   * Entailment audit over the claims behind active signals. Reported for the
+   * LLM-EXTRACTED claims only: the pathway readouts (Open Targets, AEMS, SIDER)
+   * are rendered from the same structured records they describe, so verifying
+   * them against their own source is circular and would inflate the rate.
+   */
+  entailment: {
+    extracted: number;      // LLM-extracted claims behind active signals
+    scored: number;         // of those, carrying an entailment label
+    entailed: number;
+    neutral: number;
+    contradicted: number;
+    rendered: number;       // template-rendered claims, excluded from the rate
+    entailedPct: number | null;
+  };
 }> {
   const all = await getCandidates();
   const byCondition = new Map<string, HomeConditionStat>();
@@ -554,7 +569,7 @@ export async function getSubstrateHomeData(): Promise<{
   // back the active signals (claim_ids on the signals → claims → documents).
   const [sigRes, claimRes] = await Promise.all([
     supabase.from("substrate_signals").select("claim_ids").eq("status", "active"),
-    supabase.from("claims").select("id, document_id"),
+    supabase.from("claims").select("id, document_id, model_name, entailment_label"),
   ]);
   const referenced = new Set<string>();
   for (const s of (sigRes.data ?? []) as unknown as Row[]) {
@@ -563,11 +578,34 @@ export async function getSubstrateHomeData(): Promise<{
   }
   const docs = new Set<string>();
   let claims = 0;
+  const ent = { extracted: 0, scored: 0, entailed: 0, neutral: 0, contradicted: 0, rendered: 0 };
   for (const cl of (claimRes.data ?? []) as Row[]) {
-    if (referenced.has(String(cl.id))) {
-      claims += 1;
-      if (cl.document_id) docs.add(String(cl.document_id));
+    if (!referenced.has(String(cl.id))) continue;
+    claims += 1;
+    if (cl.document_id) docs.add(String(cl.document_id));
+
+    // Split rendered readouts from genuine extractions before counting.
+    if (String(cl.model_name ?? "").startsWith("pathway-render")) {
+      ent.rendered += 1;
+      continue;
     }
+    ent.extracted += 1;
+    const label = cl.entailment_label ? String(cl.entailment_label) : null;
+    if (!label) continue;
+    ent.scored += 1;
+    if (label === "entailed") ent.entailed += 1;
+    else if (label === "neutral") ent.neutral += 1;
+    else if (label === "contradicted") ent.contradicted += 1;
   }
-  return { totalPairs: all.length, byCondition, claims, documents: docs.size };
+
+  return {
+    totalPairs: all.length,
+    byCondition,
+    claims,
+    documents: docs.size,
+    entailment: {
+      ...ent,
+      entailedPct: ent.scored > 0 ? Math.round((ent.entailed / ent.scored) * 1000) / 10 : null,
+    },
+  };
 }
