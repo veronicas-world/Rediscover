@@ -216,8 +216,7 @@ export default async function Home() {
             <div className="s">
               <div className="v">{entailedLabel}</div>
               <div className="l">
-                of {ent.scored} extracted claims confirmed entailed by their own quoted
-                passage{ent.contradicted === 0 ? ", none contradicted" : ""}
+                of {ent.scored} quotes checked actually support the claim they back
               </div>
             </div>
             {FACTS.map((f) => (
