@@ -92,6 +92,7 @@ import argparse
 import json
 import os
 import re
+import socket
 import sys
 import time
 import urllib.error
@@ -361,18 +362,44 @@ def call_claude_extraction(
             "user-agent": HTTP_HEADERS["User-Agent"],
         },
     )
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            data = json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        err_body = ""
+    # Transient failures (read timeouts, 429 rate limits, 5xx) are retried with
+    # exponential backoff. Without this a single dropped connection anywhere in
+    # a 322-source run aborts the whole job — and because the run log is only
+    # written at the end, every completed extraction is lost with it. A bare
+    # socket.timeout is neither an HTTPError nor a URLError, so it has to be
+    # caught explicitly.
+    MAX_ATTEMPTS = 4
+    data = None
+    last_err: str | None = None
+    for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
-            err_body = e.read().decode("utf-8", errors="replace")
-        except Exception:
-            pass
-        return None, f"Anthropic HTTP {e.code}: {err_body[:300]}"
-    except urllib.error.URLError as e:
-        return None, f"Anthropic HTTP error: {e}"
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = json.loads(resp.read())
+            break
+        except urllib.error.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")
+            except Exception:
+                pass
+            last_err = f"Anthropic HTTP {e.code}: {err_body[:300]}"
+            # 4xx other than 429 are permanent; do not burn retries on them.
+            if e.code != 429 and e.code < 500:
+                return None, last_err
+        except (socket.timeout, TimeoutError) as e:
+            last_err = f"Anthropic read timeout: {e}"
+        except urllib.error.URLError as e:
+            last_err = f"Anthropic HTTP error: {e}"
+        except OSError as e:
+            last_err = f"Anthropic connection error: {e}"
+
+        if attempt < MAX_ATTEMPTS:
+            backoff = 2 ** attempt  # 2s, 4s, 8s
+            print(f"      retry {attempt}/{MAX_ATTEMPTS - 1} after {backoff}s ({last_err})", flush=True)
+            time.sleep(backoff)
+
+    if data is None:
+        return None, last_err or "Anthropic request failed"
 
     content = data.get("content") or []
     text_block = next((c.get("text") for c in content if c.get("type") == "text"), None)
@@ -543,6 +570,10 @@ def extract_one(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--resume", action="store_true",
+                        help="Reuse extractions already present in the previous run log "
+                             "(scripts/audit-output/key-finding-extractions.json) instead of "
+                             "re-paying for them. Use after an interrupted run.")
     parser.add_argument("--limit", type=int, default=None,
                         help="Process only the first N free-text rows. Default: all.")
     parser.add_argument("--model", default=DEFAULT_MODEL,
@@ -581,12 +612,47 @@ def main() -> int:
     _, _, signal_to_pair = fetch_lookup(base, sb_headers)
     print(f"  {len(signal_to_pair)} active signals mapped to drug + condition names")
 
+    # Resume support: if a previous run left a log, reuse every extraction it
+    # already completed (matched on source_id) instead of paying for it again.
+    # Combined with the checkpointing below, an interrupted run costs only the
+    # sources it had not yet reached.
+    done: dict[str, Extraction] = {}
+    if args.resume and RUN_LOG_PATH.exists():
+        try:
+            prior = json.loads(RUN_LOG_PATH.read_text())
+            for rec in prior.get("results", []):
+                if rec.get("status") in {"extracted", "no_relevant_finding"}:
+                    done[str(rec["source_id"])] = Extraction(**rec)
+            if done:
+                print(f"  resuming: {len(done)} source(s) already extracted in a previous run")
+        except Exception as e:  # a malformed log should never block a fresh run
+            print(f"  (could not read prior run log, starting fresh: {e})")
+
     print(f"extracting key findings for {len(sources)} free-text source row(s) using {args.model}…")
     extractions: list[Extraction] = []
+
+    def checkpoint() -> None:
+        """Persist progress so a crash never discards completed work."""
+        RUN_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        RUN_LOG_PATH.write_text(json.dumps({
+            "schema_version": "1.0",
+            "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "model": args.model,
+            "status": "in_progress",
+            "summary": {"total": len(extractions)},
+            "results": [asdict(e) for e in extractions],
+        }, indent=2) + "\n")
+
     for i, row in enumerate(sources, start=1):
         if i % 10 == 1:
             print(f"  · {i} / {len(sources)} …", flush=True)
+        cached = done.get(str(row.get("id")))
+        if cached is not None:
+            extractions.append(cached)
+            continue
         extractions.append(extract_one(row, signal_to_pair, api_key, args.model))
+        if i % 25 == 0:
+            checkpoint()
 
     # Write run log.
     RUN_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
