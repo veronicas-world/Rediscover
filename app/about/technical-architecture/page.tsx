@@ -428,6 +428,7 @@ export default function TechnicalArchitecturePage() {
         <a href="#guiding-principle"><span className="doc-n">07</span><span className="doc-t">Guiding principle</span></a>
         <a href="#infrastructure"><span className="doc-n">08</span><span className="doc-t">Infrastructure</span></a>
         <a href="#limitations"><span className="doc-n">09</span><span className="doc-t">Limitations</span></a>
+        <a href="#changelog"><span className="doc-n">10</span><span className="doc-t">Revision history</span></a>
       </aside>
 
       {/* ── Header ───────────────────────────────────────────────────────── */}
@@ -1267,6 +1268,54 @@ export default function TechnicalArchitecturePage() {
             </Link>
             .
           </p>
+
+        </div>
+      </section>
+
+      {/* ── Figure 8 — Revision history ──────────────────────────────────── */}
+      <section id="changelog" style={{ borderBottom: "1px solid var(--rule)", scrollMarginTop: 24 }}>
+        <div className={SECTION_INNER}>
+          <FigureHeader
+            label="Revision history"
+            title="Every change to the method is dated and logged"
+            intro="The methodology is versioned. Anything that changes the rubric, the sample, the sources of truth, the adjudication rules, or a figure published on this site is recorded with a date and a description of what moved and why. The full log lives on its own page so it can grow without crowding this one. If a number here differs from one you saw a month ago, the entry explaining it is there."
+          />
+
+          <div
+            style={{
+              border: "1px solid var(--rule)",
+              borderLeft: "3px solid var(--green-mid)",
+              background: "var(--paper)",
+              padding: "22px 24px",
+              maxWidth: "68ch",
+            }}
+          >
+            <div style={{ ...MONO, fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 14 }}>
+              Current version &middot; v4.2, July 2026
+            </div>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)", margin: "0 0 8px" }}>
+              <strong style={{ color: "var(--ink)" }}>v4.2</strong> &nbsp;Repaired quoted
+              evidence that had been cropped too tightly to carry the finding it was
+              attached to, and re-ran the entailment check. Entailment across extracted
+              claims moved from 72.4 to 97.3 percent.
+            </p>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)", margin: "0 0 8px" }}>
+              <strong style={{ color: "var(--ink)" }}>v4.1</strong> &nbsp;Added the
+              regulatory and development-status layer, drawing on three public FDA and NLM
+              sources, reported beside the score and never folded into it.
+            </p>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)", margin: "0 0 18px" }}>
+              <strong style={{ color: "var(--ink)" }}>v4.0</strong> &nbsp;Retired the
+              earlier scored-signals model for the arm-aware substrate engine, and dropped
+              the L-grade after an external reviewer flagged it as circular.
+            </p>
+            <Link
+              href="/about/methodology/changelog"
+              style={{ ...MONO, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-mid)", borderBottom: "1px solid var(--green-mid)", paddingBottom: 2, textDecoration: "none" }}
+            >
+              Read the full changelog &rarr;
+            </Link>
+          </div>
 
           <div style={{ borderTop: "1px solid var(--rule)", paddingTop: "2rem", marginTop: "2.5rem" }}>
             <BackLink href="/about" label="Back to About" />

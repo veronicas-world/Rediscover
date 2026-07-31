@@ -28,6 +28,7 @@ const HOWITWORKS_LINKS = [
   { label: "Technical architecture", href: "/about/technical-architecture" },
   { label: "Signal types",           href: "/signal-types" },
   { label: "External references",    href: "/about/external-references" },
+  { label: "Methodology changelog",  href: "/about/methodology/changelog" },
 ];
 
 const COMPANY_LINKS = [
