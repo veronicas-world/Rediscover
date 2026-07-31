@@ -220,6 +220,17 @@ def sql_escape(s: str) -> str:
     return s.replace("'", "''")
 
 
+def comment_safe(s: str, limit: int) -> str:
+    """Flatten text for embedding in a `--` SQL comment.
+
+    Source quotes routinely contain newlines (abstracts are stored wrapped).
+    A raw newline inside a `--` comment ends the comment, so the remainder of
+    the quote is then parsed as SQL and the migration fails. Collapse all
+    whitespace to single spaces before truncating.
+    """
+    return " ".join(str(s).split())[:limit]
+
+
 def write_migration(repairs: list[Repair]) -> None:
     applied = [r for r in repairs if r.status == "repaired"]
     MIGRATION_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -244,8 +255,8 @@ def write_migration(repairs: list[Repair]) -> None:
     for r in applied:
         lines += [
             f"-- claim {r.claim_id}  [{r.source} {r.external_id}]  entailment was {r.entailment_score}",
-            f"--   old ({len(r.old_quote)} chars): {r.old_quote[:120]}",
-            f"--   new ({len(r.new_quote)} chars): {r.new_quote[:120]}",
+            f"--   old ({len(r.old_quote)} chars): {comment_safe(r.old_quote, 120)}",
+            f"--   new ({len(r.new_quote)} chars): {comment_safe(r.new_quote, 120)}",
             "UPDATE claims SET",
             f"  exact_quote = '{sql_escape(r.new_quote)}',",
             f"  quote_start_char = {r.new_start},",
@@ -273,7 +284,7 @@ def write_migration(repairs: list[Repair]) -> None:
         lines.append("-- NOT_SUPPORTED — the source document does not support these claims.")
         lines.append("-- Left unchanged; review individually.")
         for r in unsupported:
-            lines.append(f"--   {r.claim_id}  [{r.source} {r.external_id}]  quote: {r.old_quote[:90]}")
+            lines.append(f"--   {r.claim_id}  [{r.source} {r.external_id}]  quote: {comment_safe(r.old_quote, 90)}")
         lines.append("")
     MIGRATION_PATH.write_text("\n".join(lines))
 

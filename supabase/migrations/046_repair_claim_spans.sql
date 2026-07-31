@@ -9,7 +9,7 @@
 -- Claims the model reported as NOT_SUPPORTED are deliberately NOT rewritten;
 -- they are listed at the foot of this file for human review.
 --
--- Generated: 2026-07-31T18:44:55+00:00
+-- Generated: 2026-07-31T18:55:33+00:00
 -- Claims repaired: 77
 
 BEGIN;
@@ -357,7 +357,7 @@ WHERE id = '096ac767-3c3a-40c5-9379-4b2a3d83a64b';
 
 -- claim 531f6f61-6b15-42ee-8056-94b2538aa8f9  [pubmed 37583655]  entailment was 0.6
 --   old (89 chars): resulted in lower androstenedione levels (-0.30 ng/ml [-0.50, -0.10], p = 0.004; I2 = 0%)
---   new (208 chars): Daily use was more effective for hirsutism than use every three days (-3.48 [-4.58, -2.39], p < 0.0001, I2 = 1%), and re
+--   new (208 chars): Daily use was more effective for hirsutism than use every three days (-3.48 [-4.58, -2.39], p < 0.0001, I2 = 1%), and re
 UPDATE claims SET
   exact_quote = 'Daily use was more effective for hirsutism than use every three days (-3.48 [-4.58, -2.39], p < 0.0001, I2 = 1%), and resulted in lower androstenedione levels (-0.30 ng/ml [-0.50, -0.10], p = 0.004; I2 = 0%).',
   quote_start_char = 2691,
@@ -390,7 +390,7 @@ WHERE id = '6a8001c6-180e-44e1-b61c-ea6bded278bb';
 
 -- claim 5d5b6c9e-db6b-4ddc-9a2c-76c1981951f2  [pubmed 37583655]  entailment was 0.55
 --   old (233 chars): anti-androgens + lifestyle were superior to metformin + lifestyle for hirsutism (weighted mean difference [WMD] [95% CI]
---   new (555 chars): In meta-analysis, anti-androgens + lifestyle were superior to metformin + lifestyle for hirsutism (weighted mean differe
+--   new (555 chars): In meta-analysis, anti-androgens + lifestyle were superior to metformin + lifestyle for hirsutism (weighted mean differe
 UPDATE claims SET
   exact_quote = 'In meta-analysis, anti-androgens + lifestyle were superior to metformin + lifestyle for hirsutism (weighted mean difference [WMD] [95% CI]: -1.59 [-3.06, -0.12], p = 0.03; I2 = 74%), SHBG (7.70 nmol/l [0.75, 14.66], p = 0.03; I2 = 0%), fasting insulin and fasting insulin: glucose ratio (-2.11 μU/ml [-3.97, -0.26], p = 0.03; I2 = 0% and -1.12 [-1.44, -0.79], p < 0.0001, I2 = 0%, respectively), but were not superior to placebo + lifestyle for hirsutism (-0.93, [-3.37, 1.51], p = 0.45; I2 = 76%) or SHBG (9.72 nmol/l [-0.71, 20.14], p = 0.07; I2 = 31%).',
   quote_start_char = 2135,
@@ -478,7 +478,7 @@ WHERE id = '4252da26-d0b4-4d95-9295-73515da10e3b';
 
 -- claim eecea4ab-c2e3-4472-86af-1f2875a9d5d9  [pubmed 38263123]  entailment was 0.55
 --   old (99 chars): women started MHT within 10 years after menopause had lower frequency of all-cause death (P = 0.02)
---   new (260 chars): Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause ha
+--   new (260 chars): Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause ha
 UPDATE claims SET
   exact_quote = 'Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause had lower frequency of all-cause death (P = 0.02) and cardiovascular events (P = 0.002), and more significant improvement in FMD (P = 0.0003).',
   quote_start_char = 1690,
@@ -489,7 +489,7 @@ WHERE id = 'eecea4ab-c2e3-4472-86af-1f2875a9d5d9';
 
 -- claim ac7bef10-d05d-43c5-8b7a-18ccba01e679  [pubmed 38263123]  entailment was 0.55
 --   old (137 chars): women started MHT within 10 years after menopause had lower frequency of all-cause death (P = 0.02) and cardiovascular e
---   new (260 chars): Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause ha
+--   new (260 chars): Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause ha
 UPDATE claims SET
   exact_quote = 'Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause had lower frequency of all-cause death (P = 0.02) and cardiovascular events (P = 0.002), and more significant improvement in FMD (P = 0.0003).',
   quote_start_char = 1690,
@@ -500,7 +500,7 @@ WHERE id = 'ac7bef10-d05d-43c5-8b7a-18ccba01e679';
 
 -- claim 0cde33f9-28b4-4836-8c3d-adef4e323f5d  [pubmed 38263123]  entailment was 0.4
 --   old (48 chars): more significant improvement in FMD (P = 0.0003)
---   new (260 chars): Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause ha
+--   new (260 chars): Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause ha
 UPDATE claims SET
   exact_quote = 'Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause had lower frequency of all-cause death (P = 0.02) and cardiovascular events (P = 0.002), and more significant improvement in FMD (P = 0.0003).',
   quote_start_char = 1690,
@@ -511,7 +511,7 @@ WHERE id = '0cde33f9-28b4-4836-8c3d-adef4e323f5d';
 
 -- claim bee69e21-b05d-4ad7-bbda-ada501e3082c  [pubmed 38263123]  entailment was 0.6
 --   old (50 chars): MHT improves flow-mediated arterial dilation (FMD)
---   new (238 chars): Compared with placebo, MHT could improve flow-mediated arterial dilation (FMD) (SMD = 1.46, 95%CI 0.86 to 2.07, I2 = 90%
+--   new (238 chars): Compared with placebo, MHT could improve flow-mediated arterial dilation (FMD) (SMD = 1.46, 95%CI 0.86 to 2.07, I2 = 90%
 UPDATE claims SET
   exact_quote = 'Compared with placebo, MHT could improve flow-mediated arterial dilation (FMD) (SMD = 1.46, 95%CI 0.86 to 2.07, I2 = 90%), but it did not improve nitroglycerin-mediated arterial dilation (NMD) (SMD = 0.27, 95%CI - 0.08 to 0.62, I2 = 76%).',
   quote_start_char = 1451,
@@ -533,7 +533,7 @@ WHERE id = '0bd9d634-5f5f-4012-8854-e6cc89322453';
 
 -- claim 9192a1a3-b2ff-45ff-a679-f689d1ffa5a8  [pubmed 38263123]  entailment was 0.55
 --   old (28 chars): increases the risk of stroke
---   new (156 chars): However, MHT would increase the risk of stroke (RR = 1.23, 95%CI 1.08 to 1.41,I2 = 0%) and venous thromboembolism (RR = 
+--   new (156 chars): However, MHT would increase the risk of stroke (RR = 1.23, 95%CI 1.08 to 1.41,I2 = 0%) and venous thromboembolism (RR = 
 UPDATE claims SET
   exact_quote = 'However, MHT would increase the risk of stroke (RR = 1.23, 95%CI 1.08 to 1.41,I2 = 0%) and venous thromboembolism (RR = 1.86, 95%CI 1.39 to 2.50, I2 = 24%).',
   quote_start_char = 1294,
@@ -555,7 +555,7 @@ WHERE id = 'f18eb92c-efb3-4111-892c-563c64f2dfe7';
 
 -- claim ae3436c3-cc00-4d71-b981-ac470a0d1e48  [pubmed 38263123]  entailment was 0.55
 --   old (20 chars): further improves FMD
---   new (260 chars): Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause ha
+--   new (260 chars): Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause ha
 UPDATE claims SET
   exact_quote = 'Compared with women started MHT more than 10 years after menopause, women started MHT within 10 years after menopause had lower frequency of all-cause death (P = 0.02) and cardiovascular events (P = 0.002), and more significant improvement in FMD (P = 0.0003).',
   quote_start_char = 1690,
