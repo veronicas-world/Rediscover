@@ -431,7 +431,8 @@ export default async function PlatformPage() {
             <p style={pBone}>
               <strong>The MATRIX marker</strong>{" "}appears where Every Cure&rsquo;s MATRIX model has a
               score for the same pair. MATRIX is a machine-learned treatment-probability estimate
-              drawn from a biomedical knowledge graph across roughly 1,800 drugs and 22,000 diseases,
+              drawn from a biomedical knowledge graph. We read its public dataset release, which
+              covers roughly 1,800 drugs and 22,000 diseases,
               and it predicts how plausible a drug and disease link looks given the structure of
               biomedical knowledge. We read the actual evidence for a narrow set of women&rsquo;s health
               conditions, so the two are doing different things, and we show the MATRIX percentile beside

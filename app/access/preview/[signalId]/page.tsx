@@ -374,7 +374,8 @@ export default async function SignalDetail({
               <h3>MATRIX cross-reference {c.matrixPercentile ? <span className="grade">{c.matrixPercentile}</span> : null}</h3>
               <p className="prose">
                 <Ext href={EVERYCURE}>Every Cure&rsquo;s</Ext> machine-learned treatment-probability model,
-                drawn from a biomedical knowledge graph across roughly 1,800 drugs and 22,000 diseases. It
+                drawn from a biomedical knowledge graph. We read its public dataset release, which
+                covers roughly 1,800 drugs and 22,000 diseases. It
                 provides a model-based estimate of how plausible a drug-disease link is given the structure of
                 biomedical knowledge, reported alongside the substrate&rsquo;s own evidence.
               </p>

@@ -105,7 +105,7 @@ const EVERYCURE_STATS: { label: string; value: string }[] = [
   { label: "ARPA-H Phase 1", value: "$48.3M · Feb 2024" },
   { label: "ARPA-H Phase 2", value: "up to $76M" },
   { label: "TED Audacious Project", value: "grantee" },
-  { label: "MATRIX coverage", value: "~1,800 drugs × ~22,000 diseases" },
+  { label: "Dataset we cross-reference", value: "~1,800 drugs × ~22,000 diseases" },
   { label: "Pair count", value: "~39.5M" },
   { label: "Hosting", value: "Hugging Face, public" },
 ];

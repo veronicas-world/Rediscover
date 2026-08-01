@@ -272,7 +272,7 @@ const LIMITATION_GROUPS: { heading: string; items: { label: string; body: string
       },
       {
         label: "LLM versioning and prompt drift",
-        body: "Both the model and the system prompts evolve over the lifecycle of the project. Each pipeline run is logged with the model version (claude-opus-4-8 at current snapshot) and a hash of the active prompt; snapshots taken months apart should not be compared signal-for-signal without re-running classification with a pinned model and prompt. The repository preserves prompt history for reproducibility.",
+        body: "Both the model and the system prompts evolve over the lifecycle of the project. Each pipeline run is logged with the model version and a hash of the active prompt; snapshots taken months apart should not be compared signal-for-signal without re-running classification with a pinned model and prompt. The repository preserves prompt history for reproducibility. The current snapshot was scored with claude-opus-4-8. Models released after that date are deliberately not adopted mid-corpus, because a corpus scored partly by one model and partly by another cannot be compared internally, which is the more damaging failure. Newer work in the pipeline, such as the July 2026 claim-span repair and entailment re-score, names the model it used in the changelog entry for that change.",
       },
       {
         label: "Claim atomization below source granularity",
@@ -744,15 +744,26 @@ export default function TechnicalArchitecturePage() {
               Model Selection: Claude Opus 4.8
             </p>
             <p style={{ fontSize: "14px", lineHeight: 1.62, color: "var(--ink-2)" }}>
-              The dimension scoring is performed using Claude Opus 4.8
-              (claude-opus-4-8), released in May 2026; the deterministic steps
-              (the female-applicability multiplier, imprecision caps, and tier
-              assignment) are computed in code, not by the model. Opus 4.8 was
-              selected for its performance on complex multicriteria reasoning,
-              where each arm&apos;s five dimensions must be assessed against the
-              source content in a single analytical pass. In our internal
-              testing, smaller and faster models produced flatter, less
-              discriminating scores on plausibility and consistency.
+              The dimension scoring in the current snapshot was performed using
+              Claude Opus 4.8 (claude-opus-4-8), released in May 2026; the
+              deterministic steps (the female-applicability multiplier,
+              imprecision caps, and tier assignment) are computed in code, not by
+              the model. Opus 4.8 was selected for its performance on complex
+              multicriteria reasoning, where each arm&apos;s five dimensions must
+              be assessed against the source content in a single analytical pass.
+              In our internal testing, smaller and faster models produced
+              flatter, less discriminating scores on plausibility and
+              consistency.
+            </p>
+            <p style={{ fontSize: "14px", lineHeight: 1.62, color: "var(--ink-2)", marginTop: 12 }}>
+              Newer models have since been released. The scoring model is pinned
+              on purpose rather than tracked forward: every pair in the corpus was
+              scored by one model against one prompt, so the scores can be
+              compared with each other. Re-scoring a subset on a newer model
+              would produce a corpus graded by two different raters, which is a
+              worse problem than being a version behind. The model will move when
+              there is a substantive reason to re-score the whole corpus, and that
+              migration will carry its own changelog entry.
             </p>
             <p style={{ fontSize: "14px", lineHeight: 1.62, color: "var(--ink-2)", marginTop: 12 }}>
               On clinical text specifically,{" "}

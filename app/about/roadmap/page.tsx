@@ -289,7 +289,7 @@ const UPGRADES: { name: string; role: string; status: Status }[] = [
   },
   {
     name: "Summary grounding",
-    role: "Checking every summary sentence against its source text and flagging any that drifts beyond what the source supports. The verifier is built; it is waiting on the per-source finding excerpts it reads from being populated, then a first run. A biomedical embedding model such as PubMedBERT-NLI is under evaluation to sharpen recall over the current general-purpose embeddings.",
+    role: "Checking every summary sentence against its source text and flagging any that drifts beyond what the source supports. The verifier is built; it is waiting on the per-source finding excerpts it reads from being populated, then a first run. The verifier currently scores similarity with a general-purpose embedding model. Replacing that with a model built for grounded claim verification is open work. An earlier plan named PubMedBERT-NLI, which now looks dated; published evaluations on short biomedical claims put the small open checkers below a frontier model on this task, so the more likely path is calibrating the current judge against human labels rather than swapping in a weaker one.",
     status: "Planned",
   },
   {
