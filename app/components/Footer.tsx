@@ -27,6 +27,7 @@ const PLATFORM_LINKS = [
 const HOWITWORKS_LINKS = [
   { label: "Technical architecture", href: "/about/technical-architecture" },
   { label: "Signal types",           href: "/signal-types" },
+  { label: "What we count",          href: "/about/what-we-count" },
   { label: "External references",    href: "/about/external-references" },
   { label: "Methodology changelog",  href: "/about/methodology/changelog" },
 ];

@@ -1,0 +1,140 @@
+diff --git a/app/about/methodology/changelog/page.tsx b/app/about/methodology/changelog/page.tsx
+index 43b8bf6..e0cbc81 100644
+--- a/app/about/methodology/changelog/page.tsx
++++ b/app/about/methodology/changelog/page.tsx
+@@ -132,8 +132,93 @@ export default function MethodologyChangelogPage() {
+           }}
+         >
+ 
+-          {/* v4.2 — claim span repair and entailment re-score */}
++          {/* v4.3 — human calibration, declared context, majority voting */}
+           <EntryWrapper isFirst>
++            <div style={ENTRY_EYEBROW}>
++              Methodology v4.3 &middot; August 2, 2026
++            </div>
++            <p style={ENTRY_PARA}>
++              Hand-labelled fifty claims against the automated entailment judge, and changed
++              the judge based on what that turned up. Raw agreement was 88 percent, Cohen&rsquo;s
++              kappa 0.63. The disagreements were not scattered. Nearly all were one case: the
++              claim carries a condition qualifier, such as &ldquo;in vulvodynia&rdquo;, that the
++              quoted sentence never repeats, because the paper established its population pages
++              earlier. The judge had been filling that gap from its own recall of the
++              literature, which its instructions forbade and which nothing in the record could
++              audit.
++            </p>
++            <p style={ENTRY_PARA_NEXT}>
++              Recomputing those same fifty labels under each reading showed how much rested on
++              that one unsettled question. Requiring the condition to appear in the quote gives
++              78 percent agreement and kappa 0.44. Allowing it to come from the source gives 94
++              percent and kappa 0.79. The measurement was mostly reporting an ambiguity in the
++              task rather than the quality of the evidence. (Both of those kappas are computed on
++              the enriched validation sample and overstate corpus reliability; see the note on
++              design weighting below.)
++            </p>
++            <p style={ENTRY_PARA_NEXT}>
++              The judge now receives the source title and the condition the claim is filed under,
++              taken from this database rather than from memory, and may use it for one purpose:
++              settling which population a quote concerns. The intervention, the comparator, the
++              outcome, and the direction and size of the effect must all appear in the quoted
++              passage. Each judgment records whether that context was needed, so the claims
++              resting on a filed condition can be listed rather than assumed. At present 218 of
++              325 do, which makes correct condition filing load-bearing for two thirds of the
++              corpus.
++            </p>
++            <p style={ENTRY_PARA_NEXT}>
++              Quotes stored without their grammatical subject were widened. One read &ldquo;had a
++              better safety and tolerability profile than COC&rdquo;, leaving the reader to supply
++              the drug it referred to. Scoring also moved to a majority of three passes, because a
++              single pass was not reproducible: the judge changes its mind on roughly one
++              borderline claim in seven, enough to move the published figure by a point between
++              otherwise identical runs. Majority voting stabilises the number. It does not make it
++              more correct, and an earlier draft of this entry wrongly implied that it did. Three
++              samples drawn from one model are not three opinions; work published in 2026 finds
++              that even nine judges drawn from seven different model families supply only about
++              two independent votes, because they make the same mistakes on the same items. The
++              agreement-with-itself rate is reported here as a variance diagnostic and nothing
++              more.
++            </p>
++            <p style={ENTRY_PARA_NEXT}>
++              Entailment across extracted claims now stands at 93.5 percent. That is lower than
++              the 97.3 percent reported under v4.2, and the fall is the finding rather than a
++              setback: claims asserting a comparison their quote never mentions were downgraded,
++              as were claims whose supporting evidence the judge had previously been supplying
++              itself. Read that figure against its baseline. A judge that answered
++              &ldquo;entailed&rdquo; to every claim without reading anything would score about 95
++              percent on this corpus, because the corpus is that skewed. A high entailment rate is
++              therefore not by itself evidence of anything, which is the reason for the
++              calibration work rather than an argument against it.
++            </p>
++            <p style={ENTRY_PARA_NEXT}>
++              A verification pass over the statistics found two errors in how they had been
++              reported here. The validation sample deliberately oversamples the rare neutral
++              class, by roughly four times, so that the class the judge struggles with is actually
++              represented. That is sound sampling, but Cohen&rsquo;s kappa depends on prevalence as
++              well as on rater accuracy, so a kappa computed on an enriched sample overstates
++              corpus reliability. Design-weighted back to the corpus distribution, the blind
++              round-2 kappa is 0.21 rather than 0.42, with a 95 percent interval from 0.05 to
++              0.49. Separately, the rater revised five labels after seeing the machine&rsquo;s
++              answers; those revisions are an error analysis and are no longer blind, so the
++              figures computed from them are not reliability estimates. The number this project
++              stands behind is the blind, design-weighted one.
++            </p>
++            <p style={ENTRY_PARA_NEXT}>
++              The more useful measurement is not a single agreement coefficient at all. Against
++              blind human labels the judge recovers 50 percent of the claims a human calls neutral
++              (6 of 12, 95 percent interval 25 to 75). Recall on the rare class is what the reader
++              of an evidence database actually needs to know, and unlike kappa it does not shift
++              when the validation sample is enriched. Two limits remain openly outstanding: the
++              labelling has been done by one rater who also built the database, so no
++              human-to-human ceiling exists yet, and the &ldquo;contradicted&rdquo; label has never
++              once been produced across the whole corpus, which means it is unvalidated and this
++              study design cannot detect whether that is correct.
++            </p>
++          </EntryWrapper>
++
++          {/* v4.2 — claim span repair and entailment re-score */}
++          <EntryWrapper>
+             <div style={ENTRY_EYEBROW}>
+               Methodology v4.2 &middot; July 31, 2026
+             </div>
+diff --git a/app/about/technical-architecture/page.tsx b/app/about/technical-architecture/page.tsx
+index 5220d13..1759d0b 100644
+--- a/app/about/technical-architecture/page.tsx
++++ b/app/about/technical-architecture/page.tsx
+@@ -1302,24 +1302,29 @@ export default function TechnicalArchitecturePage() {
+             }}
+           >
+             <div style={{ ...MONO, fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 14 }}>
+-              Current version &middot; v4.2, July 2026
++              Current version &middot; v4.3, August 2026
+             </div>
++            <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)", margin: "0 0 8px" }}>
++              <strong style={{ color: "var(--ink)" }}>v4.3</strong> &nbsp;Calibrated the
++              entailment judge against hand-labelled claims, which showed it was supplying a
++              claim&rsquo;s condition from its own knowledge. It now reads that from this
++              database and may use it only to settle which population a quote concerns.
++              Entailment moved from 97.3 to 93.5 percent, against a do-nothing baseline of
++              about 95. Blind agreement with a human, weighted back to corpus prevalence,
++              gives kappa 0.21 (95% CI 0.05 to 0.49); recall on the rare neutral class is 50
++              percent. One rater so far, so no human-to-human ceiling yet.
++            </p>
+             <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)", margin: "0 0 8px" }}>
+               <strong style={{ color: "var(--ink)" }}>v4.2</strong> &nbsp;Repaired quoted
+               evidence that had been cropped too tightly to carry the finding it was
+               attached to, and re-ran the entailment check. Entailment across extracted
+               claims moved from 72.4 to 97.3 percent.
+             </p>
+-            <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)", margin: "0 0 8px" }}>
++            <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)", margin: "0 0 18px" }}>
+               <strong style={{ color: "var(--ink)" }}>v4.1</strong> &nbsp;Added the
+               regulatory and development-status layer, drawing on three public FDA and NLM
+               sources, reported beside the score and never folded into it.
+             </p>
+-            <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)", margin: "0 0 18px" }}>
+-              <strong style={{ color: "var(--ink)" }}>v4.0</strong> &nbsp;Retired the
+-              earlier scored-signals model for the arm-aware substrate engine, and dropped
+-              the L-grade after an external reviewer flagged it as circular.
+-            </p>
+             <Link
+               href="/about/methodology/changelog"
+               style={{ ...MONO, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-mid)", borderBottom: "1px solid var(--green-mid)", paddingBottom: 2, textDecoration: "none" }}

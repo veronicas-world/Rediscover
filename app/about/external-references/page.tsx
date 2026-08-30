@@ -1725,6 +1725,34 @@ export default function ExternalReferencesPage() {
                   </p>
                 )}
 
+                <p
+                  style={{
+                    fontSize: "13.5px",
+                    lineHeight: 1.7,
+                    color: "var(--ink-2)",
+                    maxWidth: "72ch",
+                    borderLeft: "2px solid var(--rule-strong)",
+                    paddingLeft: 14,
+                    margin: "0 0 18px 0",
+                  }}
+                >
+                  <strong style={{ color: "var(--ink)" }}>Status, July 2026.</strong> This verifier
+                  has not been run, and it reads{" "}
+                  <code style={{ fontFamily: "inherit", color: "var(--ink-2)" }}>sources</code>, the
+                  provenance table left over from the engine that preceded the substrate cutover.
+                  Nothing on the public site is drawn from it. Grounding for the claims actually
+                  displayed is done a different way: each claim carries a verbatim quote located in
+                  the stored source text with character offsets, and a separate entailment pass
+                  labels whether that quote supports the claim. Those results, and the limits of
+                  reading them, are described under{" "}
+                  <Link href="/about/technical-architecture#limitations" style={LINK}>
+                    documented limitations
+                  </Link>
+                  . Embedding similarity above a fixed threshold is a coarser test than entailment,
+                  so if this verifier is revived it will be as a cheap pre-filter rather than the
+                  decision rule.
+                </p>
+
                 <div
                   style={{
                     ...MONO,

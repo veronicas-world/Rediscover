@@ -64,6 +64,7 @@ const ABOUT_GROUPS: { label: string; items: { label: string; href: string }[] }[
     items: [
       { label: "Technical architecture", href: "/about/technical-architecture" },
       { label: "Signal types",           href: "/signal-types" },
+      { label: "What we count",          href: "/about/what-we-count" },
       { label: "External references",    href: "/about/external-references" },
     ],
   },
