@@ -22,6 +22,20 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+// ── Shared logic (single source of truth) ───────────────────────────────────
+// Curation + helpers are imported from lib/ so the snapshot builder and the
+// Next.js server (lib/substrate-candidates.ts) use the SAME code, not
+// hand-maintained duplicates.
+import {
+  classifyCuration, resolveDrugClass, normalizeDrugName, isCommunityOnly,
+  knownNegativeNote, negativeEvidenceDetected,
+} from "../lib/curation.mjs";
+import {
+  ARMS, DIMS, SLUG_OVERRIDE, COND_ALIAS, SIGNAL_COLS,
+  num, tierLc, lvl, clip, sourceLabel, sourceHref, claimRank,
+  toArm, deriveHeadline, formatMatrixPercentile,
+} from "../lib/substrate-helpers.mjs";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LIB = path.join(__dirname, "..", "lib");
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(LIB, f), "utf8"));
@@ -40,8 +54,6 @@ const DAILYMED = readJson("dailymed-indication-snapshot.json");
 const ORANGEBOOK = readJson("orangebook-status-snapshot.json");
 const TRIALS = readJson("clinicaltrials-status-snapshot.json");
 
-const COND_ALIAS = { menopause: "perimenopause & menopause" };
-
 const matrixIdx = new Map(
   (MATRIX.per_pair || []).map((p) => [`${String(p.compound_name).toLowerCase()}::${String(p.condition_name).toLowerCase()}`, p]),
 );
@@ -54,8 +66,6 @@ const trialsIdx = new Map(
 const orangebookIdx = new Map(
   (ORANGEBOOK.per_drug || []).map((r) => [String(r.compound_name).toLowerCase(), r]),
 );
-
-const formatMatrixPercentile = (qr) => `Top ${Math.max(1, Math.round(qr * 100))}%`;
 
 function matrixForPair(drug, condition) {
   const condKey = COND_ALIAS[condition.toLowerCase()] ?? condition.toLowerCase();
@@ -83,175 +93,6 @@ function getTrialStatusForPair(drug, condition) {
 function getOrangeBookForDrug(drug) {
   return orangebookIdx.get(drug.toLowerCase()) ?? undefined;
 }
-
-// ── Small helpers (mirrors lib/substrate-candidates.ts) ──────────────────────
-const ARMS = ["direct", "pathway", "community"];
-const DIMS = [
-  { key: "corroboration", label: "Corroboration" },
-  { key: "rigor", label: "Rigor" },
-  { key: "specificity", label: "Specificity" },
-  { key: "plausibility", label: "Plausibility" },
-  { key: "consistency", label: "Consistency" },
-];
-const SLUG_OVERRIDE = { menopause: "perimenopause-menopause" };
-
-const num = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
-const tierLc = (t) => {
-  const k = String(t ?? "").toLowerCase();
-  return k === "strong" || k === "moderate" || k === "emerging" ? k : "exploratory";
-};
-const lvl = (score) => {
-  const n = Number(score);
-  if (!Number.isFinite(n)) return "—";
-  return n >= 2 ? "High" : n >= 1 ? "Medium" : "Low";
-};
-const clip = (s, n) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
-
-function sourceLabel(doc) {
-  if (!doc) return "Source on file";
-  const type = String(doc.source ?? "").toLowerCase();
-  const ext = doc.external_id ? String(doc.external_id) : "";
-  if (type === "pubmed") return ["PubMed", ext && `PMID ${ext}`].filter(Boolean).join(" · ");
-  if (type === "clinicaltrials") return ["ClinicalTrials.gov", ext].filter(Boolean).join(" · ");
-  if (type === "reddit") return "Community report · Reddit";
-  if (type === "opentargets") return "Open Targets · mechanistic";
-  if (type === "aems") return "AEMS · adverse-event report";
-  if (type === "sider") return "SIDER · label side-effect";
-  return clip(type || "source", 32);
-}
-function sourceHref(doc) {
-  if (!doc) return undefined;
-  const url = doc.url ? String(doc.url).trim() : "";
-  if (url) return url;
-  const type = String(doc.source ?? "").toLowerCase();
-  const ext = doc.external_id ? String(doc.external_id).trim() : "";
-  if (!ext) return undefined;
-  if (type === "pubmed") return `https://pubmed.ncbi.nlm.nih.gov/${ext}/`;
-  if (type === "clinicaltrials") return `https://clinicaltrials.gov/study/${ext}`;
-  return undefined;
-}
-const claimRank = (doc) => {
-  const t = String(doc?.source ?? "").toLowerCase();
-  if (t === "pubmed") return 0;
-  if (t === "clinicaltrials") return 1;
-  if (t === "opentargets" || t === "aems" || t === "sider") return 2;
-  return 3;
-};
-
-// Curation classification — KEEP IN SYNC with lib/curation.ts. The corpus
-// snapshot TAGS every candidate but keeps them ALL (so an MCP client sees the
-// full picture, flagged); the public site filters on this tag instead.
-const CUR_EXCLUDE_RE = /acupuncture|reflexolog|cognitive[- ]behav|\bcbt\b|hypnother|physioth|physical therapy|biofeedback|\btens\b|dilators?|laser therap|vestibulectomy|laparoscop|surgical|cold knife|excision|electromyograph|\bdiet\b|natural compound|non-?pharmacolog/i;
-const CUR_EXCLUDE_EXACT = new Set(["unspecified treatment","unspecified treatment groups","unspecified","interventions","multiple interventions","various treatments","various","treatments","drug therapy","hormonal treatment","nonhormonal treatment","daily use"]);
-const CUR_COMBO_RE = /combined with|combination|with or without| plus |\bplus\b|\+| and |\bcocp?\b|combined oral contracept/i;
-const CUR_SUPPL_RE = /vitamin|vitex|chasteberry|nux vomica|\blysine\b|fatty acid|evening primrose|\bomega\b|st\.? ?john|isoflavone|red clover|\bclover\b|curcumin|resveratrol|quercetin|folic acid|ergocalciferol|ubidecarenone|coenzyme|\bcoq|creatine|pterostilbene/i;
-function classifyCuration(drug) {
-  const d = String(drug ?? ""); const s = d.trim().toLowerCase();
-  if (CUR_EXCLUDE_EXACT.has(s) || CUR_EXCLUDE_RE.test(d)) return "exclude";
-  if (CUR_COMBO_RE.test(d)) return "combination";
-  if (CUR_SUPPL_RE.test(d)) return "supplement";
-  return "drug";
-}
-const CLASS_TO_MOLECULE = { "aromatase inhibitors": "Letrozole", "anti-androgens": "Spironolactone" };
-const CLASS_ROLLUP = new Set(["ssris","snris","ssri/snris","snri/ssris","gnrh agonist","gnrh agonists","gnrha",
-  "hormonal therapy","nonhormonal therapy","hormone replacement therapy","menopausal hormone therapy",
-  "menopause hormone therapy","estrogen therapy","estrogen monotherapy","estrogen","bioidentical estrogens",
-  "vaginal estrogen","vaginal oestrogen","low-dose vaginal estrogen","estrogen therapy (intravaginal)"]);
-function resolveDrugClass(drug) {
-  const s = String(drug ?? "").trim().toLowerCase();
-  if (s in CLASS_TO_MOLECULE) return { molecule: CLASS_TO_MOLECULE[s] };
-  if (CLASS_ROLLUP.has(s)) return { rollup: true };
-  return null;
-}
-// Pairs with NEGATIVE published randomized evidence — never present as positive.
-const KNOWN_NEGATIVE = {
-  "progesterone::pmdd": "Randomized placebo-controlled trials have consistently found progesterone no better than placebo for severe PMS/PMDD. Retained as a documented negative result, not a candidate.",
-};
-const knownNegativeNote = (drug, conditionId) =>
-  KNOWN_NEGATIVE[`${String(drug).trim().toLowerCase()}::${String(conditionId).trim().toLowerCase()}`] ?? null;
-const isCommunityOnly = (claims) =>
-  !!claims && claims.length > 0 && claims.every((c) => /community|reddit/i.test(String(c?.src ?? "")));
-// Conservative negative/null-result detector. Does NOT match comparative or
-// weak-positive language ("less effective", "inferior to", "second-line").
-// KEEP IN SYNC with lib/curation.ts.
-const NEGATIVE_EVIDENCE_RE = new RegExp([
-  String.raw`\b(did|do|does|was|were)\s+not\s+(reduce|improve|differ|decrease|change|support|show|demonstrate|outperform|exceed)`,
-  String.raw`no\s+(better|greater)\s+than\s+placebo`,
-  String.raw`not\s+(superior|better)\s+to\s+placebo`,
-  String.raw`no\s+more\s+effective\s+than\s+placebo`,
-  String.raw`no\s+(statistically\s+)?significant\s+(difference|improvement|effect|benefit|reduction|change)`,
-  String.raw`failed\s+to\s+(show|demonstrate|reduce|improve|meet|achieve)`,
-  String.raw`\bineffective\b`,
-  String.raw`(was|were)\s+not\s+effective`,
-  String.raw`no\s+evidence\s+(of|for)\s+(benefit|efficacy|effect)`,
-].join("|"), "i");
-// Preference-ranking idiom ("not supported preferentially to X") compares two
-// working treatments and must not read as a null result. KEEP IN SYNC.
-const PREFERENCE_RANKING_RE =
-  /not\s+(be\s+)?(support(ed)?|prefer(red)?|recommended)[^.]{0,90}?(preferentially|over\s+(the\s+)?\w|rather\s+than|in\s+preference|as\s+(a\s+)?first[- ]line)/i;
-const negativeEvidenceDetected = (...t) => {
-  const s = t.filter(Boolean).join("  ");
-  if (PREFERENCE_RANKING_RE.test(s)) return false;
-  return NEGATIVE_EVIDENCE_RE.test(s);
-};
-function normalizeDrugName(drug) {
-  const raw = String(drug ?? "").trim();
-  if (!raw) return raw;
-  const letters = raw.replace(/[^A-Za-z]/g, "");
-  if (!letters || letters !== letters.toUpperCase()) return raw;
-  let s = raw;
-  const parts = s.split(",").map((p) => p.trim()).filter(Boolean);
-  if (parts.length === 2 && !/\d/.test(parts[1])) s = `${parts[1]} ${parts[0]}`;
-  const KEEP_UPPER = /^(HCG|FSH|LH|DHEA|CoQ10|TENS|SMC021|G-CSF)$/i;
-  return s.toLowerCase().split(/\s+/)
-    .map((w) => (KEEP_UPPER.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
-    .join(" ");
-}
-
-function toArm(sig) {
-  const dims = DIMS.map((d) => ({
-    key: d.key,
-    label: d.label,
-    score: Math.max(0, Math.min(2, num(sig[`${d.key}_score`]))),
-    rationale: sig[`${d.key}_rationale`] ? String(sig[`${d.key}_rationale`]) : "",
-  }));
-  return {
-    arm: String(sig.arm),
-    aspect: String(sig.aspect ?? "efficacy"),
-    armScore: num(sig.arm_score),
-    strength: num(sig.arm_strength),
-    tier: tierLc(sig.confidence_tier),
-    isAnchor: false,
-    dimensions: dims,
-    female: {
-      band: sig.female_applicability_band ? String(sig.female_applicability_band) : "—",
-      multiplier: num(sig.female_applicability_multiplier, 1),
-      rationale: sig.female_applicability_rationale ? String(sig.female_applicability_rationale) : "",
-    },
-    synthesis: sig.synthesis_summary ? String(sig.synthesis_summary) : undefined,
-    mechanism: sig.mechanism_hypothesis ? String(sig.mechanism_hypothesis) : undefined,
-    precisionNote: sig.precision_note ? String(sig.precision_note) : undefined,
-    needsFulltext: !!sig.needs_fulltext,
-    contradictionFlag: !!sig.contradiction_flag,
-    numContradictions: num(sig.num_contradictions),
-  };
-}
-function deriveHeadline(arms) {
-  const direct = arms.find((a) => a.arm === "direct" && a.strength >= 3);
-  if (direct) return { status: "clinical", anchor: direct };
-  const strongest = [...arms].sort((a, b) => b.armScore - a.armScore)[0];
-  const nonTrivial = arms.length >= 2 || strongest.tier !== "exploratory";
-  return { status: nonTrivial ? "unvalidated_signal" : "preliminary", anchor: strongest };
-}
-
-const SIGNAL_COLS =
-  "id, intervention_id, condition_id, aspect, arm," +
-  " corroboration_score, rigor_score, specificity_score, plausibility_score, consistency_score," +
-  " corroboration_rationale, rigor_rationale, specificity_rationale, plausibility_rationale, consistency_rationale," +
-  " arm_strength, arm_score, confidence_tier," +
-  " female_applicability_band, female_applicability_multiplier, female_applicability_rationale," +
-  " contradiction_flag, num_contradictions, precision_note, needs_fulltext," +
-  " synthesis_summary, mechanism_hypothesis, claim_ids, status";
 
 async function getSexPkMap() {
   const map = new Map();
@@ -404,8 +245,19 @@ async function build() {
     const curationClass = cls ? (cls.molecule ? "drug" : "class") : classifyCuration(drug);
     const communityOnly = isCommunityOnly(claims);
     const negativeNote = knownNegativeNote(drug, slug);
-    const negativeEvidence = !negativeNote && negativeEvidenceDetected(
-      anchor.synthesis, ...(claims ?? []).map((cl) => cl.text));
+    // Check the structured direction field on all claims behind this signal
+    // (more reliable than regex on quote text). The extraction pipeline already
+    // classifies each claim as positive/negative/null/unclear.
+    const allClaimRecs = [...claimIds]
+      .map((id) => claimById.get(id))
+      .filter((c) => c && c.quote);
+    const hasNegativeDirection = allClaimRecs.some(
+      (c) => c.direction === "negative" || c.direction === "null",
+    );
+    const negativeEvidence = !negativeNote && (
+      hasNegativeDirection ||
+      negativeEvidenceDetected(anchor.synthesis, ...(claims ?? []).map((cl) => cl.text))
+    );
     const safetyAnchored = anchor.aspect === "safety";
     const demote = communityOnly || !!negativeNote || negativeEvidence || safetyAnchored;
     const displayTier = demote && anchor.tier !== "exploratory" ? "exploratory" : anchor.tier;

@@ -25,23 +25,14 @@ import {
   classifyCuration, resolveDrugClass, normalizeDrugName, isCommunityOnly, knownNegativeNote,
   negativeEvidenceDetected,
 } from "@/lib/curation";
+import {
+  ARMS, DIMS, SLUG_OVERRIDE, COND_ALIAS, SIGNAL_COLS,
+  num, tierLc, lvl, clip, sourceLabel, sourceHref, claimRank,
+  toArm, deriveHeadline,
+} from "./substrate-helpers";
 
 type Row = Record<string, unknown>;
 type ArmKey = "direct" | "pathway" | "community";
-
-const ARMS: ArmKey[] = ["direct", "pathway", "community"];
-
-const DIMS: { key: string; label: string }[] = [
-  { key: "corroboration", label: "Corroboration" },
-  { key: "rigor", label: "Rigor" },
-  { key: "specificity", label: "Specificity" },
-  { key: "plausibility", label: "Plausibility" },
-  { key: "consistency", label: "Consistency" },
-];
-
-// Substrate condition labels are the canonical six; five match the `conditions`
-// table by name, but "menopause" is filed under the slug "perimenopause-menopause".
-const SLUG_OVERRIDE: Record<string, string> = { menopause: "perimenopause-menopause" };
 
 // ── Independent side-layers ──────────────────────────────────────────────────
 // Reported beside the score, never folded in. MATRIX is name-keyed; sex-PK and
@@ -50,12 +41,6 @@ const SLUG_OVERRIDE: Record<string, string> = { menopause: "perimenopause-menopa
 
 export type SexPkFact = { parameter: string; sex: string; direction?: string; magnitude?: string; source?: string; sourceUrl?: string; note?: string };
 export type PhaseFact = { cyclePhase: string; pattern?: string; dosingNote?: string; source?: string; sourceUrl?: string };
-
-// MATRIX condition names differ from the substrate's canonical labels for one
-// condition; alias the substrate label (lowercased) to MATRIX's condition name.
-const MATRIX_COND_ALIAS: Record<string, string> = {
-  menopause: "perimenopause & menopause",
-};
 
 // Case-insensitive `${compound}::${condition}` → MATRIX score, built once.
 const MATRIX_INDEX: Map<string, (typeof MATRIX_PAIR_SNAPSHOT.per_pair)[number]> = (() => {
@@ -67,7 +52,7 @@ const MATRIX_INDEX: Map<string, (typeof MATRIX_PAIR_SNAPSHOT.per_pair)[number]> 
 })();
 
 function matrixForPair(drug: string, condition: string) {
-  const condKey = MATRIX_COND_ALIAS[condition.toLowerCase()] ?? condition.toLowerCase();
+  const condKey = COND_ALIAS[condition.toLowerCase()] ?? condition.toLowerCase();
   const m = MATRIX_INDEX.get(`${drug.toLowerCase()}::${condKey}`);
   if (!m) return { matrixPercentile: undefined, matrixDetail: undefined } as const;
   return {
@@ -127,116 +112,9 @@ async function getPhaseMap(): Promise<Map<string, PhaseFact[]>> {
   return map;
 }
 
-function tierLc(t: unknown): "strong" | "moderate" | "emerging" | "exploratory" {
-  const k = String(t ?? "").toLowerCase();
-  return k === "strong" || k === "moderate" || k === "emerging" ? k : "exploratory";
-}
-
-function lvl(score: unknown): string {
-  const n = Number(score);
-  if (!Number.isFinite(n)) return "—";
-  return n >= 2 ? "High" : n >= 1 ? "Medium" : "Low";
-}
-
-function num(v: unknown, d = 0): number {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : d;
-}
-
-function clip(s: string, n: number): string {
-  return s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s;
-}
-
-// ── Provenance: render a substrate document into a source label + link ───────
-function sourceLabel(doc: Row | null, direction?: string): string {
-  if (!doc) return "Source on file";
-  const type = String(doc.source ?? "").toLowerCase();
-  const ext = doc.external_id ? String(doc.external_id) : "";
-  if (type === "pubmed") return ["PubMed", ext && `PMID ${ext}`].filter(Boolean).join(" · ");
-  if (type === "clinicaltrials") return ["ClinicalTrials.gov", ext].filter(Boolean).join(" · ");
-  if (type === "reddit") return "Community report · Reddit";
-  if (type === "opentargets") return "Open Targets · mechanistic";
-  if (type === "aems") return "AEMS · adverse-event report";
-  if (type === "sider") return "SIDER · label side-effect";
-  return clip(type || "source", 32);
-}
-
-function sourceHref(doc: Row | null): string | undefined {
-  if (!doc) return undefined;
-  const url = doc.url ? String(doc.url).trim() : "";
-  if (url) return url;
-  const type = String(doc.source ?? "").toLowerCase();
-  const ext = doc.external_id ? String(doc.external_id).trim() : "";
-  if (!ext) return undefined;
-  if (type === "pubmed") return `https://pubmed.ncbi.nlm.nih.gov/${ext}/`;
-  if (type === "clinicaltrials") return `https://clinicaltrials.gov/study/${ext}`;
-  return undefined;
-}
-
-// ── Anchor-and-corroborate (SCORING_SPEC §6) ─────────────────────────────────
-function deriveHeadline(arms: SubstrateArm[]): {
-  status: "clinical" | "unvalidated_signal" | "preliminary";
-  anchor: SubstrateArm;
-} {
-  // 1. A non-trivial Direct arm anchors the pair → clinical.
-  const direct = arms.find((a) => a.arm === "direct" && a.strength >= 3);
-  if (direct) return { status: "clinical", anchor: direct };
-  // strongest available arm by arm_score (Direct included if it exists but is thin)
-  const strongest = [...arms].sort((a, b) => b.armScore - a.armScore)[0];
-  // 2. Direct thin/absent but arms converge → surfaced, hedged.
-  // 3. A single weak arm → preliminary.
-  const nonTrivial = arms.length >= 2 || strongest.tier !== "exploratory";
-  return { status: nonTrivial ? "unvalidated_signal" : "preliminary", anchor: strongest };
-}
-
-function toArm(sig: Row): SubstrateArm {
-  const dims = DIMS.map((d) => ({
-    key: d.key,
-    label: d.label,
-    score: Math.max(0, Math.min(2, num(sig[`${d.key}_score`]))),
-    rationale: sig[`${d.key}_rationale`] ? String(sig[`${d.key}_rationale`]) : "",
-  }));
-  return {
-    arm: String(sig.arm) as ArmKey,
-    aspect: String(sig.aspect ?? "efficacy"),
-    armScore: num(sig.arm_score),
-    strength: num(sig.arm_strength),
-    tier: tierLc(sig.confidence_tier),
-    isAnchor: false,
-    dimensions: dims,
-    female: {
-      band: sig.female_applicability_band ? String(sig.female_applicability_band) : "—",
-      multiplier: num(sig.female_applicability_multiplier, 1),
-      rationale: sig.female_applicability_rationale ? String(sig.female_applicability_rationale) : "",
-    },
-    synthesis: sig.synthesis_summary ? String(sig.synthesis_summary) : undefined,
-    mechanism: sig.mechanism_hypothesis ? String(sig.mechanism_hypothesis) : undefined,
-    precisionNote: sig.precision_note ? String(sig.precision_note) : undefined,
-    needsFulltext: !!sig.needs_fulltext,
-    contradictionFlag: !!sig.contradiction_flag,
-    numContradictions: num(sig.num_contradictions),
-  };
-}
-
 // ── Load + assemble ──────────────────────────────────────────────────────────
-const SIGNAL_COLS =
-  "id, intervention_id, condition_id, aspect, arm," +
-  " corroboration_score, rigor_score, specificity_score, plausibility_score, consistency_score," +
-  " corroboration_rationale, rigor_rationale, specificity_rationale, plausibility_rationale, consistency_rationale," +
-  " arm_strength, arm_score, confidence_tier," +
-  " female_applicability_band, female_applicability_multiplier, female_applicability_rationale," +
-  " contradiction_flag, num_contradictions, precision_note, needs_fulltext," +
-  " synthesis_summary, mechanism_hypothesis, claim_ids, status";
 
 type ClaimRec = { quote: string; direction: string; src: string; href?: string; rank: number };
-
-function claimRank(doc: Row | null): number {
-  const t = String(doc?.source ?? "").toLowerCase();
-  if (t === "pubmed") return 0;
-  if (t === "clinicaltrials") return 1;
-  if (t === "opentargets" || t === "aems" || t === "sider") return 2;
-  return 3; // reddit / community
-}
 
 async function getAllCandidates(): Promise<Candidate[]> {
   const [sigRes, entRes, claimRes, condRes, compRes, sexMap, phaseMap] = await Promise.all([
@@ -375,9 +253,21 @@ async function getAllCandidates(): Promise<Candidate[]> {
     //     Capped to `exploratory` and labelled as a safety signal.
     const communityOnly = isCommunityOnly(claims);
     const negativeNote = knownNegativeNote(drug, slug);
-    const negativeEvidence = !negativeNote && negativeEvidenceDetected(
-      anchor.synthesis,
-      ...(claims ?? []).map((cl) => cl.text),
+    // Check the structured direction field on all claims behind this signal
+    // (more reliable than regex on quote text). The extraction pipeline already
+    // classifies each claim as positive/negative/null/unclear.
+    const allClaimRecs = [...claimIds]
+      .map((id) => claimById.get(id))
+      .filter((c): c is ClaimRec => !!c && !!c.quote);
+    const hasNegativeDirection = allClaimRecs.some(
+      (c) => c.direction === "negative" || c.direction === "null",
+    );
+    const negativeEvidence = !negativeNote && (
+      hasNegativeDirection ||
+      negativeEvidenceDetected(
+        anchor.synthesis,
+        ...(claims ?? []).map((cl) => cl.text),
+      )
     );
     const safetyAnchored = anchor.aspect === "safety";
     const demote = communityOnly || !!negativeNote || negativeEvidence || safetyAnchored;
