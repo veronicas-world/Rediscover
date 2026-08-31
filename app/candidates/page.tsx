@@ -3,6 +3,7 @@ import Link from "next/link";
 import CandidateCard from "@/app/components/CandidateCard";
 import CandidateExplorer, { type ExplorerItem } from "./CandidateExplorer";
 import { getCandidates, getCorpusScope } from "@/lib/substrate-candidates";
+import { tierKey } from "@/lib/substrate-helpers";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -52,7 +53,7 @@ export default async function CandidatesPage() {
       order.push(slug);
     }
     g.items.push(c);
-    g.counts[c.tier] += 1;
+    g.counts[tierKey(c.tier)] += 1;
   }
 
   // Order conditions by total count, descending.

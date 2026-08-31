@@ -134,16 +134,34 @@ Method: 50 active signals sampled, each scored 3 times with the same model
 (Claude Sonnet 4.6), same prompt, same claims. Dimension scores, derived
 tiers, synthesis summaries, and structured facts compared across runs.
 
-Result: tier agreement 58.5% (24/41 stable). Corroboration was 100% stable
+Result: tier agreement 58.5% (24/41 stable). Median arm_score spread across
+runs was 1.00 point out of 10 (max 2.00). Corroboration was 100% stable
 (deterministically capped by document count). Plausibility (75.6%) and
 specificity (78.0%) were the least stable dimensions. Synthesis summaries
 were identical in 2.4% of cases. Structured facts were stable in 75.6%.
 
-Interpretation: the scoring layer is not stable enough to validate against
-human judgment. The deterministic backstops (corroboration ceiling, community
-independence) are working as designed; the model-assigned dimensions are not.
-This finding is reported alongside the entailment study and informs the
-sequencing of the scoring reliability study.
+The 58.5% tier-stability figure must be read alongside the median spread. The
+model wobbles by about 1 point on a 0–10 scale. The tier system turns that into
+a category change because the bands are 2.0–2.5 points wide with hard
+thresholds. Every tier flip in the test was a boundary crossing (8.0→7.0
+across the Strong cutoff, 3.0→4.0 across Emerging, 7.0→5.2 across Moderate),
+not a wholesale disagreement about evidence quality. The deterministic
+backstops (corroboration ceiling, community independence) are stable; the
+model-assigned dimensions are not.
+
+A subsequent run with temperature pinned to 0.0 (the original pass used
+temperature=None, a workaround for Opus 4.8 that left Sonnet sampling at the
+API default of 1.0) is pending API credit replenishment. If temperature
+pinning reduces the median spread, the noise band narrows and fewer signals
+span.
+
+This is a live-site finding, not just a study-design one. The tiers currently
+published on whel.bio are one draw from this distribution. A signal displayed
+as "Strong" may score 7.0 on a re-run — still strong evidence, but not the
+tier the badge claims. The noise-band spanning display (showing
+"strong–moderate" when the score is within the measured noise band of a
+cutoff) makes this uncertainty visible to the reader rather than hiding it
+behind a false-precision badge.
 
 ## Limitations
 

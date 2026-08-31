@@ -28,7 +28,7 @@ export interface Candidate {
   /** Display-time curation class (see lib/curation.ts). "drug" = a clean single-agent
    *  repurposing candidate; the rest are segregated out of the graded candidate index. */
   curationClass?: "drug" | "exclude" | "combination" | "supplement" | "class";
-  tier: "strong" | "moderate" | "emerging" | "exploratory";
+  tier: string;
   score: number;
   origin: string;
   pathway: string;
@@ -150,7 +150,7 @@ export interface SubstrateArm {
   armScore: number;
   /** Pre-multiplier sum of the five dimensions, 0–10. */
   strength: number;
-  tier: "strong" | "moderate" | "emerging" | "exploratory";
+  tier: string;
   /** True for the arm that anchors the pair headline. */
   isAnchor: boolean;
   /** The five arm-aware dimensions with their 0–2 scores and rationales. */
@@ -190,11 +190,20 @@ function MarkerChip({ dot, label }: { dot: string; label: string }) {
 }
 
 function TierBadge({ tier }: { tier: Candidate["tier"] }) {
-  const labels = { strong: "Strong tier", moderate: "Moderate tier", emerging: "Emerging tier", exploratory: "Exploratory tier" };
+  // Handle spanning tiers (e.g., "strong–moderate") from the noise-band display.
+  // Use the lower tier for the CSS class/color; show the span as the label.
+  const lower = tier.includes("–") ? tier.split("–").pop() : tier;
+  const labels: Record<string, string> = {
+    strong: "Strong tier", moderate: "Moderate tier",
+    emerging: "Emerging tier", exploratory: "Exploratory tier",
+  };
+  const label = tier.includes("–")
+    ? tier.split("–").map(t => t.charAt(0).toUpperCase() + t.slice(1)).join("–") + " tier"
+    : labels[tier] ?? tier;
   return (
-    <span className={`tier-badge ${tier}`}>
+    <span className={`tier-badge ${lower}`}>
       <span className="tdot" />
-      {labels[tier]}
+      {label}
     </span>
   );
 }

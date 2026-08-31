@@ -110,7 +110,7 @@ def build_user_prompt(iv_label: str, cd_label: str, aspect: str, arm: str,
 def score_one_signal(api_key: str, model: str, system: str, user: str) -> dict | None:
     """Call the scoring model once and return the parsed response."""
     try:
-        res = complete_json(system, user, max_tokens=1500, model=model, temperature=None)
+        res = complete_json(system, user, max_tokens=1500, model=model, temperature=0.0)
         return res
     except Exception as e:
         return {"_error": str(e)}
@@ -311,6 +311,18 @@ def main() -> int:
                     runs[i].get("synthesis", ""),
                     runs[j].get("synthesis", "")))
 
+    # Median arm_score spread across runs (the measurement that contextualises
+    # the tier-stability figure: a 1-point wobble on a 2-point-wide band is
+    # a boundary artifact, not a scoring failure).
+    import statistics
+    spreads = []
+    for r in valid:
+        scores = [run.get("score") for run in r["runs"] if run.get("score") is not None]
+        if len(scores) >= 2:
+            spreads.append(max(scores) - min(scores))
+    median_spread = statistics.median(spreads) if spreads else 0
+    max_spread = max(spreads) if spreads else 0
+
     # Disagreements
     tier_disagree = [r for r in valid if not all_runs_agree(r["runs"], "tier")]
     dim_disagree = [r for r in valid if not all_dims_agree(r["runs"])]
@@ -326,6 +338,10 @@ def main() -> int:
             "stable": tier_stable,
             "unstable": len(valid) - tier_stable,
             "rate": round(100 * tier_stable / len(valid), 1) if valid else 0,
+        },
+        "arm_score_spread": {
+            "median": round(median_spread, 2),
+            "max": round(max_spread, 2),
         },
         "dimension_agreement": {
             "all_five_stable": {
@@ -377,6 +393,9 @@ def main() -> int:
     print("TIER STABILITY (the thing the site displays):")
     print(f"  stable:   {tier_stable}/{len(valid)} = {100*tier_stable/len(valid):.1f}%")
     print(f"  unstable: {len(valid) - tier_stable}/{len(valid)} = {100*(len(valid)-tier_stable)/len(valid):.1f}%")
+    print(f"  median arm_score spread: {median_spread:.2f} / 10  (max {max_spread:.2f})")
+    print(f"  context: bands are 2.0–2.5 points wide; a {median_spread:.1f}-point wobble crosses")
+    print(f"  a cutoff when the score sits within {median_spread:.1f} of it.")
     print()
     print("DIMENSION STABILITY (per dimension, across runs):")
     for d in dim_names:

@@ -12,7 +12,7 @@ export type ExplorerItem = {
   id: string;
   condition: string;
   conditionSlug: string;
-  tier: "strong" | "moderate" | "emerging" | "exploratory";
+  tier: string;
   score: number;
   /** Anchor arm = the public-facing signal type. */
   signalArm: "direct" | "pathway" | "community" | null;
@@ -36,7 +36,13 @@ export type ExplorerItem = {
   card: ReactNode;
 };
 
-type TierKey = ExplorerItem["tier"];
+type TierKey = "strong" | "moderate" | "emerging" | "exploratory";
+/** Normalize a display tier (may span, e.g. "strong–moderate") to the lower tier. */
+function tierKey(t: string): TierKey {
+  const k = t.toLowerCase();
+  const lower = k.includes("–") ? k.split("–").pop()! : k;
+  return lower === "strong" || lower === "moderate" || lower === "emerging" ? (lower as TierKey) : "exploratory";
+}
 type ValKey = NonNullable<ExplorerItem["validation"]>;
 type ArmKey = NonNullable<ExplorerItem["signalArm"]>;
 type MarkerKey =
@@ -202,7 +208,7 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
   // facet's own selection, so the numbers reflect what selecting would yield.
   const counts = useMemo(() => {
     const passExcept = (it: ExplorerItem, skip: string) => {
-      if (skip !== "tier" && tiers.size && !tiers.has(it.tier)) return false;
+      if (skip !== "tier" && tiers.size && !tiers.has(tierKey(it.tier))) return false;
       if (skip !== "val" && vals.size && (!it.validation || !vals.has(it.validation))) return false;
       if (skip !== "arm" && arms.size && (!it.signalArm || !arms.has(it.signalArm))) return false;
       if (skip !== "marker" && markers.size && ![...markers].every((m) => markerActive(it, m))) return false;
@@ -221,7 +227,7 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
       return m;
     };
     return {
-      tier: tally<TierKey>("tier", (it) => it.tier),
+      tier: tally<TierKey>("tier", (it) => tierKey(it.tier)),
       val: tally<ValKey>("val", (it) => it.validation),
       arm: tally<ArmKey>("arm", (it) => it.signalArm),
       marker: tally<MarkerKey>("marker", (it) => ALL_MARKERS.filter((m) => markerActive(it, m))),
@@ -240,7 +246,7 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
 
   const filtered = useMemo(() => {
     return items.filter((it) => {
-      if (tiers.size && !tiers.has(it.tier)) return false;
+      if (tiers.size && !tiers.has(tierKey(it.tier))) return false;
       if (vals.size && (!it.validation || !vals.has(it.validation))) return false;
       if (arms.size && (!it.signalArm || !arms.has(it.signalArm))) return false;
       if (markers.size && ![...markers].every((m) => markerActive(it, m))) return false;
@@ -261,7 +267,7 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
           return ar - br || b.score - a.score;
         }
         case "tier":
-          return TIER_RANK[a.tier] - TIER_RANK[b.tier] || b.score - a.score;
+          return TIER_RANK[tierKey(a.tier)] - TIER_RANK[tierKey(b.tier)] || b.score - a.score;
         case "condition":
           return a.condition.localeCompare(b.condition) || b.score - a.score;
         case "score":

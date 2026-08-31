@@ -28,7 +28,7 @@ import {
 import {
   ARMS, DIMS, SLUG_OVERRIDE, COND_ALIAS, SIGNAL_COLS,
   num, tierLc, lvl, clip, sourceLabel, sourceHref, claimRank,
-  toArm, deriveHeadline,
+  toArm, deriveHeadline, tierDisplay, tierKey,
 } from "./substrate-helpers";
 
 type Row = Record<string, unknown>;
@@ -271,7 +271,12 @@ async function getAllCandidates(): Promise<Candidate[]> {
     );
     const safetyAnchored = anchor.aspect === "safety";
     const demote = communityOnly || !!negativeNote || negativeEvidence || safetyAnchored;
-    const displayTier = demote && anchor.tier !== "exploratory" ? "exploratory" : anchor.tier;
+    // Apply noise-band spanning display before curation demotion: a score
+    // within ~1 point of a cutoff is not stable across runs (test-retest
+    // found 58.5% tier stability, median spread 1.0/10). Display the span
+    // so the reader sees the uncertainty rather than a false-precision badge.
+    const scoreTier = tierDisplay(anchor.armScore, anchor.tier);
+    const displayTier = demote && scoreTier !== "exploratory" ? "exploratory" : scoreTier;
 
     n += 1;
     out.push({
@@ -460,7 +465,7 @@ export async function getSubstrateHomeData(): Promise<{
     const slug = c.conditionId ?? c.condition.toLowerCase();
     let s = byCondition.get(slug);
     if (!s) { s = { strong: 0, moderate: 0, emerging: 0, exploratory: 0, total: 0 }; byCondition.set(slug, s); }
-    s[c.tier] += 1;
+    s[tierKey(c.tier)] += 1;
     s.total += 1;
   }
   // Provenance volume: distinct verbatim claims and source documents that actually

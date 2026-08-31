@@ -13,6 +13,7 @@ import {
   sourceLabel as _sourceLabel, sourceHref as _sourceHref, claimRank as _claimRank,
   toArm as _toArm, deriveHeadline as _deriveHeadline,
   formatMatrixPercentile as _formatMatrixPercentile,
+  tierDisplay as _tierDisplay, tierKey as _tierKey, NOISE_BAND as _NOISE_BAND,
 } from "./substrate-helpers.mjs";
 
 export type ArmKey = "direct" | "pathway" | "community";
@@ -40,3 +41,12 @@ export function deriveHeadline(arms: SubstrateArm[]): {
   return _deriveHeadline(arms) as { status: "clinical" | "unvalidated_signal" | "preliminary"; anchor: SubstrateArm };
 }
 export function formatMatrixPercentile(qr: number): string { return _formatMatrixPercentile(qr); }
+
+export const NOISE_BAND: number = _NOISE_BAND;
+export function tierDisplay(score: number, storedTier: string): string {
+  return _tierDisplay(score, storedTier);
+}
+export type TierKey = "strong" | "moderate" | "emerging" | "exploratory";
+export function tierKey(t: string): TierKey {
+  return _tierKey(t) as TierKey;
+}

@@ -419,8 +419,10 @@ def run(limit=None, model=None, only_unscored=False):
 
     def _score(job):
         _key, _claims, system, user = job
-        # temperature omitted (=None): Opus 4.8 deprecates it.
-        return complete_json(system, user, max_tokens=1500, model=model, temperature=None)
+        # temperature=0.0 for deterministic scoring. (Opus 4.8 deprecates
+        # temperature and 400s if it's sent; if that model is ever used for
+        # scoring, pass temperature=None instead. Sonnet accepts it.)
+        return complete_json(system, user, max_tokens=1500, model=model, temperature=0.0)
 
     scored = 0
     suppressed = 0

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getCandidates, getCombinationCandidates, getAdjunctCandidates } from "@/lib/substrate-candidates";
+import { tierKey, type TierKey } from "@/lib/substrate-helpers";
 import SideToc, { type TocItem } from "@/app/components/SideToc";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +22,6 @@ export async function generateMetadata({
   return { title: data?.name ? `${data.name} | Whel` : "Condition | Whel" };
 }
 
-type TierKey = "strong" | "moderate" | "emerging" | "exploratory";
 type ArmKey = "direct" | "pathway" | "community";
 
 const TIERS: { key: TierKey; label: string; token: string }[] = [
@@ -88,7 +88,7 @@ export default async function ConditionDetailPage({
   const tierCounts: Record<TierKey, number> = {
     strong: 0, moderate: 0, emerging: 0, exploratory: 0,
   };
-  for (const c of condCands) tierCounts[c.tier]++;
+  for (const c of condCands) tierCounts[tierKey(c.tier)]++;
 
   // Arm composition: how many arm-readings each evidence arm contributes across
   // this condition's pairs (a pair can carry Direct + Pathway + Community).
