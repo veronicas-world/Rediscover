@@ -286,15 +286,41 @@ def community_independence(claims):
     return score, "Independence (patient accounts): " + "; ".join(notes) + "."
 
 
+def corroboration_ceiling(claims):
+    """Deterministic upper bound on the corroboration dimension for the direct
+    and pathway arms, from the count of distinct source documents
+    (SCORING_SPEC §2 direct). The external audit (May 2026) found the model
+    over-counted — a single systematic review's pooled trials were counted as
+    independent sources, inflating corroboration to 2 on one document. This
+    backstop caps the score to what the document count can support:
+
+      0 distinct documents → 0
+      1–2 distinct documents → 1   (one source, or two independent studies = 1)
+      3+ distinct documents → 2   (three+ independent = 2)
+
+    The rubric's 'one large well-powered low-bias RCT = 2' exception is
+    deliberately capped to 1 here: one study is not replication, and the audit
+    found inflation, not deflation. The model still proposes the score; this
+    only caps it down, never up. The community arm has its own rule
+    (community_independence) and is not affected."""
+    docs = {c["document_id"] for c in claims if c["document_id"]}
+    n = len(docs)
+    if n >= 3:
+        return 2
+    if n >= 1:
+        return 1
+    return 0
+
+
 # ── Scoring driver ──────────────────────────────────────────────────────────
 
 def _group_claims(conn):
     """Verified claims joined to their document source, grouped by
     (intervention_id, condition_id, aspect, arm)."""
     rows = conn.execute(
-        "SELECT c.id, c.text, c.exact_quote, c.aspect, c.direction, c.intervention_id,"
-        " c.condition_id, d.source AS doc_source, d.title AS doc_title, d.external_id,"
-        " d.meta_json AS doc_meta"
+        "SELECT c.id, c.text, c.exact_quote, c.aspect, c.direction, c.document_id,"
+        " c.intervention_id, c.condition_id, d.source AS doc_source, d.title AS doc_title,"
+        " d.external_id, d.meta_json AS doc_meta"
         " FROM claims c JOIN documents d ON c.document_id = d.id"
         " WHERE c.provenance_verified = 1"
     ).fetchall()
@@ -418,6 +444,18 @@ def run(limit=None, model=None, only_unscored=False):
             ci_score, ci_rationale = community_independence(claims)
             dims["corroboration"] = ci_score
             rats["corroboration"] = ci_rationale
+
+        # direct/pathway corroboration ceiling: cap the model's score to the
+        # number of distinct independent source documents (SCORING_SPEC §2). The
+        # external audit found the model over-counted a single review's pooled
+        # trials as independent; this deterministic backstop prevents a recurrence.
+        if arm in ("direct", "pathway"):
+            ceiling = corroboration_ceiling(claims)
+            if dims["corroboration"] > ceiling:
+                dims["corroboration"] = ceiling
+                n_docs = len({c["document_id"] for c in claims if c["document_id"]})
+                cap_note = f"[Capped at {ceiling}: {n_docs} distinct source document(s).]"
+                rats["corroboration"] = (rats["corroboration"] + " " + cap_note).strip()
 
         # contradictions (§4): flag from the table; cap consistency at 1 if present
         nco = _num_contradictions(conn, iv, cd)
@@ -685,6 +723,17 @@ def _selftest():
     check("comm 6 accounts/1 thread -> 1 (anchored)", community_independence(onethread)[0], 1)
     dup = [_c(f"u{i}", f"t{i}", "exact same coordinated sentence here") for i in range(6)]
     check("comm near-duplicate caps 2->1", community_independence(dup)[0], 1)
+
+    # direct/pathway corroboration ceiling (rule-based from document count)
+    def _dc(doc_id):
+        return {"document_id": doc_id}
+    check("corr 0 docs -> 0", corroboration_ceiling([]), 0)
+    check("corr 1 doc -> 1", corroboration_ceiling([_dc("d1")]), 1)
+    check("corr 2 docs -> 1", corroboration_ceiling([_dc("d1"), _dc("d2")]), 1)
+    check("corr 3 docs -> 2", corroboration_ceiling([_dc("d1"), _dc("d2"), _dc("d3")]), 2)
+    check("corr 5 docs -> 2", corroboration_ceiling([_dc(f"d{i}") for i in range(5)]), 2)
+    # a single review with many claims from one document caps at 1 (the audit case)
+    check("corr 1 doc x6 claims -> 1", corroboration_ceiling([_dc("d1")] * 6), 1)
 
     print("  SELFTEST", "PASS" if ok else "FAILED")
     return 0 if ok else 1

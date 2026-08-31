@@ -367,14 +367,20 @@ async function getAllCandidates(): Promise<Candidate[]> {
     //     are capped at `exploratory` however enthusiastic the reports are.
     //  2. Pairs with negative published randomized evidence never present as
     //     positive signals: capped and marked as a contradiction.
+    //  3. The cited evidence itself reports no benefit: never present as positive.
+    //  4. Safety-anchored pairs (the only evidence is adverse-event / tolerability
+    //     data, with no efficacy or mechanistic arm) must never display "supports"
+    //     or an inflated tier — adverse-event data is not efficacy evidence, and
+    //     a harm signal presented as "Evidence supports" is actively dangerous.
+    //     Capped to `exploratory` and labelled as a safety signal.
     const communityOnly = isCommunityOnly(claims);
     const negativeNote = knownNegativeNote(drug, slug);
-    // 3. The cited evidence itself reports no benefit: never present as positive.
     const negativeEvidence = !negativeNote && negativeEvidenceDetected(
       anchor.synthesis,
       ...(claims ?? []).map((cl) => cl.text),
     );
-    const demote = communityOnly || !!negativeNote || negativeEvidence;
+    const safetyAnchored = anchor.aspect === "safety";
+    const demote = communityOnly || !!negativeNote || negativeEvidence || safetyAnchored;
     const displayTier = demote && anchor.tier !== "exploratory" ? "exploratory" : anchor.tier;
 
     n += 1;
@@ -391,15 +397,17 @@ async function getAllCandidates(): Promise<Candidate[]> {
       pathway: displayTier === "exploratory"
         ? "Hypothesis-generation · pre-validation"
         : "505(b)(2) · existing active ingredient, new indication",
-      direction: (anyContradiction || negativeNote || negativeEvidence)
+      direction: (anyContradiction || negativeNote || negativeEvidence || safetyAnchored)
         ? "contradicts"
         : displayTier === "exploratory" ? "silent" : "supports",
       evidenceCaveat: negativeNote
         ?? (negativeEvidence
           ? "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue."
-          : communityOnly
-            ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
-            : undefined),
+          : safetyAnchored
+            ? "Safety signal only: this pair has no efficacy or mechanistic evidence on file — only adverse-event or tolerability data. Shown as a documented safety signal, not an efficacy candidate; capped at exploratory."
+            : communityOnly
+              ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
+              : undefined),
       rationale: negativeNote
         ? `${negativeNote} ${anchor.synthesis ?? ""}`.trim()
         : anchor.synthesis || `${displayDrug} surfaced as a substrate signal for ${condition}.`,

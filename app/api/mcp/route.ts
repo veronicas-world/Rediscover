@@ -1,10 +1,14 @@
 // Deployed MCP endpoint — exposes Whel's curated corpus to MCP clients
 // (Claude Science, etc.) over HTTPS, always-on, on Vercel. Gated by a secret
-// key in the query string (?key=...), checked against WHEL_MCP_KEY, so the
-// corpus is not openly public. Descriptive research context; NOT advice.
+// key (WHEL_MCP_KEY), so the corpus is not openly public. Descriptive research
+// context; NOT advice.
 //
-// Connect from Claude Science → Connectors → Remote with:
-//   https://whel.bio/api/mcp?key=YOUR_KEY
+// Auth: pass the key in the Authorization header:
+//   Authorization: Bearer YOUR_KEY
+// (The x-whel-key header is also accepted. The ?key=YOUR_KEY query-string path
+// is kept as a deprecated fallback so existing connector configs keep working,
+// but it should be removed once clients migrate — secrets in URLs land in
+// access logs and browser history.)
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 import * as corpus from "@/lib/corpus-query";
@@ -65,12 +69,26 @@ const handler = createMcpHandler(
   { basePath: "/api" },
 );
 
+/** Constant-time string comparison so the key check is not a timing oracle. */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return mismatch === 0;
+}
+
 function authorized(req: Request): boolean {
   const secret = process.env.WHEL_MCP_KEY;
   if (!secret) return false;
-  const url = new URL(req.url);
-  const key = url.searchParams.get("key") ?? req.headers.get("x-whel-key");
-  return key === secret;
+  // Prefer the Authorization: Bearer header (secrets in headers are not logged
+  // the way query-string secrets are). The x-whel-key header is also accepted.
+  const authHeader = req.headers.get("authorization") ?? "";
+  const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  const key = bearer
+    || req.headers.get("x-whel-key")
+    || new URL(req.url).searchParams.get("key"); // deprecated fallback
+  if (!key) return false;
+  return timingSafeEqual(key, secret);
 }
 
 async function gated(req: Request): Promise<Response> {

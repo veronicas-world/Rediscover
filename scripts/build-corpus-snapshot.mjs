@@ -406,7 +406,8 @@ async function build() {
     const negativeNote = knownNegativeNote(drug, slug);
     const negativeEvidence = !negativeNote && negativeEvidenceDetected(
       anchor.synthesis, ...(claims ?? []).map((cl) => cl.text));
-    const demote = communityOnly || !!negativeNote || negativeEvidence;
+    const safetyAnchored = anchor.aspect === "safety";
+    const demote = communityOnly || !!negativeNote || negativeEvidence || safetyAnchored;
     const displayTier = demote && anchor.tier !== "exploratory" ? "exploratory" : anchor.tier;
 
     n += 1;
@@ -424,12 +425,14 @@ async function build() {
       pathway: displayTier === "exploratory"
         ? "Hypothesis-generation · pre-validation"
         : "505(b)(2) · existing active ingredient, new indication",
-      direction: (anyContradiction || negativeNote || negativeEvidence) ? "contradicts" : displayTier === "exploratory" ? "silent" : "supports",
+      direction: (anyContradiction || negativeNote || negativeEvidence || safetyAnchored) ? "contradicts" : displayTier === "exploratory" ? "silent" : "supports",
       evidenceCaveat: negativeNote ?? (negativeEvidence
         ? "Negative or null result: the evidence cited for this pair reports no benefit over placebo or control. Recorded as a documented negative, not a candidate to pursue."
-        : communityOnly
-          ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
-          : undefined),
+        : safetyAnchored
+          ? "Safety signal only: this pair has no efficacy or mechanistic evidence on file — only adverse-event or tolerability data. Shown as a documented safety signal, not an efficacy candidate; capped at exploratory."
+          : communityOnly
+            ? "Community-reported only: every source behind this signal is an anecdotal patient report, with no published trial or literature corroboration. Hypothesis-generating, capped at exploratory."
+            : undefined),
       rationale: negativeNote
         ? `${negativeNote} ${anchor.synthesis ?? ""}`.trim()
         : anchor.synthesis || `${displayDrug} surfaced as a substrate signal for ${condition}.`,
