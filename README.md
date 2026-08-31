@@ -106,6 +106,11 @@ the project's maturity.
   sex-applicability label. Internally recorded, externally overstated.
 - **Triangulation is presentational.** The pair headline is the single strongest arm.
   Corroborating arms decorate; they do not change rank.
+- **The deterministic rules depend on model-extracted facts.** The `% female` and
+  sample-size values that drive the sex-applicability band and the imprecision caps are
+  extracted by the same scoring model call they then constrain. A wrong `% female`
+  silently produces the wrong multiplier and nothing downstream catches it. The Python
+  logic is deterministic; its inputs are not.
 - **Live counts, frozen evidence.** The scope line reads from the database at request
   time, but the last full pipeline run was June 2026.
 - **48 source documents is not coverage.** It is a start, and the counting page says so.
@@ -263,38 +268,72 @@ site says so.
 
 ## 11. Work queue
 
-Ordered by leverage. Items 1–9 are from an independent Droid review
-([`docs/droid-review-2026-08.md`](docs/droid-review-2026-08.md)); 10–12 are outstanding
-from the validation work.
+Ordered by leverage. Revised 2026-08-30 after an independent Droid review
+([`docs/droid-review-2026-08.md`](docs/droid-review-2026-08.md)) and a second pass that
+challenged the ordering.
 
-1. **Run the validation study.** Pre-registered in
+1. **Verify or soften the WHBench Opus-4.6 attribution** on the technical-architecture
+   page. The paper and the 72.1% figure are real; the abstract does not name the top
+   model. Five minutes. It sits at the top not because it is large but because this
+   project has already published one fabricated citation, and an unverifiable
+   attribution on a public methodology page discredits everything under it. Credibility
+   work is not ranked by effort.
+2. **Run the declared-context ablation** (`scripts/ablate-declared-context.py`, built,
+   never run). Measures whether the judge obeys the instruction limiting context to
+   population scoping. It is a code task with no human dependency, and if the judge
+   leaks, the validation study would be measuring a compromised instrument. Gate item 3
+   on this.
+3. **Run the validation study.** Pre-registered in
    [`docs/validation-protocol-DRAFT.md`](docs/validation-protocol-DRAFT.md). Until it
-   runs, every tier on the site is an unvalidated model rating. Nothing matters more.
-2. **Unify candidate assembly.** `lib/substrate-candidates.ts` and
-   `scripts/build-corpus-snapshot.mjs` are hand-maintained ports of the same complex
-   logic in two languages, with a `KEEP IN SYNC` comment and no test enforcing it. The
-   MCP corpus will silently drift from the live site.
-3. **Renumber colliding migrations.** Four prefix collisions. Ten-minute fix; blocks
-   clean provisioning.
-4. **Persist display tier and curation class to the database**, so the DB is the single
-   source of truth and auditors reading it see what users see.
-5. **Serve reads from the corpus snapshot** rather than a full assembly per request.
-6. **Swap the entailment judge to an independent model.** Currently the guarantee is
-   judged by the same model family that produced the claims.
-7. **Fix `COMBO_RE` matching the bare word " and "**, which is silently dropping
-   candidates from the public index.
-8. **Reconcile the sex-awareness framing with the two-level reality.** Either describe
-   the multiplier honestly or populate F2/F3.
-9. **Verify the WHBench Opus-4.6 attribution** on the technical-architecture page, or
-   soften it.
-10. **Run the declared-context ablation** (`scripts/ablate-declared-context.py`, built,
-    never run). Measures whether the judge obeys the instruction limiting context to
-    population scoping. Should run before human raters spend time validating the judge.
-11. **Add rater identity to `scripts/label-claims.py`** so two people can label the same
-    items and a human-to-human reliability ceiling can be computed.
-12. **Review the five off-scope condition labels** (anxiety, breast cancer,
-    cardiovascular disease, dysmenorrhea, latent hyperprolactinaemia) for filing drift
-    of the kind that produced the r/PelvicFloor mis-filing.
+   runs, every tier on the site is an unvalidated model rating. The infrastructure
+   exists; the blocker is human time. Prerequisite: rater identity in
+   `scripts/label-claims.py` so two people can label the same items and a
+   human-to-human ceiling can be computed.
+4. **Add a decorrelated second entailment judge as a measurement instrument.**
+   Note the framing carefully: *add*, not *swap*. Swapping buys almost nothing on
+   published benchmarks (Bespoke-MiniCheck-7B scores 77.4 balanced accuracy on
+   LLM-AggreFact against Claude-3.5-Sonnet's 77.2, and on the ExpertQA slice every
+   model on the board sits between 59 and 61). Replacing one judge with another
+   relocates the correlated-error problem rather than solving it. Running two judges
+   from different families and reporting their disagreement rate converts the problem
+   into a measured quantity. Sequencing also matters: the 100 human labels already
+   collected refer to the current judge's output, so change the live judge only after
+   the study that measures it has run.
+5. **Persist display tier and curation class to the database.** `confidence_tier` in
+   `substrate_signals` can say `Moderate` while the site displays `Exploratory`, because
+   the community-only, negative-evidence, safety-anchored and class-relabel rules run in
+   read-time TypeScript. An auditor reading the database, or the MCP server feeding
+   external tools, gets a different answer than a visitor. This project publishes query
+   definitions and invites external recomputation; that invitation is not honest while
+   the displayed truth lives only in code. Prerequisite for item 6.
+6. **Serve reads from the corpus snapshot** rather than a full assembly per request.
+7. **Fix `COMBO_RE` matching the bare word " and "**, which silently drops candidates
+   from the public index. Small blast radius today (2 labels, 1 correctly matched), but
+   it fails silently and in the direction of hiding evidence.
+8. **Reconcile the sex-awareness framing with the two-level reality.** Six bands
+   described, two firing. Either describe the multiplier honestly as "evidence in women
+   versus sex-data-absent," which is defensible and still useful, or populate F2/F3 so
+   the six-band framing is real. This is the same class of overstatement as publishing
+   a claim count with no document denominator, and it is on the homepage.
+9. **Review the five off-scope condition labels** (anxiety, breast cancer,
+   cardiovascular disease, dysmenorrhea, latent hyperprolactinaemia) for the filing
+   drift that produced the r/PelvicFloor mis-filing.
+
+### Recently completed
+
+Kept here so the queue is not read as the whole story.
+
+- **Candidate assembly unified.** `build-corpus-snapshot.mjs` now imports from
+  `lib/substrate-helpers.mjs` instead of hand-porting the logic. Verified.
+- **Migration numbering fixed.** No prefix collisions remain. Verified.
+- **Security pass** (commit `c955095`), which the read-only review did not cover: RLS
+  enabled on all 13 substrate tables with correct anon policies, `access_requests`
+  insert-only, four internal tables deny-all, `substrate_signals` anon policy restricted
+  to `status='active'`, MCP auth moved from query string to Bearer header with
+  constant-time comparison, `documents` columns restricted.
+- **Safety-anchored correctness fix.** Pairs whose only evidence was adverse-event data
+  were displaying a harm signal as *support*. Now capped to exploratory and displayed as
+  contradicting. This was a live correctness bug, not a presentation issue.
 
 ## 12. Running it
 
