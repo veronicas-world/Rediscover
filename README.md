@@ -70,7 +70,7 @@ In rough order of ambition:
 6. **Be independently audited.** The counting page publishes query definitions so an
    outside reviewer can recompute every number. That invitation is sincere.
 
-## 4. Current state, honestly
+## 4. Current state
 
 Numbers as of 2026-08-30. All are live-queryable; see
 [`app/about/what-we-count`](app/about/what-we-count/page.tsx) for exact definitions.
@@ -88,7 +88,7 @@ Numbers as of 2026-08-30. All are live-queryable; see
 | Signals on structured data only | 87 |
 | Human labels collected | 100 (rounds 1 and 2, single rater) |
 
-### What is not yet true
+### Working on
 
 Be clear-eyed about this. An agent that reads only the marketing copy will overstate
 the project's maturity.
