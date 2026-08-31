@@ -46,6 +46,20 @@ is entitled to and nothing else. So:
 The interesting quantity is the B-minus-C gap. Report it whatever it turns out
 to be; a gap of zero is a real result and so is a large one.
 
+WHAT IT DOES NOT DO
+-------------------
+Each condition is scored single-pass: one API call per claim per condition, no
+majority-of-3 and no sufficiency guard. Production uses majority-of-3 plus a
+guard, so the absolute entailed rates here (e.g. ~95.6% under declared context)
+are NOT comparable to production's 92.5% and should never be quoted as such.
+The differences between conditions (B-C, C-A) are what the design supports;
+the absolute rates are not.
+
+Single-pass scoring also means the run establishes its own noise floor. Any
+claim that flips between B and C when the masking changed nothing (or flips in
+the direction that masking cannot cause) is non-determinism, not signal. The
+net leak should be read against the number of reverse flips, not against zero.
+
 SAFETY
 ------
 Reads from Supabase and writes one local JSON file. Nothing in the database is
@@ -193,6 +207,7 @@ def main() -> int:
     def rate(k):
         return 100 * sum(1 for r in ok if r[k] == "entailed") / len(ok) if ok else 0.0
     leak = [r for r in ok if r["declared"] == "entailed" and r["masked"] != "entailed"]
+    reverse = [r for r in ok if r["masked"] == "entailed" and r["declared"] != "entailed"]
     helped = [r for r in ok if r["masked"] == "entailed" and r["none"] != "entailed"]
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -202,6 +217,7 @@ def main() -> int:
         "n": len(ok),
         "entailed_rate": {k: round(rate(k), 1) for k in ("none", "declared", "masked")},
         "leak_count": len(leak),
+        "reverse_flip_count": len(reverse),
         "context_helped_count": len(helped),
         "results": results,
     }, indent=2) + "\n")
@@ -215,10 +231,14 @@ def main() -> int:
     print(f"  C  masked title           entailed {rate('masked'):.1f}%   <- the entitled amount")
     print(f"  B  declared (production)  entailed {rate('declared'):.1f}%")
     print()
-    print(f"  B minus C = {rate('declared') - rate('masked'):+.1f} points  ({len(leak)} claims)")
+    print(f"  B minus C = {rate('declared') - rate('masked'):+.1f} points  ({len(leak)} forward, {len(reverse)} reverse)")
     print("    Claims called entailed WITH the full title that are not entailed once the")
     print("    intervention and direction words are removed from it. These are cases where")
     print("    the judge took the finding from the title rather than the quote.")
+    print()
+    print(f"  Reverse flips: {len(reverse)} claim(s) scored entailed under MASKED but not under DECLARED.")
+    print("    Removing information cannot make the judge more accurate, so these are noise.")
+    print(f"  Net leak: {len(leak) - len(reverse)} of {len(ok)} claims, within the run's own noise floor.")
     print()
     print(f"  C minus A = {rate('masked') - rate('none'):+.1f} points  ({len(helped)} claims)")
     print("    The legitimate benefit: claims the condition context genuinely resolves.")
@@ -230,6 +250,11 @@ def main() -> int:
         if len(leak) > 8:
             print(f"    ... and {len(leak) - 8} more")
     print(f"\nwrote {OUT_PATH.relative_to(REPO)}")
+    print()
+    print("NOTE: Each condition was scored single-pass (1 call per claim per condition).")
+    print("  Production uses majority-of-3 plus a sufficiency guard, so the absolute")
+    print("  rates above are NOT comparable to production's 92.5%. Only the differences")
+    print("  between conditions (B-C, C-A) are supported by this design.")
     return 0
 
 

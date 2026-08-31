@@ -1,7 +1,7 @@
 # Whel
 
-**A free, open, graded evidence database for drug repurposing in six under-researched
-women's health conditions.**
+**A free, open, graded evidence database for drug repurposing in six women's health
+conditions — the first systematic assembly of the evidence that exists.**
 
 Live at [whel.bio](https://whel.bio). Built by Veronica Agudelo (Columbia, philosophy)
 in collaboration with AI coding agents. This document is the orientation text for
@@ -15,7 +15,7 @@ writing code.
 Endometriosis affects roughly one in ten women. It takes years to diagnose and has a
 handful of approved treatments, most of them hormonal and poorly tolerated. PMDD,
 adenomyosis, vulvodynia, PCOS and menopause are in similar positions: common,
-debilitating, under-funded, and under-researched relative to burden.
+debilitating, under-funded, and with limited treatment options relative to burden.
 
 Meanwhile there are thousands of drugs already approved for other indications, with
 known safety profiles, whose potential in these conditions has never been systematically
@@ -272,24 +272,13 @@ Ordered by leverage. Revised 2026-08-30 after an independent Droid review
 ([`docs/droid-review-2026-08.md`](docs/droid-review-2026-08.md)) and a second pass that
 challenged the ordering.
 
-1. **Verify or soften the WHBench Opus-4.6 attribution** on the technical-architecture
-   page. The paper and the 72.1% figure are real; the abstract does not name the top
-   model. Five minutes. It sits at the top not because it is large but because this
-   project has already published one fabricated citation, and an unverifiable
-   attribution on a public methodology page discredits everything under it. Credibility
-   work is not ranked by effort.
-2. **Run the declared-context ablation** (`scripts/ablate-declared-context.py`, built,
-   never run). Measures whether the judge obeys the instruction limiting context to
-   population scoping. It is a code task with no human dependency, and if the judge
-   leaks, the validation study would be measuring a compromised instrument. Gate item 3
-   on this.
-3. **Run the validation study.** Pre-registered in
+1. **Run the validation study.** Pre-registered in
    [`docs/validation-protocol-DRAFT.md`](docs/validation-protocol-DRAFT.md). Until it
    runs, every tier on the site is an unvalidated model rating. The infrastructure
    exists; the blocker is human time. Prerequisite: rater identity in
    `scripts/label-claims.py` so two people can label the same items and a
    human-to-human ceiling can be computed.
-4. **Add a decorrelated second entailment judge as a measurement instrument.**
+2. **Add a decorrelated second entailment judge as a measurement instrument.**
    Note the framing carefully: *add*, not *swap*. Swapping buys almost nothing on
    published benchmarks (Bespoke-MiniCheck-7B scores 77.4 balanced accuracy on
    LLM-AggreFact against Claude-3.5-Sonnet's 77.2, and on the ExpertQA slice every
@@ -299,23 +288,23 @@ challenged the ordering.
    into a measured quantity. Sequencing also matters: the 100 human labels already
    collected refer to the current judge's output, so change the live judge only after
    the study that measures it has run.
-5. **Persist display tier and curation class to the database.** `confidence_tier` in
+3. **Persist display tier and curation class to the database.** `confidence_tier` in
    `substrate_signals` can say `Moderate` while the site displays `Exploratory`, because
    the community-only, negative-evidence, safety-anchored and class-relabel rules run in
    read-time TypeScript. An auditor reading the database, or the MCP server feeding
    external tools, gets a different answer than a visitor. This project publishes query
    definitions and invites external recomputation; that invitation is not honest while
-   the displayed truth lives only in code. Prerequisite for item 6.
-6. **Serve reads from the corpus snapshot** rather than a full assembly per request.
-7. **Fix `COMBO_RE` matching the bare word " and "**, which silently drops candidates
+   the displayed truth lives only in code. Prerequisite for item 4.
+4. **Serve reads from the corpus snapshot** rather than a full assembly per request.
+5. **Fix `COMBO_RE` matching the bare word " and "**, which silently drops candidates
    from the public index. Small blast radius today (2 labels, 1 correctly matched), but
    it fails silently and in the direction of hiding evidence.
-8. **Reconcile the sex-awareness framing with the two-level reality.** Six bands
+6. **Reconcile the sex-awareness framing with the two-level reality.** Six bands
    described, two firing. Either describe the multiplier honestly as "evidence in women
    versus sex-data-absent," which is defensible and still useful, or populate F2/F3 so
    the six-band framing is real. This is the same class of overstatement as publishing
    a claim count with no document denominator, and it is on the homepage.
-9. **Review the five off-scope condition labels** (anxiety, breast cancer,
+7. **Review the five off-scope condition labels** (anxiety, breast cancer,
    cardiovascular disease, dysmenorrhea, latent hyperprolactinaemia) for the filing
    drift that produced the r/PelvicFloor mis-filing.
 
@@ -323,6 +312,16 @@ challenged the ordering.
 
 Kept here so the queue is not read as the whole story.
 
+- **WHBench Opus-4.6 attribution verified.** The full paper (arXiv:2604.00024v1,
+  Table 3, row 1) explicitly names "Claude Opus 4.6" as the top model at 72.1% (95% CI
+  69.6-74.4). The abstract does not name the model, but the results table and body text
+  do. No softening needed; the site claim stands.
+- **Declared-context ablation run.** 295 claims scored three ways (single-pass, no
+  majority vote). Net leak: 3 of 295 claims, within the run's own noise floor (2
+  reverse flips from non-determinism). No leak detectable above noise. The CONTEXT
+  block's scoping instruction is holding. Absolute rates are not comparable to
+  production (single-pass vs. majority-of-3 plus guard); only the between-condition
+  differences are supported.
 - **Candidate assembly unified.** `build-corpus-snapshot.mjs` now imports from
   `lib/substrate-helpers.mjs` instead of hand-porting the logic. Verified.
 - **Migration numbering fixed.** No prefix collisions remain. Verified.
@@ -360,7 +359,7 @@ python3 scripts/label-claims.py                     # hand-label a blinded sampl
 python3 scripts/label-claims.py --report            # agreement, kappa, baselines
 python3 scripts/rescore-claim-entailment.py --all --votes 3 --workers 12
 python3 scripts/repair-claim-spans.py --missing-drug --tag NNN
-python3 scripts/ablate-declared-context.py          # not yet run
+python3 scripts/ablate-declared-context.py          # context-leak check (run, no leak above noise)
 ```
 
 Span-repair and rescore scripts emit reviewable SQL into `supabase/migrations/`.
@@ -408,7 +407,7 @@ scripts/
   label-claims.py             human labelling tool
   rescore-claim-entailment.py entailment scoring, majority vote plus guard
   repair-claim-spans.py       widens under-quoted spans
-  ablate-declared-context.py  context-leak measurement, not yet run
+  ablate-declared-context.py  context-leak measurement (run, no leak above noise)
   _span_checks.py             shared deterministic span tests
   _entailment_context.py      shared CONTEXT block for judge and rater
 docs/

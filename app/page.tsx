@@ -159,7 +159,8 @@ export default async function Home() {
             <div style={{ paddingTop: 8 }}>
               <p className="lede" style={{ color: "var(--on-ink-2)" }}>
                 An open, graded index of approved drugs with published evidence in
-                under-researched women&apos;s health conditions. Each drug&ndash;condition pair is
+                six women&apos;s health conditions &mdash; the first systematic
+                assembly of the evidence that exists. Each drug&ndash;condition pair is
                 scored across five evidence dimensions, weighted for how far the evidence was
                 generated in women, and pinned to verbatim quotes from its sources.
               </p>

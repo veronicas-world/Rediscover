@@ -142,6 +142,16 @@ export default function SignalTypesPage() {
               </tbody>
             </table>
           </div>
+          <p style={{ fontSize: "0.85rem", lineHeight: 1.7, color: "var(--muted)", marginTop: 14, maxWidth: "70ch" }}>
+            <strong>Current state:</strong> In the present corpus, only F1 (&times;1.00, evidence
+            generated in women) and F4 (&times;0.75, female representation not stated) have been
+            assigned. F2, F3, F5 and F6 require sex-stratified analysis or male-only population
+            data that the current source documents do not report. The multiplier is therefore
+            effectively &ldquo;evidence in women&rdquo; (F1) versus &ldquo;sex data absent&rdquo;
+            (F4) today. The six-band framework is designed for the corpus to grow into; the
+            scoring code implements all six bands and will assign them as the evidence base
+            expands to include studies that report sex breakdowns.
+          </p>
         </div>
       </section>
 

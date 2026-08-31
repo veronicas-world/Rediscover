@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     template: "%s | Whel",
   },
   description:
-    "An open, graded database of approved drugs with published evidence in under-researched women's health conditions. Each drug-condition pair is scored across five evidence dimensions, weighted for how far the evidence was generated in women, and pinned to verbatim quotes from its sources.",
+    "An open, graded database of approved drugs with published evidence in six women's health conditions — the first systematic assembly of the evidence that exists. Each drug-condition pair is scored across five evidence dimensions, weighted for how far the evidence was generated in women, and pinned to verbatim quotes from its sources.",
 };
 
 export default function RootLayout({

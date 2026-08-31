@@ -84,11 +84,29 @@ Reads from Supabase, writes only a local JSON file. Nothing in the database is
 modified. Progress is saved after every judgment, so the session can be stopped
 and resumed at any point.
 
+RATER IDENTITY (added August 2026)
+-----------------------------------
+The validation protocol requires two raters to label the same items so a
+human-to-human ceiling can be computed. Each label record now carries a `rater`
+field, and the storage key includes the rater name so two people can label the
+same claim independently. Existing labels (rounds 1-2, 100 labels) have no
+`rater` field and default to "r1".
+
+The --rater flag is required for labelling and optional for --report. When two
+raters have overlapping labels on the same round, the report prints a
+human-to-human agreement section (raw agreement, Cohen's kappa) alongside the
+human-vs-machine figures. The human-to-human ceiling is the upper bound on what
+the machine can achieve: if two humans disagree on a claim, the machine's
+agreement with either one is not informative for that claim.
+
 USAGE
 -----
-    python3 scripts/label-claims.py                     # label round 2 (default)
-    python3 scripts/label-claims.py --report            # round 2 stats
-    python3 scripts/label-claims.py --report --round 1  # round 1 stats
+    python3 scripts/label-claims.py --rater r1                 # label as rater 1
+    python3 scripts/label-claims.py --rater r2                 # label as rater 2
+    python3 scripts/label-claims.py --rater r2 --same-as r1    # label exactly r1's items
+    python3 scripts/label-claims.py --report                    # round 2 stats, all raters
+    python3 scripts/label-claims.py --report --round 1          # round 1 stats
+    python3 scripts/label-claims.py --report --rater r1         # round 2 stats, rater 1 only
 """
 
 from __future__ import annotations
@@ -112,6 +130,7 @@ LABELS_PATH = REPO / "scripts" / "audit-output" / "human-labels.json"
 
 CURRENT_ROUND = 2
 SEEDS = {1: 20260731, 2: 20260801}
+DEFAULT_RATER = "r1"
 
 VALID = {
     "e": "entailed",
@@ -156,18 +175,43 @@ def sb_get(base: str, headers: dict, path: str, params: str):
 def load_labels() -> dict:
     if LABELS_PATH.exists():
         try:
-            return json.loads(LABELS_PATH.read_text())
+            store = json.loads(LABELS_PATH.read_text())
         except Exception:
-            pass
-    return {"schema_version": "1.1",
-            "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "labels": {}}
+            store = None
+    else:
+        store = None
+    if store is None:
+        return {"schema_version": "1.2",
+                "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "labels": {}}
+
+    # Backfill claim_id and rater for pre-rater records (schema < 1.2).
+    # Old keys are bare claim UUIDs with no rater field; they belong to r1.
+    for k, v in store.get("labels", {}).items():
+        if "claim_id" not in v:
+            v["claim_id"] = k
+        if "rater" not in v:
+            v["rater"] = DEFAULT_RATER
+    return store
 
 
 def save_labels(store: dict) -> None:
     LABELS_PATH.parent.mkdir(parents=True, exist_ok=True)
     store["updated"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     LABELS_PATH.write_text(json.dumps(store, indent=2) + "\n")
+
+
+def label_key(claim_id: str, rater: str) -> str:
+    """Storage key for a label. r1 uses bare claim_id for backward compat with
+    the 100 existing labels; other raters use claim_id:rater."""
+    if rater == DEFAULT_RATER:
+        return claim_id
+    return f"{claim_id}:{rater}"
+
+
+def label_rater(v: dict) -> str:
+    """Extract rater from a label record, defaulting for pre-rater records."""
+    return v.get("rater", DEFAULT_RATER)
 
 
 def wrap(text: str, width: int = 76, indent: str = "  ") -> str:
@@ -323,7 +367,7 @@ def fetch_corpus_counts() -> dict | None:
     return counts or None
 
 
-def round_stats(store: dict, rnd: int, revised: bool = False):
+def round_stats(store: dict, rnd: int, revised: bool = False, rater: str | None = None):
     """Agreement for one round.
 
     `revised` uses the rater's corrected label where one was recorded. Both
@@ -331,9 +375,13 @@ def round_stats(store: dict, rnd: int, revised: bool = False):
     answer, so the revised number is no longer blind and reads high; the
     as-labelled number is blind but carries known clerical errors. Neither alone
     is the honest summary.
+
+    `rater` filters to one rater's labels. None means all raters (used for
+    inter-rater analysis and backward compat).
     """
     labeled = [v for v in store["labels"].values()
-               if v.get("human") and v["human"] != "skip" and v.get("round", 1) == rnd]
+               if v.get("human") and v["human"] != "skip" and v.get("round", 1) == rnd
+               and (rater is None or label_rater(v) == rater)]
     def call(v):
         return (v.get("human_revised") or v["human"]) if revised else v["human"]
     pairs = [(call(v), v["machine"]) for v in labeled if v.get("machine")]
@@ -349,7 +397,72 @@ def round_stats(store: dict, rnd: int, revised: bool = False):
     }
 
 
-def report(store: dict, rnd: int) -> None:
+def report_inter_rater(store: dict, rnd: int) -> None:
+    """Human-to-human agreement on claims labeled by two or more raters.
+
+    This is the ceiling on what the machine can achieve. If two humans disagree
+    on a claim, the machine's agreement with either one is not informative for
+    that claim. The protocol pre-registers this as a required endpoint.
+    """
+    # Collect labels by claim_id, keyed by rater.
+    by_claim: dict[str, dict[str, str]] = {}
+    for v in store["labels"].values():
+        if v.get("human") and v["human"] != "skip" and v.get("round", 1) == rnd:
+            cid = v.get("claim_id") or ""
+            if not cid:
+                continue
+            r = label_rater(v)
+            by_claim.setdefault(cid, {})[r] = v["human"]
+
+    # Find claims labeled by 2+ raters.
+    shared = {cid: rs for cid, rs in by_claim.items() if len(rs) >= 2}
+    if not shared:
+        return
+
+    raters = sorted({r for rs in shared.values() for r in rs})
+    cats = ["entailed", "neutral", "contradicted"]
+
+    print(f"\n  HUMAN-TO-HUMAN (inter-rater ceiling)")
+    print(f"    {len(shared)} claim(s) labeled by 2+ raters: {', '.join(raters)}")
+    for i, r1 in enumerate(raters):
+        for r2 in raters[i+1:]:
+            pairs = [(shared[c][r1], shared[c][r2])
+                     for c in shared if r1 in shared[c] and r2 in shared[c]]
+            if not pairs:
+                continue
+            n = len(pairs)
+            agree = sum(1 for a, b in pairs if a == b)
+            k = cohens_kappa(pairs)
+            ci = kappa_ci(pairs)
+            print(f"\n    {r1} vs {r2}:")
+            print(f"      raw agreement: {agree}/{n} = {100*agree/n:.1f}%")
+            if k is not None:
+                band = f"   95% CI [{ci[0]:.2f}, {ci[1]:.2f}]" if ci else ""
+                print(f"      kappa: {k:.2f}{band}  ({interpret(k)})")
+            print("      confusion (rows = {}, cols = {}):".format(r1, r2))
+            print("               " + "".join(f"{c[:7]:>10}" for c in cats))
+            for h in cats:
+                row = "".join(f"{sum(1 for a, b in pairs if a == h and b == c):>10}" for c in cats)
+                print(f"      {h:<10}{row}")
+            disagreements = [(c, pairs[i][0], pairs[i][1])
+                            for i, c in enumerate(shared)
+                            if r1 in shared[c] and r2 in shared[c] and pairs[i][0] != pairs[i][1]]
+            if disagreements:
+                print(f"      disagreements ({len(disagreements)}):")
+                for cid, h1, h2 in disagreements[:5]:
+                    # Find the claim text from the store
+                    claim_text = ""
+                    for v in store["labels"].values():
+                        if (v.get("claim_id") == cid and label_rater(v) == r1
+                               and v.get("round", 1) == rnd):
+                            claim_text = v.get("claim", "")
+                            break
+                    print(f"        {r1}={h1:<11} {r2}={h2:<11} {claim_text[:50]}")
+                if len(disagreements) > 5:
+                    print(f"        ... and {len(disagreements) - 5} more")
+
+
+def report(store: dict, rnd: int, rater_filter: str | None = None) -> None:
     """Report in the order a reviewer will read it.
 
     Kappa is deliberately NOT the headline. On a corpus that is 95% one class,
@@ -357,10 +470,15 @@ def report(store: dict, rnd: int) -> None:
     (Feinstein & Cicchetti 1990; Byrt, Bishop & Carlin 1993), and this sample is
     enriched on top of that. The quantities that survive both problems are the
     confusion table, and recall and precision on the rare class. Those go first.
+
+    `rater_filter` limits the human-vs-machine stats to one rater. None means
+    all raters pooled (backward compat). Inter-rater agreement is always shown
+    when 2+ raters exist, regardless of the filter.
     """
-    st = round_stats(store, rnd)
+    st = round_stats(store, rnd, rater=rater_filter)
     if not st:
-        print(f"No labels recorded yet for round {rnd}.")
+        rater_msg = f" for rater '{rater_filter}'" if rater_filter else ""
+        print(f"No labels recorded yet for round {rnd}{rater_msg}.")
         return
     rev = round_stats(store, rnd, revised=True)
     n_rev = sum(1 for v in st["labeled"] if v.get("human_revised"))
@@ -459,7 +577,59 @@ def report(store: dict, rnd: int) -> None:
             print(f"    human {call(d):<11} machine {d['machine']:<11} {d['claim'][:50]}")
         if len(disagreements) > 8:
             print(f"    ... and {len(disagreements) - 8} more (see {LABELS_PATH.name})")
+
+    # Inter-rater ceiling (human-to-human agreement).
+    report_inter_rater(store, rnd)
+
     print(f"\n  full record: {LABELS_PATH.relative_to(REPO)}")
+
+
+def reconstruct_from_labels(store: dict, rnd: int, src_rater: str) -> list[dict]:
+    """Reconstruct claim-like dicts from a rater's stored labels.
+
+    For --same-as mode: reads the source rater's labels for the given round
+    and returns claim-like dicts with all fields needed for display and storage.
+    No DB query needed — the context, quote, claim text and machine label are
+    all in the labels file already.
+
+    The machine label stored in the labels file is the label at the time the
+    source rater labelled, which is what we want: both raters should be compared
+    against the same machine output, not the current DB state.
+    """
+    items = []
+    for k, v in store["labels"].items():
+        if v.get("round", 1) != rnd:
+            continue
+        if label_rater(v) != src_rater:
+            continue
+        if not v.get("human") or v["human"] == "skip":
+            continue
+        items.append({
+            "id": v["claim_id"],
+            "text": v.get("claim", ""),
+            "exact_quote": v.get("quote", ""),
+            "entailment_label": v.get("machine"),
+            "model_name": "claude-sonnet-4-6",
+            "_stored_context": v.get("context", ""),
+            "_stored_source": v.get("source", ""),
+        })
+    return items
+
+
+def freeze_frame(store: dict, rnd: int, claim_ids: list[str], seed: int, n: int) -> None:
+    """Record the claim_id list for a round so future draws use the frozen set.
+
+    A round should be a fixed set of items, not a query that returns different
+    answers as the database moves underneath it (protocol §7: 'frame frozen
+    by timestamp'). Once frozen, later invocations of the same round filter
+    the pool to these IDs rather than re-sampling.
+    """
+    store.setdefault("frames", {})[str(rnd)] = {
+        "frozen_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "claim_ids": claim_ids,
+        "seed": seed,
+        "n": n,
+    }
 
 
 def main() -> int:
@@ -470,69 +640,113 @@ def main() -> int:
     p.add_argument("--seed", type=int, default=None, help="Sampling seed, for a reproducible sample.")
     p.add_argument("--no-stratify", action="store_true",
                    help="Draw a purely random sample instead of balancing across labels.")
+    p.add_argument("--rater", default=DEFAULT_RATER,
+                   help="Rater identity (e.g. r1, r2). Required for labelling so two "
+                        "raters can label the same items. Default: r1.")
+    p.add_argument("--same-as", default=None, metavar="RATER",
+                   help="Label exactly the same claims as the specified rater, in "
+                        "independently randomised order. Reads claim_ids from "
+                        "human-labels.json — no re-sampling, no DB dependency. "
+                        "Use: --rater r2 --same-as r1")
     args = p.parse_args()
 
     store = load_labels()
     if args.report:
-        report(store, args.round)
+        report(store, args.round, rater_filter=args.rater if args.rater != DEFAULT_RATER else None)
         return 0
 
-    load_dotenv()
-    base = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").rstrip("/")
-    key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
-    if not (base and key):
-        print("Missing Supabase credentials in .env.local", file=sys.stderr)
-        return 1
-    headers = {"apikey": key, "Authorization": f"Bearer {key}", "Accept": "application/json"}
-
-    signals = sb_get(base, headers, "substrate_signals", "select=claim_ids&status=eq.active")
-    referenced = {str(c) for s in signals for c in (s.get("claim_ids") or [])}
-
-    claims = sb_get(base, headers, "claims",
-                    "select=id,text,exact_quote,entailment_label,model_name,condition_id,"
-                    "documents(title,source,external_id,url)")
-    conds = sb_get(base, headers, "entities", "select=id,label&type=eq.condition")
-    conditions = {c["id"]: c["label"] for c in conds}
-
-    # Claims seen in an earlier round are off the table. A second opinion on
-    # something you already ruled on is a memory test, not an independent rating.
-    seen = {cid for cid, v in store["labels"].items() if v.get("round", 1) != args.round}
-
-    pool = [c for c in claims
-            if str(c["id"]) in referenced
-            and str(c["id"]) not in seen
-            and c.get("model_name") == "claude-sonnet-4-6"     # extracted, not template-rendered
-            and c.get("entailment_label")
-            and (c.get("exact_quote") or "").strip()]
-
-    seed = args.seed if args.seed is not None else SEEDS.get(args.round, 20260731 + args.round)
-    rng = random.Random(seed)
-    if args.no_stratify:
-        sample = rng.sample(pool, min(args.n, len(pool)))
+    # ── --same-as mode: reconstruct claims from stored labels, no DB ──────
+    if args.same_as:
+        sample = reconstruct_from_labels(store, args.round, args.same_as)
+        if not sample:
+            print(f"No labels found for rater '{args.same_as}' in round {args.round}.",
+                  file=sys.stderr)
+            return 1
+        # Independently randomised order per rater (protocol §7).
+        rater_seed = (SEEDS.get(args.round, 20260731 + args.round)
+                      + sum(ord(ch) for ch in args.rater))
+        rng = random.Random(rater_seed)
+        rng.shuffle(sample)
+        conditions = {}  # not needed; context is pre-built
+        print()
+        print(f"Round {args.round}. --same-as {args.same_as}: {len(sample)} claims "
+              f"from {args.same_as}'s labels, independently shuffled for {args.rater}.")
     else:
-        # Balance across labels so rare classes are actually represented.
-        by_label: dict[str, list] = {}
-        for c in pool:
-            by_label.setdefault(c["entailment_label"], []).append(c)
-        for v in by_label.values():
-            rng.shuffle(v)
-        sample, i = [], 0
-        while len(sample) < min(args.n, len(pool)):
-            added = False
-            for lab in sorted(by_label):
-                if i < len(by_label[lab]) and len(sample) < args.n:
-                    sample.append(by_label[lab][i])
-                    added = True
-            if not added:
-                break
-            i += 1
+        # ── Normal mode: fetch from DB, with frame freeze ──────────────────
+        load_dotenv()
+        base = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").rstrip("/")
+        key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
+        if not (base and key):
+            print("Missing Supabase credentials in .env.local", file=sys.stderr)
+            return 1
+        headers = {"apikey": key, "Authorization": f"Bearer {key}", "Accept": "application/json"}
 
-    todo = [c for c in sample if str(c["id"]) not in store["labels"]]
+        signals = sb_get(base, headers, "substrate_signals", "select=claim_ids&status=eq.active")
+        referenced = {str(c) for s in signals for c in (s.get("claim_ids") or [])}
+
+        claims = sb_get(base, headers, "claims",
+                        "select=id,text,exact_quote,entailment_label,model_name,condition_id,"
+                        "documents(title,source,external_id,url)")
+        conds = sb_get(base, headers, "entities", "select=id,label&type=eq.condition")
+        conditions = {c["id"]: c["label"] for c in conds}
+
+        # Claims seen in an earlier round by THIS rater are off the table.
+        seen = {v["claim_id"] for v in store["labels"].values()
+                if v.get("round", 1) != args.round and label_rater(v) == args.rater}
+
+        pool = [c for c in claims
+                if str(c["id"]) in referenced
+                and str(c["id"]) not in seen
+                and c.get("model_name") == "claude-sonnet-4-6"
+                and c.get("entailment_label")
+                and (c.get("exact_quote") or "").strip()]
+
+        seed = args.seed if args.seed is not None else SEEDS.get(args.round, 20260731 + args.round)
+
+        # Frame freeze: if this round was already drawn, use the frozen claim_ids.
+        frozen = store.get("frames", {}).get(str(args.round))
+        if frozen:
+            frozen_ids = set(frozen["claim_ids"])
+            pool = [c for c in pool if str(c["id"]) in frozen_ids]
+            # Use the frozen seed for reproducibility.
+            seed = frozen.get("seed", seed)
+            print(f"  Using frozen frame for round {args.round} "
+                  f"({len(frozen_ids)} items, frozen {frozen.get('frozen_at','?')[:10]}).")
+
+        rng = random.Random(seed)
+        if args.no_stratify:
+            sample = rng.sample(pool, min(args.n, len(pool)))
+        else:
+            by_label: dict[str, list] = {}
+            for c in pool:
+                by_label.setdefault(c["entailment_label"], []).append(c)
+            for v in by_label.values():
+                rng.shuffle(v)
+            sample, i = [], 0
+            while len(sample) < min(args.n, len(pool)):
+                added = False
+                for lab in sorted(by_label):
+                    if i < len(by_label[lab]) and len(sample) < args.n:
+                        sample.append(by_label[lab][i])
+                        added = True
+                if not added:
+                    break
+                i += 1
+
+        # Freeze the frame if this is the first draw of this round.
+        if not frozen:
+            freeze_frame(store, args.round,
+                         [str(c["id"]) for c in sample], seed, len(sample))
+            save_labels(store)
+            print(f"  Frozen frame for round {args.round}: {len(sample)} items.")
+
+        print()
+        print(f"Round {args.round}. Sample of {len(sample)} claims "
+              f"({len(pool)} eligible, {len(seen)} excluded as already seen).")
+
+    todo = [c for c in sample if label_key(str(c["id"]), args.rater) not in store["labels"]]
     done = len(sample) - len(todo)
 
-    print()
-    print(f"Round {args.round}. Sample of {len(sample)} claims "
-          f"({len(pool)} eligible, {len(seen)} excluded as already seen).")
     if done:
         print(f"{done} already labeled; {len(todo)} to go.")
     print()
@@ -550,7 +764,8 @@ def main() -> int:
     print()
 
     for idx, c in enumerate(todo, start=1):
-        context = build_context(c, conditions)
+        # Use pre-built context for --same-as mode, build fresh for normal mode.
+        context = c.pop("_stored_context", None) or build_context(c, conditions)
         print("-" * 78)
         print(f"  {idx} of {len(todo)}")
         print()
@@ -570,12 +785,14 @@ def main() -> int:
             except (EOFError, KeyboardInterrupt):
                 print("\n\nStopped. Progress saved.")
                 save_labels(store)
-                report(store, args.round)
+                report(store, args.round,
+                        rater_filter=args.rater if args.rater != DEFAULT_RATER else None)
                 return 0
             if ans == "q":
                 print("\nStopped. Progress saved.")
                 save_labels(store)
-                report(store, args.round)
+                report(store, args.round,
+                        rater_filter=args.rater if args.rater != DEFAULT_RATER else None)
                 return 0
             if ans in VALID:
                 break
@@ -584,14 +801,17 @@ def main() -> int:
         d = c.get("documents") or {}
         if isinstance(d, list):
             d = d[0] if d else {}
-        store["labels"][str(c["id"])] = {
+        stored_source = c.pop("_stored_source", None)
+        store["labels"][label_key(str(c["id"]), args.rater)] = {
             "round": args.round,
+            "rater": args.rater,
+            "claim_id": str(c["id"]),
             "human": VALID[ans],
             "machine": c["entailment_label"],
             "claim": " ".join(str(c["text"]).split()),
             "quote": " ".join(str(c["exact_quote"]).split()),
             "context": context,
-            "source": f"{d.get('source','?')} {d.get('external_id','')}".strip(),
+            "source": stored_source or f"{d.get('source','?')} {d.get('external_id','')}".strip(),
             "labeled_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
         save_labels(store)
@@ -602,7 +822,8 @@ def main() -> int:
         print()
 
     print("Sample complete.")
-    report(store, args.round)
+    report(store, args.round,
+            rater_filter=args.rater if args.rater != DEFAULT_RATER else None)
     return 0
 
 

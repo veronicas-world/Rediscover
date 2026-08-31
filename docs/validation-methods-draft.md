@@ -1,0 +1,156 @@
+# Validation study — methods section (draft)
+
+Drafted from the pre-registered protocol (`docs/validation-protocol-DRAFT.md`).
+Methods are locked by pre-registration; this draft puts them in paper form for
+the institutional pitch and for rapid write-up once results are available.
+Results and discussion are not drafted — the study has not run.
+
+## Object of measurement
+
+An automated entailment judge assigns each claim in the Whel database one of
+three labels: entailed, neutral, or contradicted. The judge is a language model
+(Claude Sonnet 4.6) operating under a published prompt with majority-of-three
+voting and a lexical sufficiency guard. The same model family extracted the
+claims, so the entailment rate is a self-consistency metric, not independent
+verification.
+
+This study measures the gap between the judge's labels and expert human
+judgment. It is a diagnostic accuracy study (index test = the judge, reference
+standard = adjudicated human label), reported against STARD 2015 and STARD-AI,
+with a nested reliability study (human vs human) reported against GRRAS.
+
+## Raters
+
+Two raters:
+
+- **R1** (Veronica Agudelo): built the database; not independent of the system
+  under test. 99 claims in the current frame were already labelled in earlier
+  rounds; these are excluded from R1's primary analysis.
+- **R2** (licensed psychiatrist, MD, published in women's health): no prior
+  exposure to the system. R2's labels are the primary reference standard.
+
+R1's labels are reported as a secondary comparison and as a measure of author
+bias.
+
+## Materials
+
+Each rater sees the CONTEXT block (source, title, subreddit where applicable,
+condition on record), the QUOTE (verbatim passage from the source), and the
+CLAIM (the atomic assertion extracted from the quote). The machine's label is
+hidden until after the rater's judgment is recorded. Both raters use the same
+interface (`scripts/label-claims.py`) and see identical materials.
+
+## Codebook
+
+A seven-step decision tree, frozen before scored labelling:
+
+1. Does the quote name the intervention? If not, neutral.
+2. Does the quote name the comparator, if the claim asserts one? If not, neutral.
+3. Does the quote state the outcome? If not, neutral.
+4. Does the quote state the direction of effect? If not, neutral.
+5. Is the population qualifier satisfied (by the quote or by CONTEXT)? If not,
+   neutral.
+6. Does the quote assert the opposite direction? If so, contradicted.
+7. Otherwise, entailed.
+
+Specified rules for edge cases: a null result against a claim of benefit is
+contradicted; a truncated quote is judged as it stands; degree words matter
+("improved" ≠ "significantly improved"); a conjunctive finding supports a
+claim about either component alone; a claim with two components, only one
+supported, is neutral.
+
+## Calibration phase (discarded)
+
+30 items drawn from the frame, stratified the same way as the scored set, then
+permanently excluded. Both raters label independently, then meet and reconcile
+every disagreement against the codebook. R2 states her reading first. Gate: if
+calibration agreement is below 70% raw, a second calibration round runs before
+proceeding.
+
+## Sampling
+
+The frame is all claims behind active signals, LLM-extracted, provenance-
+verified, carrying an entailment label. Template-rendered claims (pathway-
+render/*) are excluded as circular. Frame frozen by timestamp; size recorded
+before sampling.
+
+Current frame: 295 claims from 48 source documents. Distribution: 273
+entailed, 22 neutral, 0 contradicted.
+
+Allocation:
+
+- Neutral stratum: census (take all 22).
+- Entailed stratum: simple random sample, document-clustered.
+- Both raters label the same items, in independently randomised order.
+
+## Endpoints
+
+**Primary**: false omission rate — P(human = neutral | judge = entailed).
+Estimated within the entailed stratum. Wilson interval, document-clustered
+bootstrap.
+
+**Co-primary**: precision on neutral — P(human = neutral | judge = neutral).
+Estimated within the neutral stratum.
+
+**Secondary**: human-vs-human raw agreement and Cohen's kappa (the reliability
+ceiling); design-weighted corpus kappa (Horvitz-Thompson, document-clustered
+bootstrap); ratio of human-machine to human-human agreement; full confusion
+matrices; prevalence and bias indices (Byrt, Bishop & Carlin 1993); p_pos /
+p_neg (Feinstein & Cicchetti 1990); judge test-retest across 5 re-runs;
+intra-rater agreement on a re-shown 15% at ≥2 weeks.
+
+## Adjudication
+
+Where R1 and R2 disagree, both view the item together and record a consensus
+label. The machine label stays hidden. Where consensus is not reached, R2's
+label stands. Consensus labels form the reference standard for the accuracy
+endpoints. They are never used to recompute inter-rater reliability.
+
+## Decision rule
+
+Stated before any data is seen:
+
+- False omission rate ≤ 5%: the judge is fit for the site as it stands.
+- 5–15%: publishable with the rate stated prominently beside the entailment
+  figure.
+- > 15%: the entailment figure is withdrawn from the site until fixed.
+
+## Analysis
+
+All bootstraps resample source documents, not claims (48 clusters, mean 6.1
+claims/document, max 25). Wild cluster bootstrap preferred to naive pairs
+bootstrap in the few-clusters regime. Finite population correction applied.
+Skip handling: primary analysis counts a skip as a disagreement; sensitivity
+analysis excludes them; skip rate reported per rater and per stratum.
+
+## Scoring layer test-retest (pre-registered addition, August 2026)
+
+The five 0–2 dimension scores that determine every tier on the site are
+produced by a single LLM call per signal group. Before any human validation of
+the scoring layer, we measured the scoring layer's stability across repeated
+runs on the same inputs.
+
+Method: 50 active signals sampled, each scored 3 times with the same model
+(Claude Sonnet 4.6), same prompt, same claims. Dimension scores, derived
+tiers, synthesis summaries, and structured facts compared across runs.
+
+Result: tier agreement 58.5% (24/41 stable). Corroboration was 100% stable
+(deterministically capped by document count). Plausibility (75.6%) and
+specificity (78.0%) were the least stable dimensions. Synthesis summaries
+were identical in 2.4% of cases. Structured facts were stable in 75.6%.
+
+Interpretation: the scoring layer is not stable enough to validate against
+human judgment. The deterministic backstops (corroboration ceiling, community
+independence) are working as designed; the model-assigned dimensions are not.
+This finding is reported alongside the entailment study and informs the
+sequencing of the scoring reliability study.
+
+## Limitations
+
+1. R1 built the system and has already seen 99 claims in the frame.
+2. Two raters, both recruited personally.
+3. 48 source documents is the real unit of generalisation.
+4. The judge and the claim extractor are the same model family; their errors
+   are correlated. Majority-of-three reduces variance, not this bias.
+5. Some NLI disagreement is irreducible (Pavlick & Kwiatkowski 2019).
+6. The scoring layer is unstable across runs (see above).

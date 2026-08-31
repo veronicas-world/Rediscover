@@ -62,7 +62,7 @@ export default function Footer() {
             </span>
             <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--on-ink-2)", maxWidth: "38ch", marginTop: 20 }}>
               A drug repurposing database for female biology. An open, graded index of approved
-              drugs with published evidence in under-researched women&apos;s health conditions,
+              drugs with published evidence in six women&apos;s health conditions,
               every claim pinned to its source.
             </p>
           </div>
