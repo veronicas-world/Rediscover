@@ -143,6 +143,11 @@ export default async function AromataseInhibitorsSignalPage() {
   const v13ConsistencyModeShare = Math.round(
     (Math.max(...Object.values(consistencyDist)) / consistencyTotal) * 100
   );
+
+  // The live score's denominator follows the spec that actually produced it. Until
+  // the rescore is proven by the data, the live rows still carry v1.3 semantics
+  // (strength 0-10), so dividing them by v1.4's max would overstate them.
+  const liveMax = delta?.rescored ? CURRENT_SPEC.armStrengthMax : PREVIOUS_SPEC.armStrengthMax;
   const primaryClaim = c?.claims?.[0];
 
   return (
@@ -212,7 +217,7 @@ export default async function AromataseInhibitorsSignalPage() {
             <MetaCell label="Condition" value={c?.condition ?? "Endometriosis"} />
             <MetaCell
               label="Tier (live)"
-              value={c ? `${tierLabel} \u00b7 ${c.score.toFixed(1)} / ${CURRENT_SPEC.armStrengthMax}` : "\u2014"}
+              value={c ? `${tierLabel} \u00b7 ${c.score.toFixed(1)} / ${liveMax}` : "\u2014"}
             />
             <MetaCell label="Validation" value={c?.validationStatus === "clinical" ? "Clinically anchored" : "\u2014"} />
           </div>
@@ -292,7 +297,7 @@ export default async function AromataseInhibitorsSignalPage() {
                     }}
                   >
                     <span>Score breakdown &middot; {ARM_TITLE[anchor.arm] ?? anchor.arm} arm</span>
-                    <span>strength {anchor.strength} / {CURRENT_SPEC.armStrengthMax} &rarr; {tierLabel}</span>
+                    <span>strength {anchor.strength} / {liveMax} &rarr; {tierLabel}</span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {anchor.dimensions.map((dim) => (

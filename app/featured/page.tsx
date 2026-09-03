@@ -131,6 +131,10 @@ export default async function FeaturedSignalPage() {
   // leave the sentence contradicting the live figures directly above it.
   const frozen = frozenV13BySignalId(SIGNAL_ID, anchor?.arm ?? "direct");
   const delta = rubricDelta(anchor?.dimensions ?? [], frozen);
+
+  // Denominator follows the spec that produced the live score: v1.3 semantics
+  // until the rescore is proven by the data, then v1.4's 0-8 scale.
+  const liveMax = delta?.rescored ? CURRENT_SPEC.armStrengthMax : PREVIOUS_SPEC.armStrengthMax;
   const primaryClaim = c?.claims?.[0];
 
   return (
@@ -195,7 +199,7 @@ export default async function FeaturedSignalPage() {
             <MetaCell label="Condition" value={c?.condition ?? "Menopause"} />
             <MetaCell
               label="Tier (live)"
-              value={c ? `${tierLabel} \u00b7 ${c.score.toFixed(1)} / ${CURRENT_SPEC.armStrengthMax}` : "\u2014"}
+              value={c ? `${tierLabel} \u00b7 ${c.score.toFixed(1)} / ${liveMax}` : "\u2014"}
             />
             <MetaCell
               label="Validation"
@@ -289,7 +293,7 @@ export default async function FeaturedSignalPage() {
                     }}
                   >
                     <span>Score breakdown &middot; {ARM_TITLE[anchor.arm] ?? anchor.arm} arm</span>
-                    <span>strength {anchor.strength} / {CURRENT_SPEC.armStrengthMax} &rarr; {tierLabel}</span>
+                    <span>strength {anchor.strength} / {liveMax} &rarr; {tierLabel}</span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {anchor.dimensions.map((dim) => (

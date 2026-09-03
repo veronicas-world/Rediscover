@@ -94,7 +94,10 @@ export default function MethodologyChangelogPage() {
           </nav>
 
           <div style={{ ...EYEBROW, marginBottom: 16 }}>
-            Revision history · current version v4.0
+            {/* Keep in step with the newest ENTRY_EYEBROW below — it names the
+                live methodology version and will drift if a new entry is added
+                without updating it. */}
+            Revision history · current version v4.3
           </div>
 
           <h1
