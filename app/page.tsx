@@ -8,6 +8,8 @@ import HomeTierMatrix, { type MatrixRow } from "@/app/components/HomeTierMatrix"
 import CandidateCard from "@/app/components/CandidateCard";
 import { getShowcasePair, getSubstrateHomeData } from "@/lib/substrate-candidates";
 import { CURRENT_METHODOLOGY_VERSION } from "@/lib/scoring-history.mjs";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 import ScrollEffects from "@/app/components/ScrollEffects";
 
 export const dynamic = "force-dynamic";
@@ -87,6 +89,7 @@ const EXPANSION = [
 ];
 
 export default async function Home() {
+  if (!SIGNALS_PUBLISHED) return <ComingSoon />;
   // ── Real data — now from the substrate (the new arm-aware engine) ────────────
   const [{ data: conditionsRaw }, home, showcase] = await Promise.all([
     supabase.from("conditions").select("id, name, slug, description").order("name"),

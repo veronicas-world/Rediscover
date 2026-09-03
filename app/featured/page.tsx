@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getCandidateBySignalId } from "@/lib/substrate-candidates";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 import {
   frozenV13BySignalId,
   rubricDelta,
@@ -122,6 +124,7 @@ function MetaCell({ label, value }: { label: string; value: string }) {
 }
 
 export default async function FeaturedSignalPage() {
+  if (!SIGNALS_PUBLISHED) return <ComingSoon />;
   const c = await getCandidateBySignalId(SIGNAL_ID);
   const anchor = c?.arms?.find((a) => a.isAnchor) ?? c?.arms?.[0];
   const tierLabel = c ? TIER_LABEL[c.tier] ?? c.tier : "—";

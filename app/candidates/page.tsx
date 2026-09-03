@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CandidateCard from "@/app/components/CandidateCard";
 import CandidateExplorer, { type ExplorerItem } from "./CandidateExplorer";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 import { getCandidates, getCorpusScope } from "@/lib/substrate-candidates";
 import { tierKey, tierRanges } from "@/lib/substrate-helpers";
 
@@ -34,6 +36,7 @@ function slugFor(c: { conditionId?: string; condition: string }): string {
 }
 
 export default async function CandidatesPage() {
+  if (!SIGNALS_PUBLISHED) return <ComingSoon />;
   const [scope, candidates] = await Promise.all([getCorpusScope(), getCandidates()]);
 
   // Group by condition. getCandidates() is sorted strongest-first, so each

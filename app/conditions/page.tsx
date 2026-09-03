@@ -2,6 +2,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ConditionsList from "./ConditionsList";
 import { getSubstrateHomeData } from "@/lib/substrate-candidates";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,6 +13,7 @@ export const metadata = {
 };
 
 export default async function ConditionsPage() {
+  if (!SIGNALS_PUBLISHED) return <ComingSoon />;
   const [{ data: conditionsRaw }, home] = await Promise.all([
     supabase.from("conditions").select("id, name, slug, description").order("name"),
     getSubstrateHomeData(),

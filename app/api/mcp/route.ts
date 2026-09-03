@@ -12,6 +12,7 @@
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 import * as corpus from "@/lib/corpus-query";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
 
 export const maxDuration = 30;
 
@@ -96,6 +97,12 @@ async function gated(req: Request): Promise<Response> {
     return new Response(
       JSON.stringify({ jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized: missing or invalid key." }, id: null }),
       { status: 401, headers: { "content-type": "application/json" } },
+    );
+  }
+  if (!SIGNALS_PUBLISHED) {
+    return new Response(
+      JSON.stringify({ jsonrpc: "2.0", error: { code: -32003, message: "Signals are being regraded under methodology v4.3. Data will be available when the regrade completes." }, id: null }),
+      { status: 503, headers: { "content-type": "application/json" } },
     );
   }
   return handler(req);

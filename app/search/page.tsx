@@ -2,6 +2,8 @@ import Link from"next/link";
 import { supabase } from"@/lib/supabase";
 import { getCandidates } from"@/lib/substrate-candidates";
 import NoSignalsDisclosure from"./NoSignalsDisclosure";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 import SearchBar from"../components/SearchBar";
 
 export const metadata = { title:"Search" };
@@ -74,6 +76,7 @@ export default async function SearchPage({
 }: {
  searchParams: Promise<{ q?: string }>;
 }) {
+ if (!SIGNALS_PUBLISHED) return <ComingSoon />;
  const { q: raw } = await searchParams;
  const q = raw?.trim() ??"";
 

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CandidateCard from "@/app/components/CandidateCard";
 import { getCandidates, getCorpusScope } from "@/lib/substrate-candidates";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,6 +25,7 @@ const TIER_LABELS: Record<string, string> = {
 };
 
 export default async function FullIndexPreview() {
+  if (!SIGNALS_PUBLISHED) return <ComingSoon />;
   const [candidates, scope] = await Promise.all([getCandidates(), getCorpusScope()]);
   const grouped = TIER_ORDER.map((tier) => ({
     tier,

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getCandidates, getCombinationCandidates, getAdjunctCandidates } from "@/lib/substrate-candidates";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 import { tierKey, type TierKey } from "@/lib/substrate-helpers";
 import SideToc, { type TocItem } from "@/app/components/SideToc";
 
@@ -47,6 +49,7 @@ export default async function ConditionDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  if (!SIGNALS_PUBLISHED) return <ComingSoon />;
   const { slug } = await params;
 
   const [

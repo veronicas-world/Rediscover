@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -151,6 +153,7 @@ function ClaimCard({ claim, docs, showIntervention, interventionLabel }: {
 
 /* ── page ──────────────────────────────────────────────────────────── */
 export default async function SubstratePage({ params }: { params: Promise<{ slug: string }> }) {
+  if (!SIGNALS_PUBLISHED) return <ComingSoon />;
   const { slug } = await params;
 
   const { data: condition, error: condErr } = await supabase

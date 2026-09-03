@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCandidateBySignalId } from "@/lib/substrate-candidates";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
+import ComingSoon from "@/app/components/ComingSoon";
 import { toArmKey, ARM_LABELS } from "@/lib/arm-mapping";
 import {
   supplyLabel, supplyGloss, relationshipLabel, relationshipGloss, formatDate,
@@ -116,6 +118,7 @@ export default async function SignalDetail({
 }: {
   params: Promise<{ signalId: string }>;
 }) {
+  if (!SIGNALS_PUBLISHED) return <ComingSoon />;
   const { signalId } = await params;
   const c = await getCandidateBySignalId(signalId);
   if (!c) notFound();
