@@ -47,7 +47,6 @@ const BANDS: { band: string; shows: string; mult: string }[] = [
 // simply do not render.
 const TIER_MEANING: Record<string, string> = {
   strong: "guideline-grade: independently replicated, low-bias, in women",
-  moderate: "good evidence, not yet definitive",
   emerging: "a real early lead worth watching",
   exploratory: "thin or single-source; surfaced with heavy caveat",
 };
@@ -376,7 +375,7 @@ export default function SignalTypesPage() {
         <div className="container" style={{ maxWidth: 940 }}>
           <div className="eyebrow" style={{ marginBottom: 14 }}>Confidence tiers</div>
           <h2 className="h2" style={{ marginBottom: 16, maxWidth: "24ch" }}>
-            Arm strength × multiplier determines the tier.
+            Arm strength determines the tier.
           </h2>
           <p className="lede" style={{ color: "var(--body)", marginBottom: 20, maxWidth: "70ch" }}>
             Arm strength (0–8) sorts into three tiers; the female-applicability multiplier moves
@@ -396,7 +395,7 @@ export default function SignalTypesPage() {
             ))}
           </div>
           <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "var(--muted)", marginTop: 18, maxWidth: "70ch" }}>
-            A spanning badge (e.g. Moderate–Emerging) reads at its lower tier: the score sits within
+            A spanning badge (e.g. Strong–Emerging) reads at its lower tier: the score sits within
             the noise band of a cutoff, so the grade holds at the lower bound until regrade rather
             than claiming a precision the run-to-run spread does not support.
           </p>

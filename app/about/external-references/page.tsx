@@ -13,6 +13,7 @@ import {
   CITATION_AUDIT_SNAPSHOT,
   citationAuditFormattedDate,
 } from "@/lib/citation-audit-snapshot";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
 import {
   DATABASE_SOURCES_AUDIT_SNAPSHOT,
   isPopulated as databaseSourcesAuditPopulated,
@@ -1001,7 +1002,7 @@ export default function ExternalReferencesPage() {
                     },
                     {
                       head: "Cross-tabulation against Whel tiers.",
-                      tail: "How Whel's four confidence tiers (Strong, Moderate, Emerging, Exploratory) cross with graph support. A graph-supported Strong-tier signal is the strongest combined evidence the platform can present. A graph-silent Strong-tier signal is a signal where the literature replicates but the open knowledge graphs have not yet caught up; that pattern is also informative.",
+                      tail: "How Whel's three confidence tiers (Strong, Emerging, Exploratory) cross with graph support. A graph-supported Strong-tier signal is the strongest combined evidence the platform can present. A graph-silent Strong-tier signal is a signal where the literature replicates but the open knowledge graphs have not yet caught up; that pattern is also informative.",
                     },
                   ].map((item) => (
                     <li
@@ -2347,10 +2348,10 @@ export default function ExternalReferencesPage() {
               , shown on each signal card as &ldquo;Top N%&rdquo;, is
               MATRIX&apos;s own percentile across all of its predictions
               (roughly 39.5 million drug&ndash;disease pairs). A pair shown
-              as &ldquo;Top 8%&rdquo; means MATRIX assigned this
+              as &ldquo;Top N%&rdquo; means MATRIX assigned this
               drug&ndash;disease pair a higher treatment-probability than
-              ninety-two percent of every drug&ndash;disease pair its model
-              has scored across the biomedical knowledge graph.
+              (100 &minus; N) percent of every drug&ndash;disease pair its
+              model has scored across the biomedical knowledge graph.
             </p>
             <p
               style={{
@@ -2395,14 +2396,13 @@ export default function ExternalReferencesPage() {
               from the structure of a biomedical knowledge graph. Whel reads
               published literature, trial registries, adverse-event data,
               target databases, and patient communities, and scores each
-              signal against a five-dimension rubric. When the two layers
+              signal against a four-dimension rubric. When the two layers
               agree on a pair (Whel finds literature support for the use,
               AND MATRIX assigns the pair a high treatment-probability),
               that is two methodologically different approaches arriving at
-              the same hypothesis. The fact that most of Whel&apos;s matched
-              pairs land in MATRIX&apos;s top eight percent or so is the
-              kind of structural agreement an independent disclosure layer
-              is supposed to provide.
+              the same hypothesis. That convergence is the kind of
+              structural agreement an independent disclosure layer is
+              supposed to provide.
             </p>
             <p
               style={{
@@ -2737,6 +2737,7 @@ export default function ExternalReferencesPage() {
                   >
                     What we take from this
                   </h3>
+                  {SIGNALS_PUBLISHED ? (
                   <p
                     style={{
                       fontSize: 15,
@@ -2752,6 +2753,22 @@ export default function ExternalReferencesPage() {
                     cross-reference, and when both sides of a Whel pair exist in MATRIX,
                     MATRIX has a published score for that pair 83.0% of the time.
                   </p>
+                  ) : (
+                  <p
+                    style={{
+                      fontSize: 15,
+                      lineHeight: 1.68,
+                      color: "var(--muted)",
+                      maxWidth: "72ch",
+                      margin: "0 0 16px 0",
+                    }}
+                  >
+                    <em>The MATRIX cross-reference figures in this section are from a
+                    pre-rescore run and are pending revalidation under methodology v4.3.</em>
+                  </p>
+                  )}
+                  {SIGNALS_PUBLISHED && (
+                  <>
                   <p
                     style={{
                       fontSize: 15,
@@ -2835,6 +2852,8 @@ export default function ExternalReferencesPage() {
                     universe, with two informative gaps and a documented set of exclusions.
                     That&apos;s the right shape for an independent layer.
                   </p>
+                  </>
+                  )}
                 </div>
 
                 {/* What this says about Whel */}
@@ -2883,6 +2902,8 @@ export default function ExternalReferencesPage() {
                     clinical ground a general-purpose drug-repurposing model doesn&apos;t.
                     Four specific things the comparison reinforces:
                   </p>
+                  {SIGNALS_PUBLISHED ? (
+                  <>
                   <ul
                     style={{
                       listStyle: "none",
@@ -2956,6 +2977,12 @@ export default function ExternalReferencesPage() {
                     ontologies MATRIX uses, and that Whel&apos;s coverage includes
                     condition–compound pairs MATRIX leaves unscored.
                   </p>
+                  </>
+                  ) : (
+                  <p style={{ fontSize: 15, lineHeight: 1.68, color: "var(--muted)", maxWidth: "72ch", margin: 0 }}>
+                    <em>The MATRIX cross-reference figures in this section are pending revalidation under methodology v4.3.</em>
+                  </p>
+                  )}
                 </div>
 
                 {/* Score distribution */}

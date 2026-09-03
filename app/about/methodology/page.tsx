@@ -62,7 +62,7 @@ const EXTERNAL_SOURCES = [
 
 // External-corroboration ladder. This is an *external* benchmark, computed
 // after the fact against the published record — it is deliberately separate
-// from the internal five-dimension rubric that produces a pair's tier, so
+// from the internal four-dimension rubric that produces a pair's tier, so
 // agreement between the two stays informative rather than circular.
 const EXT_LEVELS = [
   {
@@ -243,8 +243,8 @@ export default async function MethodologyPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <p style={BODY}>
                 Whel reads each drug–condition pair through three evidence arms and scores each arm on
-                five dimensions, then discounts the arm score by a female-applicability multiplier and
-                sorts it into a tier. The full model is documented on the{" "}
+                four dimensions, then sorts the arm score into a tier; a female-applicability
+                multiplier adjusts rank and display only, applied after tiering. The full model is documented on the{" "}
                 <Link href="/signal-types" style={LINK}>signal types &amp; scoring page</Link>{" "}
                 and the{" "}
                 <Link href="/about/technical-architecture" style={LINK}>technical architecture page</Link>
@@ -343,7 +343,7 @@ export default async function MethodologyPage() {
             <h2 className="font-heading" style={H2}>What counts as a hit</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <p style={BODY}>
-                This benchmark is deliberately external. The five-dimension rubric that produces a
+                This benchmark is deliberately external. The four-dimension rubric that produces a
                 pair&apos;s tier, including its internal <em>corroboration</em> dimension, is scored
                 only against the evidence Whel has actually ingested. The ladder below measures
                 something separate: whether the <em>independent</em> external record, setting aside what
@@ -429,7 +429,7 @@ export default async function MethodologyPage() {
                 Orange Book (generic or single-source brand still under patent), and ClinicalTrials.gov (how
                 far the drug has been studied as a therapy for the condition). It maps the route a 505(b)(2)
                 filing would build on, but it is descriptive landscape context only, not an input to the
-                five-dimension rubric or the tier and not regulatory advice. The sources are listed at{" "}
+                four-dimension rubric or the tier and not regulatory advice. The sources are listed at{" "}
                 <Link href="/about/external-references#underlying-data" style={LINK}>
                   external references → 01 · Underlying data
                 </Link>
@@ -594,7 +594,7 @@ export default async function MethodologyPage() {
                 Related
               </div>
               <p style={{ fontSize: "0.95rem", color: "var(--ink-2)", lineHeight: 1.6 }}>
-                The three evidence arms, the five-dimension rubric, and the indexing pipeline that
+                The three evidence arms, the four-dimension rubric, and the indexing pipeline that
                 produces these tiers are documented separately.
               </p>
             </div>
@@ -669,7 +669,7 @@ export default async function MethodologyPage() {
             >
               The pre-registered benchmark was re-grounded on the three-arm substrate model. The earlier
               external-validation ladder, which doubled as an in-pipeline literature grade, was retired;
-              the in-pipeline corroboration signal now lives inside the five-dimension rubric, and this
+              the in-pipeline corroboration signal now lives inside the four-dimension rubric, and this
               page keeps a clean external ladder (E0–E3) that is computed only after the fact. The sample
               numbers above are read live from the substrate so they cannot drift from the engine.
             </p>

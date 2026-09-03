@@ -540,9 +540,11 @@ export default function WhatWeCountPage() {
         {/* 9. Reproducibility */}
         <Section kicker="09 · Audit" title="Reproducing these counts">
           <p style={P}>
-            Every figure on this page is derived from the live database rather than
-            transcribed, and each is defined by a specific filter so that an outside
-            reviewer can recompute it rather than take it on trust.
+            The figures on this page were transcribed from a database run completed
+            in August 2026. They are not re-derived on each page load. Each is
+            defined by a specific filter so that an outside reviewer can recompute
+            it rather than take it on trust, but the counts shown here are a
+            dated snapshot, not a live query.
           </p>
           <table style={{ width: "100%", borderCollapse: "collapse", margin: "22px 0 0" }}>
             <thead>
