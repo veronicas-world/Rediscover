@@ -63,7 +63,7 @@ export function tierRanges(precision = 1): TierRange[] {
 export function tierDisplay(score: number, storedTier: string): string {
   return _tierDisplay(score, storedTier);
 }
-export type TierKey = "strong" | "moderate" | "emerging" | "exploratory";
+export type TierKey = "strong" | "emerging" | "exploratory";
 export function tierKey(t: string): TierKey {
   return _tierKey(t) as TierKey;
 }

@@ -28,7 +28,6 @@ type ArmKey = "direct" | "pathway" | "community";
 
 const TIERS: { key: TierKey; label: string; token: string }[] = [
   { key: "strong",      label: "Strong",      token: "var(--tier-strong)"      },
-  { key: "moderate",    label: "Moderate",    token: "var(--tier-moderate)"    },
   { key: "emerging",    label: "Emerging",    token: "var(--tier-emerging)"    },
   { key: "exploratory", label: "Exploratory", token: "var(--tier-exploratory)" },
 ];
@@ -89,7 +88,7 @@ export default async function ConditionDetailPage({
   const condAdjuncts = allAdjuncts.filter((c) => c.conditionId === slug);
 
   const tierCounts: Record<TierKey, number> = {
-    strong: 0, moderate: 0, emerging: 0, exploratory: 0,
+    strong: 0, emerging: 0, exploratory: 0,
   };
   for (const c of condCands) tierCounts[tierKey(c.tier)]++;
 
@@ -200,7 +199,6 @@ export default async function ConditionDetailPage({
                     [
                       { label: "Total signals indexed", value: String(total) },
                       { label: "Strong-tier",       value: String(tierCounts.strong) },
-                      { label: "Moderate-tier",     value: String(tierCounts.moderate) },
                       { label: "Emerging-tier",     value: String(tierCounts.emerging) },
                       { label: "Exploratory-tier",  value: String(tierCounts.exploratory) },
                     ] as const
