@@ -1,15 +1,17 @@
 """Stage 6 - score verified claims into ARM-AWARE signals (substrate_signals).
 
-Implements scripts/substrate/SCORING_SPEC.md (v1.2). Reads ONLY
+Implements scripts/substrate/SCORING_SPEC.md (v1.4). Reads ONLY
 provenance-verified claims, groups them by (intervention, condition, aspect, arm)
 — where `arm` is derived from each claim's document source — and asks the model to
-score the five arm-appropriate dimensions (0-2 each) with 2-3 sentence rationales,
+score four arm-appropriate dimensions (0-2 each) plus a downgrade-only consistency
+penalty (-2..0, §5d), giving arm_strength 0-8, with 2-3 sentence rationales,
 plus a synthesis + mechanism, plus a set of STRUCTURED FACTS (sample size, CI
 present, % female, was the study in the target female population, sex-stratified,
 evidence of a sex-dependent effect).
 
 Division of labour (SCORING_SPEC §8.1 — "LLM extracts, rules decide"):
-  * the MODEL proposes the five dimension scores, the rationales, and the raw facts;
+  * the MODEL proposes the four dimension scores + the consistency penalty, the
+    rationales, and the raw facts;
   * PYTHON decides the things that must be deterministic:
       - the imprecision caps (§2),
       - the female-applicability BAND -> multiplier (§3),
@@ -40,7 +42,7 @@ from llm import complete_json, prompt_hash, map_parallel, CreditsExhausted, usag
 from config import MODEL, MIGRATIONS_DIR
 
 SIGNALS_SEED = MIGRATIONS_DIR / "051_substrate_signals_seed.sql"
-PROMPT_VERSION = "score_claims/v1.2-arm-aware"
+PROMPT_VERSION = "score_claims/v1.4-downgrade-consistency"
 
 # ── Work-store table for scored signals. Mirrors migration 050's columns, but the
 # two GENERATED columns (arm_strength, arm_score) are computed in Python and stored
@@ -93,20 +95,43 @@ ARM_RUBRIC = {
         "systematic review or meta-analysis is 1 (one synthesis is NOT independent replication "
         "— do NOT count the trials pooled inside one review as independent sources); a single "
         "primary study is 0. Reserve 2 for three+ genuinely independent, consistent studies, or "
-        "one large, well-powered, low-bias RCT. rigor = study design (case/preclinical=0; "
-        "observational/small trial=1; "
-        "RCT/meta-analysis/active guideline=2). specificity = this drug + this condition both "
-        "named directly. plausibility = mechanism (asserted=0; plausible=1; evidenced=2). "
-        "consistency = do results agree in direction (a single study is n/a -> score 1, not "
-        "penalized)."
+        "one large, well-powered, low-bias RCT. "
+        "rigor = study design AND risk of bias (case report/preclinical=0; observational, small "
+        "trial, OR an RCT at HIGH risk of bias=1; RCT at LOW risk of bias, meta-analysis of "
+        "such, or active guideline=2). A randomised trial is NOT automatically 2 — if it is "
+        "unblinded where blinding was feasible, heavily attrited, or selectively reported, score "
+        "1. If risk of bias cannot be judged from the text, do not assume it is low. "
+        "specificity = this drug, this condition, AND this outcome (proxy only=0; drug and "
+        "condition named but the outcome measured is a SURROGATE or indirect endpoint, e.g. a "
+        "biomarker, hormone level, or imaging measure standing in for how the patient feels or "
+        "functions=1; drug and condition named directly AND the outcome is the patient-relevant "
+        "endpoint, i.e. symptoms, function, quality of life, or a clinical event=2). "
+        "plausibility = mechanism (asserted=0; plausible=1; evidenced=2). "
+        "consistency = DOWNGRADE ONLY, score 0 or NEGATIVE, never positive (0 = sources agree "
+        "in direction, OR there is only one source so agreement is not assessable — a single "
+        "study is 0, NOT a penalty and NOT a bonus; -1 = sources point in mixed directions; "
+        "-2 = direct conflict on the primary outcome)."
     ),
     # (no 'cross' rubric: cross-condition is a derived hypotheses lens, not a scored
     #  evidence arm — see arm_for_source note and ARMS_SPEC.md §4.)
     "pathway": (
-        "corroboration = how many independent mechanistic lines converge. rigor = strength/"
-        "recency of models (human-relevant=2; in-vitro only=0). specificity = specificity of "
-        "the drug's action on the named target. plausibility = target-phenotype fit. "
-        "consistency = do the mechanistic signals point the same way."
+        "corroboration = how many independent mechanistic LINES of evidence converge. COUNT "
+        "LINES, NOT DOCUMENTS: one source record can carry several independent lines (e.g. "
+        "target genetics, preclinical pharmacology, and a side-effect signal are three lines). "
+        "One line only=0; two independent lines=1; three or more independent lines=2. "
+        "rigor = human-relevance of the models (in-vitro/cell line only, or computational "
+        "prediction alone=0; animal model or human tissue ex vivo=1; human in-vivo data such as "
+        "target engagement, a biomarker, or a genetic association in people=2). "
+        "specificity = selectivity of the drug's action on the NAMED target (target is one of "
+        "many the drug hits, or the drug-target link is merely asserted=0; drug hits the target "
+        "among a few others and the link is measured=1; drug acts selectively on the named "
+        "target with a measured affinity or engagement=2). "
+        "plausibility = target-phenotype fit (link to the condition is speculative=0; the target "
+        "sits in a pathway implicated in the condition=1; the target is independently implicated "
+        "in THIS condition's biology from a source other than the drug's own record=2). "
+        "consistency = DOWNGRADE ONLY, score 0 or NEGATIVE, never positive (0 = all lines agree, "
+        "OR there is only one line so agreement is not assessable; -1 = lines point in mixed "
+        "directions; -2 = one line predicts the opposite effect of another)."
     ),
     "community": (
         "corroboration = INDEPENDENCE of accounts (single account/coordination signs=0; a few "
@@ -114,20 +139,30 @@ ARM_RUBRIC = {
         "replies are weak corroboration (anchored by the post); only independent accounts reach "
         "2. rigor = specificity of the report (vague=0; symptom+dose+timing clear=2). "
         "specificity = drug + outcome both clear and linked. plausibility = fits the drug's "
-        "pharmacology. consistency = do reports agree (confirm vs deny) and does dose/timing "
-        "cohere. NEVER score community evidence on clinical-trial criteria."
+        "pharmacology. consistency = DOWNGRADE ONLY, score 0 or NEGATIVE, never positive "
+        "(0 = confirms dominate and dose/timing coheres, OR there is only one account so "
+        "agreement is not assessable; -1 = mixed confirms and denials; -2 = substantive denials "
+        "outweigh confirms). NEVER score community evidence on clinical-trial criteria."
     ),
 }
 
 SYSTEM = """You are the scoring component of a biomedical evidence substrate for women's health.
 You are given a set of already-verified atomic claims (each with a verbatim quote) about ONE
 intervention's effect on ONE condition, for ONE aspect (efficacy or safety), all from ONE
-evidence arm. Score the evidence on five 0-2 dimensions whose meaning for THIS arm is:
+evidence arm. Score the evidence on FOUR 0-2 dimensions (corroboration, rigor, specificity,
+plausibility) plus ONE downgrade-only penalty (consistency, -2 to 0). Their meaning for THIS arm:
 
 {rubric}
 
-For EACH dimension give an integer score 0-2 and a 2-3 sentence rationale that cites the specific
-claims/sources behind the score. Do NOT inflate: a score must be justified by the claims shown.
+Give each an INTEGER score and a 2-3 sentence rationale citing the specific claims/sources behind
+it. Do NOT inflate: a score must be justified by the claims shown.
+
+Scale, and read this twice — it changed:
+  - corroboration, rigor, specificity, plausibility: 0, 1, or 2.
+  - consistency: 0, -1, or -2. NEVER a positive number. Consistency can only take certainty
+    away, never add it. A single source scores consistency 0 because agreement cannot be
+    assessed with one source — 0 is the neutral, no-penalty value, NOT a punishment. Only
+    actual disagreement between sources earns -1 or -2.
 
 Also extract STRUCTURED FACTS (use null when the text does not state them — do NOT guess, do NOT
 infer a confidence interval from a p-value):
@@ -158,7 +193,7 @@ Return ONLY this JSON object:
  "rigor": {"score": int, "rationale": str},
  "specificity": {"score": int, "rationale": str},
  "plausibility": {"score": int, "rationale": str},
- "consistency": {"score": int, "rationale": str},
+ "consistency": {"score": int, "rationale": str},   // 0, -1, or -2 only
  "facts": {"max_sample_size": int|null, "num_events": int|null, "has_confidence_interval": bool,
    "study_female_percent": number|null, "study_in_target_female_population": bool|null,
    "sex_stratified": bool, "equivalence_shown": bool, "evidence_of_sex_difference": bool},
@@ -287,8 +322,8 @@ def community_independence(claims):
 
 
 def corroboration_ceiling(claims):
-    """Deterministic upper bound on the corroboration dimension for the direct
-    and pathway arms, from the count of distinct source documents
+    """Deterministic upper bound on the corroboration dimension for the **direct
+    arm only**, from the count of distinct source documents
     (SCORING_SPEC §2 direct). The external audit (May 2026) found the model
     over-counted — a single systematic review's pooled trials were counted as
     independent sources, inflating corroboration to 2 on one document. This
@@ -301,8 +336,20 @@ def corroboration_ceiling(claims):
     The rubric's 'one large well-powered low-bias RCT = 2' exception is
     deliberately capped to 1 here: one study is not replication, and the audit
     found inflation, not deflation. The model still proposes the score; this
-    only caps it down, never up. The community arm has its own rule
-    (community_independence) and is not affected."""
+    only caps it down, never up.
+
+    NOT applied to the pathway or community arms, both of which define
+    corroboration as something other than a study count:
+
+      - pathway  — corroboration counts independent *mechanistic lines* (target
+        genetics, preclinical pharmacology, side-effect signal). One Open Targets
+        record can carry three, so bounding it by document count measures the
+        wrong object. Applying this ceiling there was a bug (SCORING_SPEC §2
+        pathway, change 4). Note it was never the binding constraint anyway: of
+        15 pathway signals with 3+ documents, the ceiling permitted 2 for all 15
+        and the model scored 1 for all 15 — the missing 0/1/2 anchors were the
+        real cause, and change 4 supplies them.
+      - community — has its own deterministic rule (community_independence)."""
     docs = {c["document_id"] for c in claims if c["document_id"]}
     n = len(docs)
     if n >= 3:
@@ -438,8 +485,12 @@ def run(limit=None, model=None, only_unscored=False):
         except (KeyError, TypeError, ValueError) as e:
             print(f"  [warn] malformed score for {key}: {e}")
             continue
+        # consistency is downgrade-only (-2..0, SCORING_SPEC §5d); the rest are 0..2.
         for d in dims:
-            dims[d] = max(0, min(2, dims[d]))
+            if d == "consistency":
+                dims[d] = max(-2, min(0, dims[d]))
+            else:
+                dims[d] = max(0, min(2, dims[d]))
 
         # community independence is RULE-BASED from thread metadata, not the model (§2).
         if arm == "community":
@@ -447,11 +498,13 @@ def run(limit=None, model=None, only_unscored=False):
             dims["corroboration"] = ci_score
             rats["corroboration"] = ci_rationale
 
-        # direct/pathway corroboration ceiling: cap the model's score to the
-        # number of distinct independent source documents (SCORING_SPEC §2). The
+        # direct-arm corroboration ceiling: cap the model's score to the number of
+        # distinct independent source documents (SCORING_SPEC §2 direct). The
         # external audit found the model over-counted a single review's pooled
         # trials as independent; this deterministic backstop prevents a recurrence.
-        if arm in ("direct", "pathway"):
+        # Pathway is excluded: there corroboration counts independent mechanistic
+        # lines, which one document can carry several of (§2 pathway, change 4).
+        if arm == "direct":
             ceiling = corroboration_ceiling(claims)
             if dims["corroboration"] > ceiling:
                 dims["corroboration"] = ceiling
@@ -459,10 +512,13 @@ def run(limit=None, model=None, only_unscored=False):
                 cap_note = f"[Capped at {ceiling}: {n_docs} distinct source document(s).]"
                 rats["corroboration"] = (rats["corroboration"] + " " + cap_note).strip()
 
-        # contradictions (§4): flag from the table; cap consistency at 1 if present
+        # contradictions (§4): flag from the table; a recorded head-to-head
+        # disagreement must cost at least one point of consistency penalty. Under the
+        # old 0-2 scale this rule capped at 1, which let a flagged pair sit at the
+        # neutral score and pay nothing; on the downgrade-only scale it bites (§5d).
         nco = _num_contradictions(conn, iv, cd)
         if nco > 0:
-            dims["consistency"] = min(dims["consistency"], 1)
+            dims["consistency"] = min(dims["consistency"], -1)
 
         # imprecision caps (§2)
         dims, precision_note, needs_ft = apply_imprecision(dims, facts, arm)
@@ -472,8 +528,14 @@ def run(limit=None, model=None, only_unscored=False):
         if band == "F4" and facts.get("study_female_percent") is None:
             needs_ft = True
 
-        strength = sum(dims.values())               # 0-10
+        # 0-8: four scored dimensions (0-2 each) plus the consistency penalty (-2..0),
+        # floored at 0. Must match the arm_strength generated column (migration 059).
+        strength = max(0, sum(dims.values()))
         score = round(min(10.0, strength * mult), 1)
+        # NOTE: tier_for still implements the v1.3 four-tier cutoffs on arm_score. The
+        # v1.4 three-tier cutoffs are derived on arm_strength and cannot be set until
+        # this rescore produces the new distribution (SCORING_SPEC §5, §10a), so
+        # confidence_tier written by this pass is provisional and not authoritative.
         tier = tier_for(score)
 
         # off-topic guard: suppress signals whose claims don't actually concern this
@@ -625,7 +687,7 @@ def review():
         flag_s = ("   [" + ", ".join(flags) + "]") if flags else ""
         print(f"[{r['arm']}] {iv} → {cd} ({r['aspect']})")
         print(f"    score {r['arm_score']}  {r['confidence_tier']}   "
-              f"strength {int(r['arm_strength'])}/10 × {r['female_applicability_multiplier']} "
+              f"strength {int(r['arm_strength'])}/8 × {r['female_applicability_multiplier']} "
               f"({r['female_applicability_band']}){flag_s}")
         for d in ("corroboration", "rigor", "specificity", "plausibility", "consistency"):
             print(f"    {d:13s} {r[d + '_score']}  — {r[d + '_rationale'] or ''}")
@@ -697,9 +759,16 @@ def _selftest():
     check("tier emerging", tier_for(3.5), "Emerging")
     check("tier exploratory", tier_for(3.4), "Exploratory")
 
-    # headline arithmetic: strong male-derived discounts below strong
-    strength = 9
-    check("9 x 0.60 = 5.4 -> Emerging", tier_for(round(min(10.0, strength * 0.60), 1)), "Emerging")
+    # NOTE: tier_for is still the v1.3 four-tier ladder on arm_score. v1.4 tiers on
+    # arm_strength with the multiplier applied after (SCORING_SPEC §1, §5), and the
+    # cutoffs cannot be set until the rescore produces the new 0-8 distribution. These
+    # checks pin current behaviour only; they are expected to be replaced.
+    check("v1.3 tier strong", tier_for(8.0), "Strong")
+    check("v1.3 tier emerging", tier_for(3.5), "Emerging")
+    # the collision v1.4 §1 exists to prevent: under arm_score tiering a strong signal
+    # that may not transfer to women is demoted to the same tier as a moderate one.
+    check("8 x 0.75 and 6 x 1.00 collide on arm_score",
+          round(8 * 0.75, 1) == round(6 * 1.00, 1), True)
 
     # arm routing
     check("arm pubmed->direct", arm_for_source("pubmed"), "direct")
@@ -726,7 +795,10 @@ def _selftest():
     dup = [_c(f"u{i}", f"t{i}", "exact same coordinated sentence here") for i in range(6)]
     check("comm near-duplicate caps 2->1", community_independence(dup)[0], 1)
 
-    # direct/pathway corroboration ceiling (rule-based from document count)
+    # DIRECT-ARM ONLY corroboration ceiling (rule-based from document count).
+    # Pathway is deliberately NOT ceilinged here — see corroboration_ceiling docstring
+    # and SCORING_SPEC §2 pathway (change 4): pathway corroboration counts independent
+    # mechanistic LINES, several of which can live in one document.
     def _dc(doc_id):
         return {"document_id": doc_id}
     check("corr 0 docs -> 0", corroboration_ceiling([]), 0)
@@ -736,6 +808,36 @@ def _selftest():
     check("corr 5 docs -> 2", corroboration_ceiling([_dc(f"d{i}") for i in range(5)]), 2)
     # a single review with many claims from one document caps at 1 (the audit case)
     check("corr 1 doc x6 claims -> 1", corroboration_ceiling([_dc("d1")] * 6), 1)
+
+    # ── downgrade-only consistency (§5d) ────────────────────────────────────
+    # The clamp and the arm_strength floor as applied in run(); kept as pure
+    # expressions here so the invariants are testable without a DB or API.
+    def _clamp(dims):
+        return {d: (max(-2, min(0, v)) if d == "consistency" else max(0, min(2, v)))
+                for d, v in dims.items()}
+
+    def _strength(dims):
+        return max(0, sum(_clamp(dims).values()))
+
+    check("consistency clamp: model returns +2 -> 0",
+          _clamp({"consistency": 2})["consistency"], 0)
+    check("consistency clamp: model returns +1 -> 0",
+          _clamp({"consistency": 1})["consistency"], 0)
+    check("consistency clamp: -1 kept", _clamp({"consistency": -1})["consistency"], -1)
+    check("consistency clamp: -5 -> -2", _clamp({"consistency": -5})["consistency"], -2)
+    check("other dims still clamp 0..2", _clamp({"rigor": 5})["rigor"], 2)
+
+    perfect = {"corroboration": 2, "rigor": 2, "specificity": 2, "plausibility": 2,
+               "consistency": 0}
+    check("max arm_strength is 8, not 10", _strength(perfect), 8)
+    check("conflict penalty subtracts", _strength({**perfect, "consistency": -2}), 6)
+    check("arm_strength floors at 0",
+          _strength({"corroboration": 0, "rigor": 1, "specificity": 0, "plausibility": 0,
+                     "consistency": -2}), 0)
+    # a single-source signal is no longer silently credited a point (the 174-signal case)
+    single_source = {"corroboration": 1, "rigor": 2, "specificity": 2, "plausibility": 1,
+                     "consistency": 0}
+    check("single-source signal gets no consistency bonus", _strength(single_source), 6)
 
     print("  SELFTEST", "PASS" if ok else "FAILED")
     return 0 if ok else 1

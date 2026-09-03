@@ -163,6 +163,39 @@ tier the badge claims. The noise-band spanning display (showing
 cutoff) makes this uncertainty visible to the reader rather than hiding it
 behind a false-precision badge.
 
+## What the scoring rubric consists of at validation time
+
+Stated explicitly because a reader who is told the model scores "five dimensions"
+will assume five working dimensions and form a false picture of what was
+validated. Measured over the 226 active signals in the corpus being validated,
+the rubric has:
+
+- **Three working dimensions** — rigor, specificity, plausibility. These carry
+  the discrimination.
+- **One corpus-limited dimension** — corroboration. **186 of 226 signals (82%)
+  rest on a single source document, and 207 of 226 (92%) therefore cannot exceed
+  a corroboration score of 1 as arithmetic on the corpus, before any judgement is
+  applied.** Five signals have ever scored 2. For the great majority of the
+  corpus this dimension is measuring **how many sources were ingested for that
+  drug–condition pair, not whether the finding replicated.** Those two things
+  coincide only once ingestion is complete, and it is not.
+- **One downgrade-only penalty term** — consistency. It cannot raise a score
+  (SCORING_SPEC v1.4 §5d), and 89% of signals carry no penalty, so it contributes
+  almost no variance.
+
+That is what is being validated. It is not five independent dimensions.
+
+**The sequencing tension, stated rather than discovered later.** Fixing
+corroboration requires ingestion breadth, and coverage expansion is deliberately
+sequenced *after* validation — validating a smaller corpus first is the right
+order, because expanding coverage before knowing whether the extraction layer is
+trustworthy would multiply an unmeasured error rate. The consequence is that this
+study measures a rubric with one structurally dead dimension. That is a known and
+accepted limitation of validating at this stage, not an oversight, and it bounds
+what a positive result licenses: it would support the claim that the *extraction
+and entailment* layer is sound, not that the five-dimension score is
+well-discriminating.
+
 ## Limitations
 
 1. R1 built the system and has already seen 99 claims in the frame.
@@ -172,3 +205,9 @@ behind a false-precision badge.
    are correlated. Majority-of-three reduces variance, not this bias.
 5. Some NLI disagreement is irreducible (Pavlick & Kwiatkowski 2019).
 6. The scoring layer is unstable across runs (see above).
+7. The rubric under validation has three working dimensions, not five (see
+   above). Corroboration is capped at ≤1 for 92% of signals by single-source
+   ingestion and is effectively binary; consistency is a downgrade-only term
+   that is inactive for 89% of signals. Any claim about the *scoring* layer's
+   discrimination is bounded by this, independently of how the entailment
+   endpoints come out.

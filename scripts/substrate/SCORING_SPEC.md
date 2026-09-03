@@ -94,10 +94,25 @@ per arm. Every score still carries a 2–3 sentence rationale citing the claims 
 | Slot | Means here | 0 | 1 | 2 |
 |---|---|---|---|---|
 | **corroboration** | independent corroboration | single primary study | a single systematic review / meta-analysis, **or** two independent studies | three+ independent and consistent, **or** one large well-powered RCT (low bias) |
-| **rigor** | study design / risk of bias | case report / preclinical | observational / small trial | RCT, meta-analysis, or active guideline |
-| **specificity** | this drug, this condition | proxy only | drug named, condition adjacent | both named directly |
+| **rigor** | study design **and** risk of bias | case report / preclinical | observational, small trial, **or an RCT with high risk of bias** | RCT **at low risk of bias**, meta-analysis of such, or active guideline |
+| **specificity** | this drug, this condition, **this outcome** | proxy only | drug named and condition adjacent, **or** both named but measured only on a surrogate / indirect endpoint | drug and condition named directly **and** the outcome is the patient-relevant endpoint |
 | **plausibility** | mechanism | asserted | plausible | evidenced in relevant biology |
-| **consistency** | do results agree in direction | conflicting | mostly one way | unanimous (n/a for a single study → scored neutral, not penalized) |
+| **consistency** | *(downgrade-only, see §5d)* — do results agree in direction | `0` unanimous, **or** single-source and not assessable | `−1` mixed direction across sources | `−2` direct conflict on the primary outcome |
+
+> **Change 1 (rigor) — added 2026-09-02, per GRADE risk of bias.** An RCT was previously worth
+> 2 on design alone. Design and risk of bias are not the same thing: a randomised trial that is
+> unblinded, heavily attrited, or selectively reported does not deliver the certainty its label
+> implies, and GRADE downgrades it. A high-risk-of-bias RCT now scores 1, alongside sound
+> observational work. Rigor is the only well-spread dimension in the corpus (§5c), so this
+> refines a dimension that already works rather than rescuing a broken one.
+
+> **Change 2 (specificity) — added 2026-09-02, per GRADE indirectness.** Specificity was
+> saturated: 151 of 226 signals sat at 2 (§5c), because it asked only whether the drug and
+> condition were named, which is nearly always true in a corpus assembled by drug–condition
+> pair. It now also asks whether the *outcome* is the one patients care about. A trial showing
+> a drug moves a biomarker is indirect evidence for symptom relief and scores 1; a trial
+> measuring symptoms, function, or a clinical event scores 2. This is the one planned change
+> expected to genuinely de-saturate a degenerate dimension.
 
 > **Revised from v1 per the research:** corroboration is about *independent validation*,
 > kept distinct from rigor (study design) and consistency (agreement) so we don't score the
@@ -110,13 +125,28 @@ per arm. Every score still carries a 2–3 sentence rationale citing the claims 
 
 ### Arm `pathway` — Pathway Insights (mechanistic, target, preclinical, side-effect)
 
-| Slot | Means here |
-|---|---|
-| **corroboration** | how many independent mechanistic lines converge (target data, preclinical, side-effect) |
-| **rigor** | strength/recency of the models (human-relevant vs. in-vitro only) |
-| **specificity** | specificity of the drug's action on the named target |
-| **plausibility** | target–phenotype fit: does hitting this target plausibly move this condition |
-| **consistency** | do the mechanistic signals point the same way |
+| Slot | Means here | 0 | 1 | 2 |
+|---|---|---|---|---|
+| **corroboration** | how many independent **mechanistic lines of evidence** converge — **counted as lines, never as documents** | one line only | two independent lines | three+ independent lines |
+| **rigor** | human-relevance of the models | in-vitro / cell line only, or computational prediction alone | animal model, or human tissue *ex vivo* | human *in vivo* data — target engagement, biomarker, or genetic association in people |
+| **specificity** | selectivity of the drug's action on the named target | target is one of many the drug hits, or the drug–target link is asserted | drug hits the target among a few others, link is measured | drug acts selectively on the named target, with a measured affinity or engagement |
+| **plausibility** | target–phenotype fit: does hitting this target plausibly move *this* condition | link to the condition is speculative | target sits in a pathway implicated in the condition | the target is independently implicated in this condition's biology, from a source other than the drug's own record |
+| **consistency** | *(downgrade-only, see §5d)* — do the mechanistic signals point the same way | `0` all lines agree, **or** only one line and so not assessable | `−1` lines point in mixed directions | `−2` one line predicts the opposite effect of another |
+
+> **Change 4 (pathway anchors) — added 2026-09-02.** The pathway arm previously had no 0/1/2
+> anchors at all, only a one-line gloss per slot, and it shows: pathway means are the lowest in
+> the corpus on every dimension (corroboration 0.26, rigor 0.71, specificity 1.05 — §5c). Two
+> specific failures these anchors fix:
+>
+> - **Corroboration must count lines, not documents.** A single Open Targets record can carry
+>   target genetics, preclinical pharmacology, and a side-effect signal — three independent
+>   lines in one document. Bounding that by document count measures the wrong object. This was
+>   also a live bug in `corroboration_ceiling()`, now fixed: the pathway arm is exempt from the
+>   document-count ceiling, as the community arm already was.
+> - **The model never used the top of the scale.** 15 pathway signals have 3+ source documents,
+>   the ceiling permitted 2 for all 15, and **all 15 scored 1** — so the ceiling was not even
+>   the binding constraint; the absence of anchors was. An explicit "three+ independent lines
+>   = 2" makes the top of the scale reachable and states what reaching it requires.
 
 ### Arm `community` — Community Forum Reports (patient-reported, online)
 
@@ -129,7 +159,7 @@ design — so a real corroborated pattern reads as a *signal worth investigating
 | **rigor** | specificity of the report | vague ("felt bad") | symptom clear, timing/dose fuzzy | clear symptom + dose + timing |
 | **specificity** | this drug, this outcome | drug or outcome vague | one clear | both clear and linked |
 | **plausibility** | fits the drug's pharmacology | unexplained by mechanism | loosely consistent | directly fits known pharmacology |
-| **consistency** | do reports agree (confirm vs. deny) | denials outweigh confirms | mixed | confirms dominate **and** dose/timing coheres across reports |
+| **consistency** | *(downgrade-only, see §5d)* — do reports agree (confirm vs. deny) | `0` confirms dominate and dose/timing coheres, **or** a single account and so not assessable | `−1` mixed, on the independence-weighted confirm:deny ratio | `−2` substantive denials outweigh confirms |
 
 A community signal that scores high is labelled **"strong patient-reported signal"** — it
 asserts that a credible, specific, mechanistically-plausible pattern is being independently
@@ -217,14 +247,14 @@ detailed view *behind* this band.
 head-to-head disagreement** on the same drug–condition pair. When present for a pair:
 `contradiction_flag = true`, `num_contradictions = N`, a `!` marker on the card, and a full
 **"Where the evidence disagrees"** section on the detail page with both verbatim quotes
-intact. A flagged pair cannot score `consistency = 2` in the affected arm. Contradictions
-do not by themselves trigger the female-applicability multiplier.
+intact. **A flagged pair must carry a consistency penalty of at least −1 in the affected arm**
+(§5d). Contradictions do not by themselves trigger the female-applicability multiplier.
 
-> **Dependency on §5d.** This rule is written against the 0/1/2 consistency scale. If the
-> proposed downgrade-only redefinition is adopted, "cannot score 2" becomes **"a flagged pair
-> must carry a consistency penalty of at least −1 in the affected arm"** — which is strictly
-> stronger, since the current rule permits a flagged pair to sit at the neutral 1 and pay
-> nothing. Restate here when §5d is decided.
+> **Restated 2026-09-02 for the downgrade-only scale.** The old rule was "a flagged pair cannot
+> score `consistency = 2`," which let a pair with a recorded head-to-head contradiction sit at
+> the neutral 1 and pay nothing for it. Under §5d a flagged pair now pays at least a point. This
+> is strictly stronger, and it is the one place where the consistency change does add
+> discrimination rather than only removing a constant.
 
 Disagreement is surfaced at **two levels**, and the UI labels which: a *clinical*
 contradiction (two studies disagree) reads differently from a *patient-reported* one
@@ -237,11 +267,17 @@ patient-reported contradiction is presented as heterogeneity of experience
 
 ## 5. Tiers — three, assigned on `arm_strength`
 
-| Tier | `arm_strength` | Signals (n=226) |
+| Tier | `arm_strength` | Signals (n=226, **pre-change scale**) |
 |---|---|---|
 | **Strong** | > 7.5 | 12 (5%) |
 | **Emerging** | 3.5 – 7.5 | 167 (74%) |
 | **Exploratory** | < 3.5 | 47 (21%) |
+
+> **The cutoffs and the split above are measured on the v1.3 scale and will both move.** The
+> §5d consistency change alone drops `arm_strength` from 0–10 to 0–8 and removes roughly a
+> point from most signals; changes 1, 2 and 4 move it again. **3.5 / 7.5 are not frozen.** They
+> are recorded as the values that satisfy rules (a) and (b) on the *current* lattice, to be
+> re-derived on the post-rescore lattice and only then frozen. See §10a for the sequence.
 
 Superseded the v1.3 four-tier scheme (Strong ≥8.0 / Moderate 6.0 / Emerging 3.5 /
 Exploratory, cut on `arm_score`) for the three reasons below. The 12 / 167 / 47 split is
@@ -351,8 +387,8 @@ signals (186 of 226) rest on a single source document**; only 19 have 3+.
   the spec's "single study → scored neutral, not penalized" is contributing a **silent fixed
   +1 to the majority of the corpus** — the single largest contributor to the 3-point floor.
 
-  **Proposed change (NOT YET ADOPTED — needs sign-off before the rescore): make consistency
-  downgrade-only, following GRADE, which never lets inconsistency add certainty.**
+  **ADOPTED (2026-09-02): consistency is downgrade-only, following GRADE, which never lets
+  inconsistency add certainty.**
 
   | Value | Meaning |
   |---|---|
@@ -360,24 +396,69 @@ signals (186 of 226) rest on a single source document**; only 19 have 3+.
   | `−1` | mixed direction across sources |
   | `−2` | direct conflict on the primary outcome |
 
-  `arm_strength` would become `corroboration + rigor + specificity + plausibility` (0–8)
-  plus the consistency penalty, floored at 0. Rationale: it keeps the information that
-  exists (the 24 genuinely disagreeing signals get penalised) and discards the information
-  that does not (174 free +1s); it removes the fixed floor; and it resolves a definitional
-  double-count, since direct corroboration=2 is *defined* as "three+ independent **and
-  consistent** studies" while §2 claims the dimensions are kept distinct so as not to score
-  the same fact twice (at most 5 signals overlap today, so this is an incoherence argument,
-  not yet a numerical one). Two rejected alternatives: *dropping* consistency from the sum
-  discards the real disagreement signal, and declaring single studies "unscorable" is not
-  buildable — it forces either per-signal renormalisation, which makes scores
-  non-comparable, or neutral treatment, which is the status quo.
+  `arm_strength` becomes `corroboration + rigor + specificity + plausibility` (0–8) plus the
+  consistency penalty, floored at 0.
+
+  **This is a coherence fix, not a discrimination fix, and must not be described as one.**
+  Work the arithmetic: today consistency is 24 / 174 / 28 across 0 / 1 / 2, i.e. 77% at one
+  value. After the change the 174 single-source signals and the 28 unanimous ones both map to
+  penalty 0, and only the 24 disagreeing signals carry a penalty — **202 of 226 (89%) at one
+  value.** As a variance contributor consistency becomes *more* degenerate, not less. What the
+  change removes is a meaningless additive constant, which **lowers the floor by about a point
+  and shifts the distribution left without spreading it.** The observed 4–7 concentration
+  becomes a 3–6 concentration of the same shape. Discrimination has to come from rigor,
+  specificity and plausibility, and of the planned rubric changes only change 2 (specificity)
+  targets one of those.
+
+  What the change is worth on its own terms: it stops inflating every score by a point it did
+  not earn; it keeps the information that exists (the 24 genuinely disagreeing signals now
+  cost something, where previously a single-source signal and a unanimous one were both
+  credited above a conflicted one); and it resolves a definitional double-count, since direct
+  corroboration=2 is *defined* as "three+ independent **and consistent** studies" while §2
+  claims the dimensions are kept distinct so as not to score the same fact twice (at most 5
+  signals overlap today, so this is an incoherence argument, not yet a numerical one). And it
+  is legible to an external methodologist: downgrade-only inconsistency is recognised on
+  sight, whereas "single study earns +1 for neutrality" is not defensible.
+
+  Two rejected alternatives: *dropping* consistency from the sum discards the real
+  disagreement signal, and declaring single studies "unscorable" is not buildable — it forces
+  either per-signal renormalisation, which makes scores non-comparable across signals, or
+  neutral treatment, which is the status quo.
+
+  Storage note: `consistency_score` now holds −2…0. `arm_strength` is a Postgres **generated
+  column** and its definition changes with it (migration 059), as does the `0 ≤ score ≤ 2`
+  CHECK constraint. The redefinition `GREATEST(0, corr + rigor + spec + plaus + consistency)`
+  is arithmetically identical to the old one for non-negative `consistency_score`, so it is
+  safe to apply before the rescore and produces no change to existing rows.
 
 ### 5e. Honest count of working dimensions
 
 After rubric changes 1, 2 and 4 and the §5d consistency change, the instrument has **three
 working dimensions** (rigor, specificity, plausibility), one corpus-limited dimension
-(corroboration, near-binary until the breadth pass), and one downgrade-only criterion
-(consistency). **Not five.** Any external description of the model should say so.
+(corroboration, capped at ≤1 for 92% of signals until the breadth pass), and one
+downgrade-only criterion (consistency, which is *more* concentrated after the change, not
+less — §5d). **Not five.** Any external description of the model, on the site or in a methods
+section, should say so.
+
+Expected shape after the changes, stated in advance so it can be checked rather than
+rationalised afterwards:
+
+- The distribution **shifts left by roughly a point and keeps its shape.** The 4–7
+  concentration becomes a 3–6 concentration. Neither the §5d change nor change 1 spreads it.
+- **Change 2 is the only planned change that should widen the distribution**, by splitting the
+  151 signals currently saturated at specificity 2 into surrogate-endpoint and
+  patient-relevant-endpoint groups. If specificity is still ~67% at max after the rescore, the
+  change did not work and should be reported as not having worked.
+- **Change 4 should lift the pathway arm off the floor.** If pathway corroboration is still
+  ≈0.26 and no pathway signal reaches 2, the anchors failed.
+- **Nothing in this round can fix direct corroboration.** It is bounded by single-source
+  ingestion, not by wording, and it will still read near-binary after the rescore. That is a
+  corpus limitation and belongs in the validation methods as one (see
+  `docs/validation-methods-draft.md`).
+
+The honest summary is that this round buys **coherence and defensibility**, not
+discrimination. Only change 2 targets discrimination, and one of five dimensions cannot be
+fixed from the rubric at all.
 
 ---
 
@@ -418,8 +499,10 @@ from which arms exist for the pair and their scores; the per-arm rows in
 Per (intervention, condition, aspect, **arm**):
 
 - `arm` (`direct` | `pathway` | `community` — the three evidence arms)
-- Five dimension scores (0–2) **+ five rationale strings** (slots interpreted per §2)
-- `arm_strength` (0–10, the pre-multiplier sum)
+- Four scored dimension scores (0–2) **+ one consistency penalty (−2…0)**, each with a
+  rationale string (slots interpreted per §2)
+- `arm_strength` (**0–8**, the pre-multiplier sum: `GREATEST(0, corroboration + rigor +
+  specificity + plausibility + consistency)`, where consistency is ≤ 0 per §5d)
 - `female_applicability_band` (F1–F6), `female_applicability_multiplier` (0.50–1.00),
   `female_applicability_rationale`
 - `arm_score` (0–10, strength × multiplier) — drives **rank and display only**
