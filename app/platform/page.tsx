@@ -475,7 +475,7 @@ export default async function PlatformPage() {
               <Link href="/about/external-references" style={{ color: "var(--moss)", textDecoration: "underline", textUnderlineOffset: 2 }}>
                 external references
               </Link>
-              , and the full scoring method, the five-dimension rubric, and the documented
+              , and the full scoring method, the graded rubric, and the documented
               limitations are on{" "}
               <Link href="/about/technical-architecture" style={{ color: "var(--moss)", textDecoration: "underline", textUnderlineOffset: 2 }}>
                 technical architecture

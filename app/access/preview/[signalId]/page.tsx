@@ -305,8 +305,9 @@ export default async function SignalDetail({
         <div className="container">
           <p className="kicker">How the score was reached, for this pair</p>
           <p className="prose-lg measure" style={{ marginBottom: 18 }}>
-            The composite score is the sum of five dimensions, each scored 0 to 2 by the model from the
-            evidence on file. Below is the sub-score this specific pair received on each, with what that
+            The composite score sums four evidence dimensions, each scored 0 to 2 by the
+            model from the evidence on file, plus a downgrade-only consistency penalty
+            (0 to &minus;2). Below is the sub-score this specific pair received on each, with what that
             dimension measures. It scored {c.score} of 10 overall, a {c.tier} reading
             {c.signalType ? `, from a ${c.signalType.replace(/_/g, " ")}` : ""}
             {c.evidenceStrength ? ` rated ${c.evidenceStrength} in strength` : ""}.

@@ -31,8 +31,8 @@ const PATHWAY_COLORS: Record<string, string> = {
 function buildPhases(totalSignals: number): { tag: string; sub: string; color: string; items: string[] }[] {
   const signalsLine =
     totalSignals > 0
-      ? `${totalSignals} signals, each scored against a published five-dimension rubric`
-      : "Signals scored against a published five-dimension rubric";
+      ? `${totalSignals} signals, each scored against the published graded rubric`
+      : "Signals scored against the published graded rubric";
 
   return [
     {

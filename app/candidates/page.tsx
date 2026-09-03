@@ -10,7 +10,7 @@ export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Candidates",
-  description: "Whel's full drug-repurposing candidate index, scored across five dimensions, tiered by confidence, and traceable to every source.",
+  description: "Whel's full drug-repurposing candidate index, scored across four evidence dimensions plus a downgrade-only consistency penalty, tiered by confidence, and traceable to every source.",
 };
 
 const TIER_ORDER = ["strong", "moderate", "emerging", "exploratory"] as const;
@@ -115,7 +115,8 @@ export default async function CandidatesPage() {
           </h1>
           <p className="lede" style={{ marginTop: 26, color: "var(--on-ink-2)" }}>
             Every candidate surfaces a drug already approved for one indication with evidence it
-            works for a women&apos;s health condition, scored across five dimensions, tiered, and
+            works for a women&apos;s health condition, scored across four evidence
+            dimensions plus a downgrade-only consistency penalty, tiered, and
             traceable to its sources. The full index is open below, grouped by condition and
             ordered strongest-first. Open any card for its complete evidence trail.
           </p>
