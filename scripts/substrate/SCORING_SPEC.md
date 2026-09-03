@@ -1,4 +1,4 @@
-# Whel substrate scoring model — v1.3 spec (arm-aware)
+# Whel substrate scoring model — v1.4 spec (arm-aware)
 
 *v1.2 adds thread-structure handling to the community arm (§2): the unit is the distinct
 account, confirming replies are discounted for independence, disagreeing replies feed
@@ -8,6 +8,16 @@ cap the score.*
 *v1.3 (after the first PMDD validation pass): a single systematic review caps at
 corroboration 1 (§2 direct), and an `on_topic` guard suppresses signals whose claims don't
 actually concern the pair, or whose intervention can't be resolved (§7).*
+
+*v1.4 (after the scoring test-retest and the lattice/degeneracy analysis): tiers drop from
+four to three and are assigned on `arm_strength`, with the female-applicability multiplier
+applied **after** tiering to rank and display only (§1, §5). The v1.3 cutoff freeze is
+**unfrozen and its "natural empty gaps" claim corrected** — two of three cutoffs sat on
+achievable values, one of them the mode (§5b). Two binding cutoff-placement rules are added.
+§5c–5e record the measured dimension degeneracy: three of five dimensions carry almost no
+information, the 74% middle tier is a mechanical consequence, and the instrument has three
+working dimensions, not five. A downgrade-only redefinition of consistency is proposed but
+**not yet adopted** (§5d).*
 
 
 *Status: DRAFT for review. Nothing in this file runs a model; it is the blueprint the
@@ -41,15 +51,30 @@ averaging across arms.**
 
 ```
 per arm:   arm_strength (0–10)  ×  female_applicability_multiplier (0.50–1.00)  =  arm_score
+           tier is assigned from arm_strength (§5); arm_score drives rank and display only
 per pair:  headline = anchor arm's score, with the other arms shown as separate
            corroborating strengths, plus a validation_status stamp (§6)
 ```
 
-Two principles carry through from v1, unchanged:
+Three principles carry through, the first two unchanged from v1:
 
 - **Female applicability can only discount, never inflate** (ceiling ×1.00). Full credit
   is earned by evidence generated *in women*; everything else is honestly marked down.
 - **We surface disagreement, we do not average it.** Contradictions stay first-class.
+- **Certainty and applicability are rated separately** (new in v1.4). The tier states how
+  certain the evidence is; the multiplier states how well it transfers to women. Collapsing
+  them into one number before tiering destroys the difference between *strong evidence that
+  may not transfer* and *moderate evidence generated in women* — `arm_strength 8 × 0.75` and
+  `arm_strength 6 × 1.00` both land on 6.0, and those are not the same claim. So **the tier
+  is computed on `arm_strength`, and the multiplier is applied afterwards, to ranking and
+  display.** This follows GRADE, which rates certainty of evidence independently of
+  applicability to the population of interest, then reports both.
+
+  Measured effect on the current corpus: 4 of 226 signals change tier (all `arm_strength 4
+  × 0.75 = 3.0`, previously dropped to the bottom tier by the discount alone). The top
+  cutoff moves nobody, because no signal above `arm_strength 7` currently carries a
+  multiplier below 1.00. The change is therefore near-inert today and adopted for being
+  structurally correct, not for its present effect size.
 
 ---
 
@@ -195,6 +220,12 @@ head-to-head disagreement** on the same drug–condition pair. When present for 
 intact. A flagged pair cannot score `consistency = 2` in the affected arm. Contradictions
 do not by themselves trigger the female-applicability multiplier.
 
+> **Dependency on §5d.** This rule is written against the 0/1/2 consistency scale. If the
+> proposed downgrade-only redefinition is adopted, "cannot score 2" becomes **"a flagged pair
+> must carry a consistency penalty of at least −1 in the affected arm"** — which is strictly
+> stronger, since the current rule permits a flagged pair to sit at the neutral 1 and pay
+> nothing. Restate here when §5d is decided.
+
 Disagreement is surfaced at **two levels**, and the UI labels which: a *clinical*
 contradiction (two studies disagree) reads differently from a *patient-reported* one
 (patients in the `community` arm disagree — e.g. the original poster reports benefit but
@@ -204,18 +235,149 @@ patient-reported contradiction is presented as heterogeneity of experience
 
 ---
 
-## 5. Tiers (recalibrated on the arm score, 0–10)
+## 5. Tiers — three, assigned on `arm_strength`
 
-| Tier | Arm score |
-|---|---|
-| **Strong** | ≥ 8.0 |
-| **Moderate** | 6.0 – 7.9 |
-| **Emerging** | 3.5 – 5.9 |
-| **Exploratory** | < 3.5 |
+| Tier | `arm_strength` | Signals (n=226) |
+|---|---|---|
+| **Strong** | > 7.5 | 12 (5%) |
+| **Emerging** | 3.5 – 7.5 | 167 (74%) |
+| **Exploratory** | < 3.5 | 47 (21%) |
 
-**FROZEN (2026-06-16)** against the real 228-signal distribution and hand-judged anchor
-pairs — see `CALIBRATION_RECORD.md`. The scores fall on a lattice and all three cutoffs
-land in natural empty gaps, so they were confirmed unchanged. Not re-tuned per run.
+Superseded the v1.3 four-tier scheme (Strong ≥8.0 / Moderate 6.0 / Emerging 3.5 /
+Exploratory, cut on `arm_score`) for the three reasons below. The 12 / 167 / 47 split is
+deliberately unbalanced and is **published as measured**. Placing a cutoff inside a
+concentration to even out the buckets would manufacture discrimination that is not in the
+data.
+
+### 5a. Why three tiers, not four
+
+Argued from the measured ceiling, not from aesthetics:
+
+- **Measured tier stability is 58.5%** (`scripts/test-retest-scoring.py`, 50 signals × 3
+  runs), with a median `arm_score` spread of 1.00/10 across runs. Four tiers claims finer
+  resolution than the instrument delivers.
+- **The external ceiling is lower than four tiers implies.** Human ROB2 risk-of-bias
+  agreement runs at κ ≈ 0.40; RobotReviewer hits 71.0% against Cochrane's 78.3%; Claude-3.5
+  Sonnet reaches micro-F1 0.71 on comparable grading. Four tiers asserts roughly twice the
+  resolution trained humans achieve on a *simpler binary* task.
+- **Three is the honest maximum:** two genuine precision levels plus an explicit uncertainty
+  band. Two tiers is stable but discards the gradation that is Whel's point; a continuous
+  score is honest but not actionable. Moving 4 → 3 drops boundary instability from ≈42% to
+  ≈13%.
+
+### 5b. Cutoff placement rules (binding)
+
+The v1.3 record claimed all three cutoffs "land in natural empty gaps." **That was wrong,**
+and it is corrected here. `arm_score` is a *lattice*, not a continuous variable — only 15
+distinct values occur across 226 signals. Two of the three frozen cutoffs sat exactly on
+achievable values, one of them the mode:
+
+- `arm_score = 6.0` → **47 signals** (the modal value, 21% of the corpus) — and a cutoff.
+- `arm_score = 8.0` → 8 signals — and a cutoff.
+- **55 of 226 signals (24%) sat exactly on a cutoff.**
+
+The dominant gap between adjacent achievable scores is 1.0, which is *exactly* the measured
+run-to-run noise. Every observed tier flip was therefore structurally a boundary crossing,
+not a judgement change. Two rules now bind all future cutoff placement:
+
+> **(a) No cutoff may fall on an achievable score value.**
+> **(b) No cutoff may fall on, or adjacent to, a modal value.**
+
+3.5 and 7.5 satisfy both on the current `arm_strength` lattice (integers 0–9; mode 6,
+near-mode 5; neither 3.5 nor 7.5 is achievable, and 7.5 is two steps from the mode).
+**These cutoffs are provisional on the current scale.** Rubric changes 1, 2 and 4 and the
+consistency change in §5d all move the achievable set and the mode, so rules (a) and (b)
+must be re-applied to the post-change distribution before the cutoffs are refrozen.
+
+### 5c. Why 74% land in the middle tier — a rubric property, not an evidence finding
+
+A reader who sees three tiers without this section has the wrong picture of what the middle
+tier means. It does **not** mean most evidence is moderate. It means the rubric has roughly
+two working dimensions. Measured distribution over the 226 active signals:
+
+| Dimension | 0 | 1 | 2 | mean | state |
+|---|---|---|---|---|---|
+| corroboration | 116 | 105 | **5** | 0.51 | effectively binary 0/1 |
+| rigor | 49 | 94 | 83 | 1.15 | **the only well-spread dimension** |
+| specificity | 32 | 43 | **151** | 1.53 | saturated, 67% at max |
+| plausibility | 92 | 112 | 22 | 0.69 | 50% at 1 |
+| consistency | 24 | **174** | 28 | 1.02 | near-constant, 77% at one value |
+
+The arithmetic is mechanical: a near-fixed consistency of 1 plus a usually-2 specificity is a
+**3-point floor before any real judgement happens**. Adding corroboration (0–1 in practice),
+rigor (0–2) and plausibility (0–1 mostly) yields a range of 3–7 — which is precisely the
+observed concentration (167 of 226 sit at `arm_strength` 4–7, and no signal has ever reached
+10; the observed maximum is 9).
+
+Per-arm means, which show the degeneracy is not uniform:
+
+| Arm | n | corrob. | rigor | specif. | plaus. | consist. |
+|---|---|---|---|---|---|---|
+| direct | 129 | 0.69 | 1.52 | 1.89 | 0.47 | 1.09 |
+| pathway | 87 | 0.26 | 0.71 | 1.05 | 0.95 | 0.93 |
+| community | 10 | 0.30 | 0.20 | 1.00 | 1.30 | 0.90 |
+
+### 5d. Root cause of each degenerate dimension (three different problems)
+
+Established by joining `substrate_signals.claim_ids` → `claims.document_id`. **82% of
+signals (186 of 226) rest on a single source document**; only 19 have 3+.
+
+- **Corroboration is corpus-limited, not mis-specified.** `corroboration_ceiling()` caps 1–2
+  documents → 1, so **207 of 226 signals (92%) cannot exceed 1 as arithmetic on the corpus**,
+  before judgement. Only 19 signals are eligible for a 2 and 3 earned it. The bar is not
+  unreachable and the ceiling is not a bug for the `direct` arm: 112 of 129 direct signals
+  rest on one document, and one document is not replication. **What the dimension currently
+  measures is corpus breadth — how many sources were ingested for that pair — which
+  coincides with evidence replication only once ingestion is complete.** No rubric wording
+  fixes this; only the breadth pass does.
+  - *Two known bugs in the `pathway` arm.* (i) `corroboration_ceiling()` bounds by distinct
+    *document* count, per its docstring "SCORING_SPEC §2 direct" — but §2 defines pathway
+    corroboration as convergence of independent *mechanistic lines*, and one Open Targets
+    record can carry several. Pathway must be exempted from the document-count ceiling, as
+    community already is. (ii) The ceiling is not even binding there: 15 pathway signals
+    have 3+ documents, all were permitted a 2, and **all 15 scored 1.** Change 4's pathway
+    anchors must define corroboration by line count, not study count.
+  - *Two stale artifacts.* Two `direct` signals carry corroboration 2 on only 2 documents.
+    They predate the ceiling commit and the next rescore will correctly cap them to 1.
+    Expect 5 → 3 signals at corroboration 2; that is a correction, not a regression.
+- **Specificity is a rubric problem.** Saturated at max because a surrogate/indirect endpoint
+  currently scores the same as a directly measured one. **Rubric change 2** (outcome and
+  endpoint directness, per GRADE indirectness) splits it and should genuinely de-saturate it.
+- **Consistency is a scoring-model problem.** It is not measuring agreement; it is tracking
+  claim count. Direct: consistency=1 has n=114 of which **108 are single-document** (avg 1.8
+  claims), while consistency=2 has n=13 (avg 4.7 claims). Pathway: consistency=0 has n=20,
+  **all** single-document (avg 1.0 claims); consistency=2 has n=14, **none** single-document
+  (avg 3.6 claims). Average claim count rises monotonically with the score in both arms. So
+  the spec's "single study → scored neutral, not penalized" is contributing a **silent fixed
+  +1 to the majority of the corpus** — the single largest contributor to the 3-point floor.
+
+  **Proposed change (NOT YET ADOPTED — needs sign-off before the rescore): make consistency
+  downgrade-only, following GRADE, which never lets inconsistency add certainty.**
+
+  | Value | Meaning |
+  |---|---|
+  | `0` | no penalty — unanimous, **or** single-source and not assessable |
+  | `−1` | mixed direction across sources |
+  | `−2` | direct conflict on the primary outcome |
+
+  `arm_strength` would become `corroboration + rigor + specificity + plausibility` (0–8)
+  plus the consistency penalty, floored at 0. Rationale: it keeps the information that
+  exists (the 24 genuinely disagreeing signals get penalised) and discards the information
+  that does not (174 free +1s); it removes the fixed floor; and it resolves a definitional
+  double-count, since direct corroboration=2 is *defined* as "three+ independent **and
+  consistent** studies" while §2 claims the dimensions are kept distinct so as not to score
+  the same fact twice (at most 5 signals overlap today, so this is an incoherence argument,
+  not yet a numerical one). Two rejected alternatives: *dropping* consistency from the sum
+  discards the real disagreement signal, and declaring single studies "unscorable" is not
+  buildable — it forces either per-signal renormalisation, which makes scores
+  non-comparable, or neutral treatment, which is the status quo.
+
+### 5e. Honest count of working dimensions
+
+After rubric changes 1, 2 and 4 and the §5d consistency change, the instrument has **three
+working dimensions** (rigor, specificity, plausibility), one corpus-limited dimension
+(corroboration, near-binary until the breadth pass), and one downgrade-only criterion
+(consistency). **Not five.** Any external description of the model should say so.
 
 ---
 
@@ -260,7 +422,8 @@ Per (intervention, condition, aspect, **arm**):
 - `arm_strength` (0–10, the pre-multiplier sum)
 - `female_applicability_band` (F1–F6), `female_applicability_multiplier` (0.50–1.00),
   `female_applicability_rationale`
-- `arm_score` (0–10, strength × multiplier) and `confidence_tier`
+- `arm_score` (0–10, strength × multiplier) — drives **rank and display only**
+- `confidence_tier` — one of three (§5), assigned from `arm_strength`, **not** `arm_score`
 - `contradiction_flag`, `num_contradictions`
 - `precision_note`, `needs_fulltext`
 - `source_tier` ('abstract' | 'fulltext')
@@ -301,8 +464,14 @@ mis-attached claims, all of which the scorer itself had flagged in its rationale
 
 ## 9. Calibration & validation (a planned gate, runs after the first scoring pass, before cutover)
 
-**STATUS: RUN AND REVIEWED 2026-06-16 — see `CALIBRATION_RECORD.md`.** Tier cutoffs
-frozen at 8.0 / 6.0 / 3.5 (confirmed against the real distribution, unchanged). Female
+**STATUS: RUN AND REVIEWED 2026-06-16 — see `CALIBRATION_RECORD.md`. SUPERSEDED IN PART BY
+v1.4 — the tier-cutoff portion of this record is withdrawn; see §5b.** The 2026-06-16 pass
+froze cutoffs at 8.0 / 6.0 / 3.5 on `arm_score` and recorded that they "land in natural
+empty gaps." Re-examination against the lattice showed that claim was false: 55 of 226
+signals (24%) sat exactly on a cutoff, and `arm_score = 6.0` was simultaneously a cutoff and
+the modal value. Cutoffs are now 3.5 / 7.5 on `arm_strength` and are **provisional**, to be
+refrozen under rules (a) and (b) after rubric changes 1, 2, 4 and the §5d consistency
+decision land. The remainder of the 2026-06-16 record stands. Female
 multiplier kept (×1.0 / ×0.75); the corpus exercises only F1 and F4, collapsing the axis
 to two levels, so the F5/F6 + Janusmed/FAERS external validation (§10b) is deferred until
 cross-condition repurposing introduces male-derived drugs. Other dials (§10c)
@@ -315,12 +484,16 @@ has run and been reviewed (§8.3).
 
 ### 10a. Tier cutoffs — recalibrate once against the real distribution
 
-The §5 cutoffs (Strong ≥ 8.0, Moderate 6.0–7.9, Emerging 3.5–5.9, Exploratory < 3.5) are a
-starting point only. The female-applicability multiplier pushes many pairs downward (a
-male-derived 9 lands at 5.4 at ×0.60), so the legacy 0–10 intuition will not carry over.
-**Step:** after the first scoring pass, plot where `arm_score` actually clusters, place the
-four cutoffs against that distribution plus ~10 hand-judged anchor pairs, then freeze them.
-Done once; not re-tuned per run.
+**Superseded by §5b.** The original commitment (place four cutoffs on the `arm_score`
+distribution plus ~10 hand-judged anchor pairs, then freeze) was carried out on 2026-06-16
+and is withdrawn on two counts. First, the multiplier argument that motivated cutting on
+`arm_score` ("a male-derived 9 lands at 5.4 at ×0.60") is exactly the collision §1 now
+rejects: that signal is strong evidence that may not transfer, and it should tier as Strong
+and be *ranked* down, not tiered down. Second, eyeballing clusters is not sufficient when
+the variable is a 15-value lattice whose adjacent-value gap equals the measured noise; rules
+(a) and (b) replace the eyeball. **Remaining step:** re-derive 3.5 / 7.5 on the
+post-rubric-change `arm_strength` lattice under rules (a) and (b), then refreeze. Done once;
+not re-tuned per run.
 
 ### 10b. Female-applicability bands — validate the *separation*, not just the definitions
 

@@ -45,11 +45,34 @@ Exploratory 53.**
 
 ---
 
-## 2. Tier cutoffs — FROZEN at Strong ≥ 8.0 / Moderate ≥ 6.0 / Emerging ≥ 3.5
+## 2. Tier cutoffs — ~~FROZEN at Strong ≥ 8.0 / Moderate ≥ 6.0 / Emerging ≥ 3.5~~ WITHDRAWN 2026-08
 
-**Decision: keep the provisional cutoffs unchanged.** They were set on reason; the real
-distribution and hand-judged anchor pairs confirm them. All three land in or beside a
-natural lattice gap.
+> **WITHDRAWN — see `SCORING_SPEC.md` §5b.** This section's central claim is false, and the
+> histogram in §1 above contains the disproof. The prose says all three cutoffs "land in or
+> beside a natural lattice gap"; *beside* a gap is *on* a bar. The §1 histogram marks the
+> Moderate cut at 6.0, which is the **47-signal modal bar**, and the Strong cut at 8.0, which
+> is an 8-signal bar — while its own gap list (1.5, 2.5, 5.5, 6.5, 7.5, 8.5) names the empty
+> positions that were available and not used. **55 of 228 signals (24%) sat exactly on a
+> cutoff.** Because the dominant gap between adjacent achievable values is 1.0 and the
+> measured run-to-run noise is also 1.0 (`scripts/test-retest-scoring.py`, median `arm_score`
+> spread 1.00/10), every observed tier flip was structurally a boundary crossing rather than
+> a change of judgement. Measured tier stability was 58.5%.
+>
+> Two further errors, both corrected in v1.4: cutting on `arm_score` rather than
+> `arm_strength` conflates certainty with applicability (the §2 anchor note below treats a
+> "strength-5 ×0.75 mechanistic lead" as equivalent to a strength-4 ×1.0 signal, which
+> collapses a real distinction), and four tiers claims more resolution than the instrument
+> delivers. Replaced by **three tiers cut at 3.5 / 7.5 on `arm_strength`**, with the
+> multiplier applied after tiering, and by two binding placement rules: no cutoff on an
+> achievable value, and none on or adjacent to a modal value.
+>
+> The anchor-pair reasoning below is retained as a judgement record — it remains useful
+> evidence about *which pairs belong above and below a line* — but the numeric cutoffs it
+> endorses are not in force. Everything in §3 onward stands.
+
+**Decision (2026-06-16, now withdrawn): keep the provisional cutoffs unchanged.** They were
+set on reason; the real distribution and hand-judged anchor pairs confirm them. All three
+land in or beside a natural lattice gap.
 
 Anchor pairs examined at each boundary:
 
