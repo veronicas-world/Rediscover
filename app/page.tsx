@@ -7,7 +7,7 @@ import Pipeline from "@/app/components/Pipeline";
 import HomeTierMatrix, { type MatrixRow } from "@/app/components/HomeTierMatrix";
 import CandidateCard from "@/app/components/CandidateCard";
 import { getShowcasePair, getSubstrateHomeData } from "@/lib/substrate-candidates";
-import { CURRENT_SPEC } from "@/lib/scoring-history.mjs";
+import { CURRENT_METHODOLOGY_VERSION } from "@/lib/scoring-history.mjs";
 import ScrollEffects from "@/app/components/ScrollEffects";
 
 export const dynamic = "force-dynamic";
@@ -185,7 +185,7 @@ export default async function Home() {
                   href="/about/methodology/changelog"
                   style={{ color: "var(--on-ink-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
                 >
-                  methodology {CURRENT_SPEC.label}
+                  methodology {CURRENT_METHODOLOGY_VERSION}
                 </Link>
               </p>
 

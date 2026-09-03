@@ -147,7 +147,7 @@ const FRAMEWORK_INTRO =
 const RUBRIC: { dim: string; note: string; s0: string; s1: string; s2: string }[] = [
   {
     dim: "Corroboration",
-    note: "Independent corroboration, kept distinct from rigor so study design is not credited twice. Its top score requires sources that are both independent and in agreement, which overlaps with consistency — one reason consistency was reduced to a downgrade-only penalty in v1.4.",
+    note: "Independent corroboration, kept distinct from rigor so study design is not credited twice. Its top score requires sources that are both independent and in agreement, which overlaps with consistency — one reason consistency was reduced to a downgrade-only penalty in the current rubric.",
     s0: "A single source (a lone review or primary study).",
     s1: "A single synthesis, or two independent sources.",
     s2: "Three or more genuinely independent, consistent sources (or one large, low-bias pivotal trial).",

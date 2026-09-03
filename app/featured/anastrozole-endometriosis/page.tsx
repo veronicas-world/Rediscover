@@ -339,7 +339,7 @@ export default async function AromataseInhibitorsSignalPage() {
 
           {/* 03 Reading the score — the rubric correction, rendered from data.
               NOTE: no numeric argument in this section is written into the prose.
-              Every figure comes from the frozen v1.3 snapshot or the live row, via
+              Every figure comes from the frozen v4.2 snapshot or the live row, via
               lib/scoring-history. A paragraph that spelled out "this dimension
               scored 2, that one scored 1, and that one point is the difference"
               is exactly what broke here, and it must not be reintroduced. */}
@@ -358,7 +358,7 @@ export default async function AromataseInhibitorsSignalPage() {
 
               {contrast && (
                 <p style={BODY}>
-                  Under {PREVIOUS_SPEC.label} this pair and the{" "}
+                  Under {PREVIOUS_SPEC.methodology} this pair and the{" "}
                   <Link href="/featured" style={LINK}>vaginal-estrogen pair</Link> scored
                   identically on{" "}
                   {contrast.shared.length === 1
@@ -374,7 +374,7 @@ export default async function AromataseInhibitorsSignalPage() {
                     <>
                       {" "}
                       Every one of those differing dimensions is a dimension{" "}
-                      {CURRENT_SPEC.label} no longer scores the same way.
+                      {CURRENT_SPEC.methodology} no longer scores the same way.
                     </>
                   )}
                 </p>
@@ -405,7 +405,7 @@ export default async function AromataseInhibitorsSignalPage() {
                 </a>
                 , inconsistency can only take certainty away, never add it: disagreement
                 between studies is a reason to downgrade, and a single study is simply not
-                assessable for consistency. {CURRENT_SPEC.label} adopts that. Consistency
+                assessable for consistency. {CURRENT_SPEC.methodology} adopts that. Consistency
                 is now a penalty in the range{" "}
                 {CURRENT_SPEC.consistencyRange[0]} to {CURRENT_SPEC.consistencyRange[1]},
                 applied only when sources actually disagree, which drops the maximum
@@ -438,11 +438,11 @@ export default async function AromataseInhibitorsSignalPage() {
                   >
                     <span>Same evidence, both rubrics</span>
                     <span>
-                      {delta.before.spec.label} {delta.before.strength}/{delta.before.max}
+                      {delta.before.spec.methodology} {delta.before.strength}/{delta.before.max}
                       {" \u2192 "}
                       {delta.rescored
-                        ? `${delta.after.spec.label} ${delta.after.strength}/${delta.after.max}`
-                        : `${delta.after.spec.label} pending rescore`}
+                        ? `${delta.after.spec.methodology} ${delta.after.strength}/${delta.after.max}`
+                        : `${delta.after.spec.methodology} pending rescore`}
                     </span>
                   </div>
 
@@ -462,8 +462,8 @@ export default async function AromataseInhibitorsSignalPage() {
                       }}
                     >
                       <span>Dimension</span>
-                      <span>{delta.before.spec.label}</span>
-                      <span>{delta.after.spec.label}</span>
+                      <span>{delta.before.spec.methodology}</span>
+                      <span>{delta.after.spec.methodology}</span>
                       <span>What changed</span>
                     </div>
 
@@ -519,7 +519,7 @@ export default async function AromataseInhibitorsSignalPage() {
                       }}
                     >
                       The revised rubric is published and in force, but the corpus has not
-                      yet been regraded under it, so the {CURRENT_SPEC.label} column is
+                      yet been regraded under it, so the {CURRENT_SPEC.methodology} column is
                       blank rather than guessed. Regrading the corpus is a single
                       deliberate pass; this page will fill in when it runs.
                     </div>

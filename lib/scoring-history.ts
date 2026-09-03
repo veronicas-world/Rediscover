@@ -13,6 +13,8 @@ export type DimKey =
 
 export interface SpecVersion {
   label: string;
+  /** Public-facing methodology version (v4.x); the only spec version the site shows. */
+  methodology: string;
   dimensionCount: number;
   armStrengthMax: number;
   tieredOn: "arm_score" | "arm_strength";
@@ -74,6 +76,8 @@ export interface Contrast {
 export const SPEC_VERSIONS = impl.SPEC_VERSIONS as unknown as Record<string, SpecVersion>;
 export const CURRENT_SPEC = impl.CURRENT_SPEC as unknown as SpecVersion;
 export const PREVIOUS_SPEC = impl.PREVIOUS_SPEC as unknown as SpecVersion;
+export const CURRENT_METHODOLOGY_VERSION = impl.CURRENT_METHODOLOGY_VERSION as unknown as string;
+export const PREVIOUS_METHODOLOGY_VERSION = impl.PREVIOUS_METHODOLOGY_VERSION as unknown as string;
 export const DIM_ORDER = impl.DIM_ORDER as unknown as DimKey[];
 export const v13Distribution = impl.v13Distribution as unknown as Record<string, unknown>;
 export const v13Meta = impl.v13Meta as unknown as Record<string, unknown>;

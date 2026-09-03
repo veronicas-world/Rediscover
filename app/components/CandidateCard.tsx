@@ -38,6 +38,9 @@ export interface Candidate {
   evidenceCaveat?: string;
   /** True when the pair is a documented negative (negative note or negative published evidence). */
   documentedNegative?: boolean;
+  /** True while the live row still carries the prior rubric's grade and the
+   *  regrade has not run; the score-by-metric table is labelled accordingly. */
+  pendingRescore?: boolean;
   /** Pre-demotion reading on the anchor arm, set when the tier was demoted by the
    *  contradiction rule — lets the display reconcile "Exploratory" with the
    *  strong direct evidence underneath it. */
@@ -358,7 +361,7 @@ function ArmStrengths({ arms }: { arms: NonNullable<Candidate["arms"]> }) {
  * Compact per-dimension SCORES for the anchor arm (the five categories, 0–2 each).
  * The model's written rationale for each lives in the full breakdown, not the card.
  */
-function ArmDimensions({ arm }: { arm: NonNullable<Candidate["arms"]>[number] }) {
+function ArmDimensions({ arm, pendingRescore }: { arm: NonNullable<Candidate["arms"]>[number]; pendingRescore?: boolean }) {
   const meta = ARM_META[arm.arm];
   return (
     <div style={{ marginTop: 11, borderTop: "1px solid var(--rule)", paddingTop: 9 }}>
@@ -368,6 +371,14 @@ function ArmDimensions({ arm }: { arm: NonNullable<Candidate["arms"]>[number] })
       }}>
         Score by metric · {meta.label} arm
       </div>
+      {pendingRescore && (
+        <div style={{
+          fontFamily: "var(--font-plex-mono, ui-monospace, monospace)", fontSize: 9.5,
+          letterSpacing: "0.04em", color: "var(--brick)", marginBottom: 6,
+        }}>
+          Prior-rubric grade · pending regrade
+        </div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 18, rowGap: 4 }}>
         {arm.dimensions.map((d) => (
           <div key={d.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
@@ -591,7 +602,7 @@ export default function CandidateCard({ c }: { c: Candidate }) {
                 <span className="m" style={{ color: "var(--brick)" }}><b>⚠ Contradiction</b></span>
               )}
             </div>
-            {anchorArm && <ArmDimensions arm={anchorArm} />}
+            {anchorArm && <ArmDimensions arm={anchorArm} pendingRescore={c.pendingRescore} />}
           </>
         ) : (
           <div className="c-meta">

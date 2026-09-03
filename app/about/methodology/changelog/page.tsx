@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CURRENT_METHODOLOGY_VERSION } from "@/lib/scoring-history.mjs";
 
 export const metadata = {
   title: "Methodology changelog | Whel",
@@ -94,10 +95,9 @@ export default function MethodologyChangelogPage() {
           </nav>
 
           <div style={{ ...EYEBROW, marginBottom: 16 }}>
-            {/* Keep in step with the newest ENTRY_EYEBROW below — it names the
-                live methodology version and will drift if a new entry is added
-                without updating it. */}
-            Revision history · current version v4.3
+            {/* Derived from CURRENT_METHODOLOGY_VERSION so the header stays in step
+                with the spec the live data was produced under. */}
+            Revision history · current version {CURRENT_METHODOLOGY_VERSION}
           </div>
 
           <h1

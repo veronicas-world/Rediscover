@@ -7,7 +7,7 @@ import { tierRanges } from "@/lib/substrate-helpers";
 export const metadata: Metadata = {
   title: "Signal types & scoring criteria | Whel",
   description:
-    "Whel reads each drug-condition pair through three evidence arms (direct research, pathway insights, and community forum reports), each scored on five arm-tuned dimensions, then discounted by a female-applicability multiplier into a confidence tier.",
+    "Whel reads each drug-condition pair through three evidence arms (direct research, pathway insights, and community forum reports), each scored on four evidence dimensions plus a downgrade-only consistency penalty, then sorted into a confidence tier on the undiscounted strength.",
 };
 
 const INLINE: React.CSSProperties = {
@@ -174,10 +174,10 @@ export default function SignalTypesPage() {
             Arm strength × multiplier determines the tier.
           </h2>
           <p className="lede" style={{ color: "var(--body)", marginBottom: 20, maxWidth: "70ch" }}>
-            The final arm score (strength 0–10 × applicability multiplier) sorts into four tiers.
-            The cutoffs were set on reason, then frozen against the real score distribution and
-            hand-judged boundary pairs, so they carve the board where the confidence boundaries
-            actually fall.
+            Arm strength (0–8) sorts into three tiers; the female-applicability multiplier moves
+            rank and display only, applied after tiering. The cutoffs were set on reason, then
+            frozen against the real score distribution and hand-judged boundary pairs, so they
+            carve the board where the confidence boundaries actually fall.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
             {TIERS.map((t) => (
@@ -190,6 +190,11 @@ export default function SignalTypesPage() {
               </div>
             ))}
           </div>
+          <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "var(--muted)", marginTop: 18, maxWidth: "70ch" }}>
+            A spanning badge (e.g. Moderate–Emerging) reads at its lower tier: the score sits within
+            the noise band of a cutoff, so the grade holds at the lower bound until regrade rather
+            than claiming a precision the run-to-run spread does not support.
+          </p>
           <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "var(--muted)", marginTop: 18, maxWidth: "70ch" }}>
             Contradictions in the underlying evidence cap the consistency score and are shown
             explicitly rather than averaged away, following the{" "}

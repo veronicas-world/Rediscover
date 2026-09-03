@@ -359,14 +359,14 @@ export default async function FeaturedSignalPage() {
               {delta && (
                 <p style={BODY}>
                   This signal was also caught by a correction to the rubric itself.
-                  Under {PREVIOUS_SPEC.label} it was separated from the{" "}
+                  Under {PREVIOUS_SPEC.methodology} it was separated from the{" "}
                   <Link href="/featured/anastrozole-endometriosis" style={LINK}>
                     aromatase-inhibitor walkthrough
                   </Link>{" "}
                   by the consistency dimension alone, which credited a source for
                   containing several findings that agreed and marked one down for
                   containing only a single finding. Having one study is not evidence
-                  of inconsistency, so {CURRENT_SPEC.label} reduced consistency to a
+                  of inconsistency, so {CURRENT_SPEC.methodology} reduced consistency to a
                   penalty that applies only when sources genuinely disagree. The two
                   signals are closer together than the earlier grade implied. The
                   companion page shows that correction in full, with both sets of

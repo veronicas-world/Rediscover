@@ -30,6 +30,7 @@ import {
   num, tierLc, lvl, clip, sourceLabel, sourceHref, claimRank,
   toArm, deriveHeadline, tierDisplay, tierKey,
 } from "./substrate-helpers";
+import { rubricDelta, frozenV13BySignalId } from "./scoring-history.mjs";
 
 type Row = Record<string, unknown>;
 type ArmKey = "direct" | "pathway" | "community";
@@ -278,6 +279,14 @@ async function getAllCandidates(): Promise<Candidate[]> {
     const scoreTier = tierDisplay(anchor.armScore, anchor.tier);
     const displayTier = demote && scoreTier !== "exploratory" ? "exploratory" : scoreTier;
 
+    // Whether the live row has been regraded under the current rubric yet, derived
+    // from the data (not a hand flag): a v1.4 consistency score is <= 0 by
+    // construction, and any change to the summed strength also proves a regrade.
+    // Until then the score-by-metric table shows the prior rubric's grade.
+    const _signalId = `${iid}__${cid}`;
+    const _delta = rubricDelta(anchor.dimensions, frozenV13BySignalId(_signalId, anchor.arm));
+    const pendingRescore = _delta ? !_delta.rescored : false;
+
     n += 1;
     out.push({
       id: `WHEL-C-${String(n).padStart(3, "0")}`,
@@ -320,6 +329,9 @@ async function getAllCandidates(): Promise<Candidate[]> {
           }
         : undefined,
       documentedNegative: !!(negativeNote || negativeEvidence),
+      // True while the live row still carries the prior rubric's grade and the
+      // regrade has not run; the card labels the score-by-metric table accordingly.
+      pendingRescore,
       signalType: anchor.arm,
       evidenceStrength: displayTier,
       claims,
