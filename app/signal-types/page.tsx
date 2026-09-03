@@ -3,6 +3,13 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import SignalTypesAccordion from "./SignalTypesAccordion";
 import { tierRanges } from "@/lib/substrate-helpers";
+import {
+  RUBRIC_ANCHORS,
+  CONSISTENCY_PENALTY,
+  GRADE_MAPPING,
+  GRADE_SUMMARY,
+  RUBRIC_SOURCES,
+} from "@/lib/rubric-anchors";
 
 export const metadata: Metadata = {
   title: "Signal types & scoring criteria | Whel",
@@ -74,11 +81,11 @@ export default function SignalTypesPage() {
           </h1>
           <p className="lede" style={{ color: "var(--on-ink-2)", marginTop: 24, maxWidth: "64ch" }}>
             Whel reads each drug-condition pair through three evidence arms, each pulling a
-            different kind of source and held to its own scoring bar. Every arm is scored on the
-            same five dimensions, but each dimension is interpreted on that arm&rsquo;s terms, so
-            a patient report is never judged on clinical-trial criteria. The arm scores are then
-            discounted by how far the evidence was generated <em>in women</em>, and sorted into a
-            confidence tier.
+            different kind of source and held to its own scoring bar. Every arm is scored on
+            four evidence dimensions plus a downgrade-only consistency penalty, with each
+            dimension interpreted on that arm&rsquo;s terms, so a patient report is never
+            judged on clinical-trial criteria. The arm strength is sorted into a confidence
+            tier, and a female-applicability multiplier is then applied to rank and display.
           </p>
         </div>
       </section>
@@ -106,6 +113,202 @@ export default function SignalTypesPage() {
         </div>
       </section>
 
+      {/* ── The rubric ───────────────────────────────────────────────────── */}
+      <section className="surface-paper section tight">
+        <div className="container" style={{ maxWidth: 940 }}>
+          <div className="eyebrow" style={{ marginBottom: 14 }}>The rubric</div>
+          <h2 className="h2" style={{ marginBottom: 16, maxWidth: "30ch" }}>
+            Four evidence dimensions, scored per arm, plus a downgrade-only consistency penalty.
+          </h2>
+          <p className="lede" style={{ color: "var(--body)", marginBottom: 28, maxWidth: "72ch" }}>
+            Each arm is scored on the same four dimensions, but what each dimension measures is
+            tuned to the arm. A randomized trial and a patient forum post are not judged with the
+            same ruler: rigor for a trial means low risk of bias, while rigor for a patient report
+            means the patient described the symptom, dose, and timing clearly. Every score carries
+            a short rationale citing the claims behind it, so the number is never opaque.
+          </p>
+
+          {/* ── Per-arm anchor tables, rendered from RUBRIC_ANCHORS ────────── */}
+          {Object.entries(RUBRIC_ANCHORS).map(([armKey, arm]) => (
+            <div key={armKey} style={{ marginBottom: 32 }}>
+              <h3
+                className="font-heading"
+                style={{ fontSize: "1.25rem", fontWeight: 500, color: "var(--ink)", letterSpacing: "-0.01em", marginBottom: 6 }}
+              >
+                {arm.label}
+              </h3>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: 14, maxWidth: "68ch" }}>
+                {arm.intro}
+              </p>
+              <div style={{ overflowX: "auto", border: "1px solid var(--line)" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", minWidth: 640 }}>
+                  <thead>
+                    <tr style={{ background: "var(--bone-2)", borderBottom: "1px solid var(--line)" }}>
+                      {["Dimension", "What it measures", "0", "1", "2"].map((h) => (
+                        <th key={h} style={{ textAlign: h === "0" || h === "1" || h === "2" ? "center" : "left", padding: "9px 12px", fontFamily: "var(--font-plex-mono, monospace)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {arm.dimensions.map((d) => (
+                      <tr key={d.key} style={{ borderBottom: "1px solid var(--line)", verticalAlign: "top" }}>
+                        <td style={{ padding: "10px 12px", fontWeight: 600, color: "var(--ink)", whiteSpace: "nowrap" }}>{d.label}</td>
+                        <td style={{ padding: "10px 12px", color: "var(--body)", maxWidth: "22ch" }}>{d.means}</td>
+                        <td style={{ padding: "10px 12px", color: "var(--muted)", textAlign: "center" }}>{d.anchors[0]}</td>
+                        <td style={{ padding: "10px 12px", color: "var(--body)", textAlign: "center" }}>{d.anchors[1]}</td>
+                        <td style={{ padding: "10px 12px", color: "var(--ink)", textAlign: "center" }}>{d.anchors[2]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+
+          {/* ── Consistency penalty ───────────────────────────────────────── */}
+          <div style={{ marginTop: 36, marginBottom: 32 }}>
+            <h3
+              className="font-heading"
+              style={{ fontSize: "1.25rem", fontWeight: 500, color: "var(--ink)", letterSpacing: "-0.01em", marginBottom: 10 }}
+            >
+              {CONSISTENCY_PENALTY.label}
+            </h3>
+            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--body)", marginBottom: 18, maxWidth: "72ch" }}>
+              {CONSISTENCY_PENALTY.summary}
+            </p>
+            <div style={{ overflowX: "auto", border: "1px solid var(--line)", marginBottom: 18 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", minWidth: 480 }}>
+                <thead>
+                  <tr style={{ background: "var(--bone-2)", borderBottom: "1px solid var(--line)" }}>
+                    {["Value", "What it means"].map((h) => (
+                      <th key={h} style={{ textAlign: "left", padding: "9px 12px", fontFamily: "var(--font-plex-mono, monospace)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {CONSISTENCY_PENALTY.rows.map((r) => (
+                    <tr key={r.value} style={{ borderBottom: "1px solid var(--line)", verticalAlign: "top" }}>
+                      <td style={{ padding: "10px 12px", fontFamily: "var(--font-plex-mono, monospace)", color: "var(--ink)", whiteSpace: "nowrap" }}>{r.value}</td>
+                      <td style={{ padding: "10px 12px", color: "var(--body)" }}>{r.meaning}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p style={{ fontSize: "0.85rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: 6, maxWidth: "72ch" }}>
+              The trigger for each penalty depends on the arm:
+            </p>
+            <div style={{ overflowX: "auto", border: "1px solid var(--line)" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", minWidth: 640 }}>
+                <thead>
+                  <tr style={{ background: "var(--bone-2)", borderBottom: "1px solid var(--line)" }}>
+                    {["Arm", "0 (no penalty)", "−1", "−2"].map((h) => (
+                      <th key={h} style={{ textAlign: "left", padding: "9px 12px", fontFamily: "var(--font-plex-mono, monospace)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(RUBRIC_ANCHORS).map(([armKey, arm]) => (
+                    <tr key={armKey} style={{ borderBottom: "1px solid var(--line)", verticalAlign: "top" }}>
+                      <td style={{ padding: "10px 12px", fontWeight: 600, color: "var(--ink)", whiteSpace: "nowrap" }}>{arm.label}</td>
+                      <td style={{ padding: "10px 12px", color: "var(--muted)" }}>{arm.consistency.anchors["0"]}</td>
+                      <td style={{ padding: "10px 12px", color: "var(--body)" }}>{arm.consistency.anchors["−1"]}</td>
+                      <td style={{ padding: "10px 12px", color: "var(--ink)" }}>{arm.consistency.anchors["−2"]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── GRADE provenance ──────────────────────────────────────────── */}
+          <div style={{ marginTop: 36, marginBottom: 32 }}>
+            <h3
+              className="font-heading"
+              style={{ fontSize: "1.25rem", fontWeight: 500, color: "var(--ink)", letterSpacing: "-0.01em", marginBottom: 10 }}
+            >
+              How this maps to GRADE
+            </h3>
+            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--body)", marginBottom: 18, maxWidth: "72ch" }}>
+              GRADE is the standard framework for grading the certainty of evidence. Whel&rsquo;s
+              rubric is not GRADE, but it is built on GRADE where GRADE applies. The table below
+              states, for each dimension, what it maps to in GRADE and whether it is adapted or
+              invented.
+            </p>
+            <div style={{ overflowX: "auto", border: "1px solid var(--line)" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", minWidth: 620 }}>
+                <thead>
+                  <tr style={{ background: "var(--bone-2)", borderBottom: "1px solid var(--line)" }}>
+                    {["Whel dimension", "GRADE equivalent", "Status"].map((h) => (
+                      <th key={h} style={{ textAlign: "left", padding: "9px 12px", fontFamily: "var(--font-plex-mono, monospace)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {GRADE_MAPPING.map((g) => (
+                    <tr key={g.whel} style={{ borderBottom: "1px solid var(--line)", verticalAlign: "top" }}>
+                      <td style={{ padding: "10px 12px", fontWeight: 600, color: "var(--ink)" }}>{g.whel}</td>
+                      <td style={{ padding: "10px 12px", color: "var(--body)" }}>{g.grade}</td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <span style={{
+                          fontFamily: "var(--font-plex-mono, monospace)",
+                          fontSize: "10px",
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: g.status === "adapted" ? "var(--moss)" : g.status === "partial" ? "var(--khaki)" : "var(--brick)",
+                        }}>
+                          {g.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {GRADE_MAPPING.filter((g) => g.note).length > 0 && (
+              <div style={{ marginTop: 14 }}>
+                {GRADE_MAPPING.filter((g) => g.note).map((g) => (
+                  <p key={g.whel} style={{ fontSize: "0.85rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: 4, maxWidth: "72ch" }}>
+                    <strong style={{ color: "var(--ink)" }}>{g.whel}:</strong> {g.note}
+                  </p>
+                ))}
+              </div>
+            )}
+            <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "var(--ink)", fontWeight: 500, marginTop: 18, maxWidth: "72ch" }}>
+              {GRADE_SUMMARY}
+            </p>
+          </div>
+
+          {/* ── Sources ───────────────────────────────────────────────────── */}
+          <div style={{ marginTop: 28 }}>
+            <h3
+              className="font-heading"
+              style={{ fontSize: "1.25rem", fontWeight: 500, color: "var(--ink)", letterSpacing: "-0.01em", marginBottom: 10 }}
+            >
+              Sources
+            </h3>
+            <p style={{ fontSize: "0.85rem", lineHeight: 1.7, color: "var(--muted)", maxWidth: "72ch" }}>
+              The rubric draws on the following frameworks and sources:
+            </p>
+            <ul style={{ marginTop: 8, paddingLeft: 18, fontSize: "0.85rem", lineHeight: 1.8, color: "var(--body)" }}>
+              {RUBRIC_SOURCES.map((s) => (
+                <li key={s.href}>
+                  <A h={s.href}>{s.label}</A>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* ── Female-applicability multiplier ───────────────────────────────── */}
       <section className="surface-paper section tight">
         <div className="container" style={{ maxWidth: 940 }}>
@@ -114,10 +317,11 @@ export default function SignalTypesPage() {
             Every arm&rsquo;s score is discounted by how far its evidence was generated in women.
           </h2>
           <p className="lede" style={{ color: "var(--body)", marginBottom: 12, maxWidth: "70ch" }}>
-            This is the correction the rest of drug development skips. Each arm&rsquo;s 0–10 strength
-            is multiplied by a bounded factor judged on whether <em>that arm&rsquo;s</em> evidence
-            is in or about women. The same drug can carry a different multiplier in different arms:
-            a women&rsquo;s-health forum is inherently female (F1), while a male-derived trial sits at F5.
+            This is the correction the rest of drug development skips. Each arm&rsquo;s strength
+            is sorted into a confidence tier, and the multiplier is then applied to rank and
+            display — judged on whether <em>that arm&rsquo;s</em> evidence is in or about women.
+            The same drug can carry a different multiplier in different arms: a women&rsquo;s-health
+            forum is inherently female (F1), while a male-derived trial sits at F5.
           </p>
           <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--body)", marginBottom: 20, maxWidth: "70ch" }}>
             The bands follow the reporting standards that ask for sex to be analyzed, not assumed:
@@ -157,10 +361,11 @@ export default function SignalTypesPage() {
             <strong>Current state:</strong> In the present corpus, only F1 (&times;1.00, evidence
             generated in women) and F4 (&times;0.75, female representation not stated) have been
             assigned. F2, F3, F5 and F6 require sex-stratified analysis or male-only population
-            data that the current source documents do not report. The multiplier is therefore
-            effectively &ldquo;evidence in women&rdquo; (F1) versus &ldquo;sex data absent&rdquo;
-            (F4) today. The six-band framework is designed for the corpus to grow into; the
-            scoring code implements all six bands and will assign them as the evidence base
+            data that the current source documents do not report. Pathway records (Open Targets,
+            SIDER, AEMS) carry no sex data at all, so pathway arms always land at F4. The multiplier
+            is therefore effectively &ldquo;evidence in women&rdquo; (F1) versus &ldquo;sex data
+            absent&rdquo; (F4) today. The six-band framework is designed for the corpus to grow into;
+            the scoring code implements all six bands and will assign them as the evidence base
             expands to include studies that report sex breakdowns.
           </p>
         </div>
