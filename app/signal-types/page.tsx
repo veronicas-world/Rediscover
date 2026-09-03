@@ -93,7 +93,7 @@ export default function SignalTypesPage() {
       {/* ── Framing + arms ────────────────────────────────────────────────── */}
       <section className="surface-bone section">
         <div className="container">
-          <div style={{ maxWidth: 800, marginBottom: 44 }}>
+          <div style={{ maxWidth: 800, marginBottom: 44, margin: "0 auto" }}>
             <div className="eyebrow" style={{ marginBottom: 14 }}>The three arms</div>
             <h2 className="h2" style={{ marginBottom: 18, maxWidth: "22ch" }}>
               Three arms, scored separately and reported side by side.
@@ -107,7 +107,7 @@ export default function SignalTypesPage() {
             </p>
           </div>
 
-          <div style={{ maxWidth: 940 }}>
+          <div style={{ maxWidth: 940, margin: "0 auto" }}>
             <SignalTypesAccordion />
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function SignalTypesPage() {
           ))}
 
           {/* ── Consistency penalty ───────────────────────────────────────── */}
-          <div style={{ marginTop: 36, marginBottom: 32 }}>
+          <div id="consistency-penalty" style={{ marginTop: 36, marginBottom: 32 }}>
             <h3
               className="font-heading"
               style={{ fontSize: "1.25rem", fontWeight: 500, color: "var(--ink)", letterSpacing: "-0.01em", marginBottom: 10 }}

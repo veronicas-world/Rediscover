@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { RUBRIC_ANCHORS } from "@/lib/rubric-anchors";
 
 const LINK = {
   color: "var(--moss)",
@@ -23,14 +24,28 @@ const ARM_COLOR: Record<string, string> = {
   community: "var(--arm-community)",
 };
 
+// Anchor rows are sourced from lib/rubric-anchors.mjs — the same data file the
+// rubric section on this page uses. Two hand-maintained copies of the anchors
+// is how the old scale drifted into the accordion; sharing the data file
+// means a rubric change updates both.
 type Dim = { slot: string; means: string; l0: string; l1: string; l2: string };
+
+function armDims(armKey: string): Dim[] {
+  const arm = RUBRIC_ANCHORS[armKey as "direct" | "pathway" | "community"];
+  return arm.dimensions.map((d) => ({
+    slot: d.label,
+    means: d.means,
+    l0: d.anchors[0],
+    l1: d.anchors[1],
+    l2: d.anchors[2],
+  }));
+}
 
 type Card = {
   key: string;
   title: string;
   oneLine: string;
   sources: ReactNode;
-  dims: Dim[];
   notes: ReactNode;
 };
 
@@ -52,13 +67,6 @@ const CARDS: Card[] = [
         verified independently of the model.
       </>
     ),
-    dims: [
-      { slot: "Corroboration", means: "independent corroboration", l0: "a single primary study", l1: "a single systematic review / meta-analysis, or two independent studies", l2: "three+ independent and consistent studies, or one large, well-powered, low-bias RCT" },
-      { slot: "Rigor", means: "study design / risk of bias", l0: "case report / preclinical", l1: "observational or small trial", l2: "RCT, meta-analysis, or active guideline" },
-      { slot: "Specificity", means: "this drug, this condition", l0: "proxy only", l1: "drug named, condition adjacent", l2: "both named directly" },
-      { slot: "Plausibility", means: "mechanism", l0: "asserted", l1: "plausible", l2: "evidenced in relevant biology" },
-      { slot: "Consistency", means: "do results agree in direction", l0: "conflicting", l1: "mostly one way", l2: "unanimous (a single study is scored neutral, not penalized)" },
-    ],
     notes: (
       <>
         <strong>A single source caps corroboration at 1.</strong> A lone systematic review or
@@ -94,13 +102,6 @@ const CARDS: Card[] = [
         <A h="https://sideeffects.embl.de/">SIDER</A> (label side-effect frequencies).
       </>
     ),
-    dims: [
-      { slot: "Corroboration", means: "how many independent mechanistic lines converge", l0: "one mechanistic line", l1: "two converging lines", l2: "several independent lines (target + preclinical + safety)" },
-      { slot: "Rigor", means: "strength / recency of the models", l0: "in-vitro only", l1: "mixed models", l2: "human-relevant models" },
-      { slot: "Specificity", means: "the drug's action on the named target", l0: "broad / off-target", l1: "partially specific", l2: "specific action on the named target" },
-      { slot: "Plausibility", means: "target–phenotype fit", l0: "weak link", l1: "plausible", l2: "hitting this target plausibly moves this condition" },
-      { slot: "Consistency", means: "do the mechanistic signals point the same way", l0: "conflicting", l1: "mixed", l2: "converge" },
-    ],
     notes: (
       <>
         <strong>Adverse-event data gets a dual read.</strong> An AEMS or SIDER signal is first a
@@ -138,13 +139,6 @@ const CARDS: Card[] = [
         pharmacovigilance literature (<A h="https://web-radr.eu/">WEB-RADR</A>).
       </>
     ),
-    dims: [
-      { slot: "Corroboration", means: "independence of accounts (weighted)", l0: "single account / signs of coordination", l1: "a few independent accounts", l2: "many independent accounts across threads, communities, and time" },
-      { slot: "Rigor", means: "specificity of the report", l0: 'vague ("felt bad")', l1: "symptom clear, timing/dose fuzzy", l2: "clear symptom + dose + timing" },
-      { slot: "Specificity", means: "this drug, this outcome", l0: "drug or outcome vague", l1: "one clear", l2: "both clear and linked" },
-      { slot: "Plausibility", means: "fits the drug's pharmacology", l0: "unexplained by mechanism", l1: "loosely consistent", l2: "directly fits known pharmacology" },
-      { slot: "Consistency", means: "do reports agree (confirm vs. deny)", l0: "denials outweigh confirms", l1: "mixed", l2: "confirms dominate and dose/timing coheres" },
-    ],
     notes: (
       <>
         <strong>Independence is computed deterministically, not by the model.</strong> The unit
@@ -216,6 +210,7 @@ export default function SignalTypesAccordion() {
       {CARDS.map((card, idx) => {
         const isActive = activeKey === card.key;
         const color = ARM_COLOR[card.key];
+        const dims = armDims(card.key);
         return (
           <div
             key={card.key}
@@ -286,14 +281,20 @@ export default function SignalTypesAccordion() {
                       margin: "0 0 4px",
                     }}
                   >
-                    Scoring criteria · five dimensions, 0–2 each
+                    Scoring criteria · four dimensions, 0–2 each
                   </p>
                   <p style={{ fontSize: "0.9rem", color: "var(--muted)", margin: 0 }}>
-                    The same five slots are scored for every arm, but each slot is interpreted on
-                    this arm&rsquo;s terms. The five sum to an arm strength of 0–10, then a
-                    female-applicability multiplier is applied.
+                    The same four dimensions are scored for every arm, but each is interpreted on
+                    this arm&rsquo;s terms. The four sum to an arm strength of 0–8, plus a
+                    downgrade-only consistency penalty of 0 to &minus;2. A female-applicability
+                    multiplier is then applied to rank and display only.
                   </p>
-                  <RubricTable dims={card.dims} color={color} />
+                  <RubricTable dims={dims} color={color} />
+                  <p style={{ fontSize: "0.85rem", color: "var(--muted)", marginTop: 10, maxWidth: "68ch" }}>
+                    Consistency is a downgrade-only penalty, not a dimension. See the{" "}
+                    <a href="#consistency-penalty" style={LINK}>consistency penalty</a>{" "}
+                    section below for what triggers each value of 0, &minus;1, and &minus;2 on this arm.
+                  </p>
                 </div>
 
                 {/* Arm-specific notes */}
