@@ -390,8 +390,11 @@ export default async function ConditionDetailPage({
             confidence tier and where each one originates. The candidates
             themselves, the specific approved drugs with their verbatim-verified
             evidence across the direct, pathway, and community arms for{" "}
-            {condition.name.toLowerCase()}, sit behind access while Whel is in
-            research preview.
+            {condition.name.toLowerCase()}, are open to read during the research
+            preview — including each candidate&rsquo;s full evidence trail on its
+            own page. Only the bulk layer (the complete searchable index, data
+            export, and API) is gated; the access page covers what it includes
+            and how to request it.
           </p>
 
           {/* Access gate */}
@@ -411,8 +414,9 @@ export default async function ConditionDetailPage({
               Explore the candidates.
             </h3>
             <p style={{ fontSize: "0.9375rem", lineHeight: 1.7, color: "var(--body)", maxWidth: "58ch", marginBottom: 22 }}>
-              Each candidate carries its full evidence trail: scored across five
-              dimensions, graded from strong to exploratory, with every source and
+              Each candidate carries its full evidence trail: scored across four
+              evidence dimensions plus a downgrade-only consistency penalty, graded
+              from strong to exploratory, with every source and
               date attached so it can be checked. Every candidate is open to read in full.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -448,7 +452,8 @@ export default async function ConditionDetailPage({
               These are recorded for {condition.name.toLowerCase()} but kept out of the graded
               repurposing index: multi-agent combination regimens (legitimate clinical regimens,
               not single-agent repurposing candidates) and supplements or herbals (reported as
-              complementary context). Neither is scored on the five-dimension rubric.
+              complementary context). Neither is scored on the graded rubric:
+              the four evidence dimensions plus the consistency penalty.
             </p>
             {condCombos.length > 0 && (
               <div style={{ marginBottom: 28 }}>

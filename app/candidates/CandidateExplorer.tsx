@@ -29,6 +29,8 @@ export type ExplorerItem = {
   hasTrials: boolean;
   /** FDA-approved (on-label) for this exact condition (DailyMed). */
   onLabel: boolean;
+  /** True when the pair is a documented negative (negative note or negative published evidence). */
+  documentedNegative: boolean;
   /** Approved for another use, so off-label here (DailyMed). */
   offLabel: boolean;
   /** A generic of the molecule is available (FDA Orange Book). */
@@ -183,6 +185,9 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
   const [matrixMax, setMatrixMax] = useState<number | null>(null);
   const [sort, setSort] = useState<SortKey>("score");
   const [grouped, setGrouped] = useState<boolean>(true);
+  // Documented negatives: one toggle, shown as its own facet row. Kept in the
+  // index for the record; defaulted off so pursued candidates lead the board.
+  const [negOnly, setNegOnly] = useState<boolean>(false);
 
   function toggle<T>(setter: React.Dispatch<React.SetStateAction<Set<T>>>, value: T) {
     setter((prev) => {
@@ -212,6 +217,7 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
       if (skip !== "val" && vals.size && (!it.validation || !vals.has(it.validation))) return false;
       if (skip !== "arm" && arms.size && (!it.signalArm || !arms.has(it.signalArm))) return false;
       if (skip !== "marker" && markers.size && ![...markers].every((m) => markerActive(it, m))) return false;
+      if (skip !== "neg" && negOnly && !it.documentedNegative) return false;
       if (skip !== "cond" && conds.size && !conds.has(it.conditionSlug)) return false;
       if (skip !== "matrix" && matrixMax != null && (it.matrixRank == null || it.matrixRank > matrixMax)) return false;
       return true;
@@ -232,6 +238,14 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
       arm: tally<ArmKey>("arm", (it) => it.signalArm),
       marker: tally<MarkerKey>("marker", (it) => ALL_MARKERS.filter((m) => markerActive(it, m))),
       cond: tally<string>("cond", (it) => it.conditionSlug),
+      neg: (() => {
+        let n = 0;
+        for (const it of items) {
+          if (!passExcept(it, "neg")) continue;
+          if (it.documentedNegative) n += 1;
+        }
+        return n;
+      })(),
       matrix: (() => {
         const m = new Map<number, number>();
         for (const it of items) {
@@ -251,28 +265,33 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
       if (arms.size && (!it.signalArm || !arms.has(it.signalArm))) return false;
       if (markers.size && ![...markers].every((m) => markerActive(it, m))) return false;
       if (conds.size && !conds.has(it.conditionSlug)) return false;
+      if (negOnly && !it.documentedNegative) return false;
       if (matrixMax != null && (it.matrixRank == null || it.matrixRank > matrixMax)) return false;
       return true;
     });
-  }, [items, tiers, vals, arms, markers, conds, matrixMax]);
+  }, [items, tiers, vals, arms, markers, conds, negOnly, matrixMax]);
 
   const sorted = useMemo(() => {
+    // Documented negatives sort after non-negatives within every ordering:
+    // the record stays visible, but pursued candidates lead the board.
+    const negLast = (a: ExplorerItem, b: ExplorerItem): number =>
+      (a.documentedNegative ? 1 : 0) - (b.documentedNegative ? 1 : 0);
     const compare = (a: ExplorerItem, b: ExplorerItem): number => {
       switch (sort) {
         case "matrix": {
           const ar = a.matrixRank, br = b.matrixRank;
-          if (ar == null && br == null) return b.score - a.score;
+          if (ar == null && br == null) return negLast(a, b) || b.score - a.score;
           if (ar == null) return 1;
           if (br == null) return -1;
-          return ar - br || b.score - a.score;
+          return negLast(a, b) || ar - br || b.score - a.score;
         }
         case "tier":
-          return TIER_RANK[tierKey(a.tier)] - TIER_RANK[tierKey(b.tier)] || b.score - a.score;
+          return negLast(a, b) || TIER_RANK[tierKey(a.tier)] - TIER_RANK[tierKey(b.tier)] || b.score - a.score;
         case "condition":
-          return a.condition.localeCompare(b.condition) || b.score - a.score;
+          return negLast(a, b) || a.condition.localeCompare(b.condition) || b.score - a.score;
         case "score":
         default:
-          return b.score - a.score;
+          return negLast(a, b) || b.score - a.score;
       }
     };
     return [...filtered].sort(compare);
@@ -290,7 +309,7 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
   }, [sorted]);
 
   const activeCount =
-    tiers.size + vals.size + arms.size + markers.size + conds.size + (matrixMax != null ? 1 : 0);
+    tiers.size + vals.size + arms.size + markers.size + conds.size + (negOnly ? 1 : 0) + (matrixMax != null ? 1 : 0);
 
   function clearAll() {
     setTiers(new Set());
@@ -298,6 +317,7 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
     setArms(new Set());
     setMarkers(new Set());
     setConds(new Set());
+    setNegOnly(false);
     setMatrixMax(null);
   }
 
@@ -337,6 +357,15 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
               onClick={() => toggle(setVals, v)}
             />
           ))}
+        </FacetRow>
+
+        <FacetRow label="Documented negatives">
+          <Chip
+            label={`Negative or null result published`}
+            count={counts.neg}
+            active={negOnly}
+            onClick={() => setNegOnly((prev) => !prev)}
+          />
         </FacetRow>
 
         <FacetRow label="Signal">

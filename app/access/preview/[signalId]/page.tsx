@@ -228,7 +228,17 @@ export default async function SignalDetail({
 
           <div className="verdict-grid" style={{ marginTop: 18 }}>
             <div>
-              <div className="id-line">{c.id} · {TIER_LABELS[c.tier]} evidence · {c.score}/10</div>
+              <div className="id-line">
+                {c.id} · {TIER_LABELS[c.tier]} evidence
+                {c.negativeResult && (
+                  <>
+                    {" · "}
+                    {c.negativeResult.anchorTier.charAt(0).toUpperCase()}
+                    {c.negativeResult.anchorTier.slice(1)} direct evidence · direction: no benefit
+                  </>
+                )}
+                {" · "}{c.score}/10
+              </div>
               <h1 className="signal-title">
                 {c.drug}
                 <span className="soft"> for </span>

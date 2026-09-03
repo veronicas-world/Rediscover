@@ -7,6 +7,7 @@ import Pipeline from "@/app/components/Pipeline";
 import HomeTierMatrix, { type MatrixRow } from "@/app/components/HomeTierMatrix";
 import CandidateCard from "@/app/components/CandidateCard";
 import { getShowcasePair, getSubstrateHomeData } from "@/lib/substrate-candidates";
+import { CURRENT_SPEC } from "@/lib/scoring-history.mjs";
 import ScrollEffects from "@/app/components/ScrollEffects";
 
 export const dynamic = "force-dynamic";
@@ -161,7 +162,8 @@ export default async function Home() {
                 An open, graded index of approved drugs with published evidence in
                 six women&apos;s health conditions &mdash; the first systematic
                 assembly of the evidence that exists. Each drug&ndash;condition pair is
-                scored across five evidence dimensions, weighted for how far the evidence was
+                scored across four evidence dimensions plus a downgrade-only
+                consistency penalty, weighted for how far the evidence was
                 generated in women, and pinned to verbatim quotes from its sources.
               </p>
 
@@ -183,7 +185,7 @@ export default async function Home() {
                   href="/about/methodology/changelog"
                   style={{ color: "var(--on-ink-2)", textDecoration: "underline", textUnderlineOffset: 3 }}
                 >
-                  methodology v4.1
+                  methodology {CURRENT_SPEC.label}
                 </Link>
               </p>
 

@@ -89,6 +89,7 @@ export default async function CandidatesPage() {
       hasGraph: !!(c.graphViaTargets && c.graphViaTargets.length > 0),
       hasTrials: !!(c.trialStatus && c.trialStatus.trial_count > 0),
       onLabel: c.indication?.label_relationship === "on_label",
+      documentedNegative: !!c.documentedNegative,
       offLabel: c.indication?.label_relationship === "off_label",
       genericAvailable: !!c.orangeBook?.generic_available,
       card: <CandidateCard key={c.id} c={c} />,

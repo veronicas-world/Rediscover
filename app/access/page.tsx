@@ -4,7 +4,7 @@ import RequestAccessForm from "./RequestAccessForm";
 
 export const metadata: Metadata = {
   title: "Request access",
-  description: "Request access to the full Whel candidate index and evidence substrate, a research preview for clinician-researchers, pharma R&D teams, and advocacy organizations.",
+  description: "Request access to Whel's bulk layer — the full candidate index, data export, and API. Individual candidates and their evidence trails are open to read during the research preview.",
 };
 
 export default function AccessPage() {
@@ -23,9 +23,11 @@ export default function AccessPage() {
             Request access.
           </h1>
           <p className="lede" style={{ marginTop: 26, color: "var(--on-ink-2)", maxWidth: "60ch" }}>
-            The public site shows the story and a sample of the evidence, while the full index, which is every
-            candidate across all six conditions with its complete trail, the searchable substrate, and data
-            export, is open by invitation during the research preview. Tell us who you are and we&rsquo;ll be in touch.
+            The public site is open to read: every candidate&rsquo;s story, evidence trail,
+            and scored breakdown. This request covers the bulk layer — the complete
+            searchable index across all six conditions, the data export, and the API —
+            which is open by invitation during the research preview. Tell us who you are
+            and we&rsquo;ll be in touch.
           </p>
         </div>
       </section>

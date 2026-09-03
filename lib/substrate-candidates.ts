@@ -309,6 +309,17 @@ async function getAllCandidates(): Promise<Candidate[]> {
       mechanism: anchor.mechanism || "Mechanism not yet characterized in the substrate.",
       dims,
       dimBreakdown: anchor.dimensions.map((d) => ({ key: d.key, label: d.label, score: d.score, level: lvl(d.score) })),
+      // Reconciliation payload for documented negatives: the pre-demotion
+      // reading on the anchor arm, so the display can show what the tier was
+      // before the contradiction rule applied instead of just "Exploratory".
+      negativeResult: negativeNote || negativeEvidence
+        ? {
+            anchorTier: anchor.tier,
+            anchorStrength: Math.round(anchor.armScore * 10) / 10,
+            anchorArm: anchor.arm,
+          }
+        : undefined,
+      documentedNegative: !!(negativeNote || negativeEvidence),
       signalType: anchor.arm,
       evidenceStrength: displayTier,
       claims,

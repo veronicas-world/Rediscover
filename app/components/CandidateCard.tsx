@@ -36,6 +36,12 @@ export interface Candidate {
   /** Evidence-integrity note shown beside the grade: set when the signal rests only on
    *  anecdotal community reports, or when published randomized evidence is negative. */
   evidenceCaveat?: string;
+  /** True when the pair is a documented negative (negative note or negative published evidence). */
+  documentedNegative?: boolean;
+  /** Pre-demotion reading on the anchor arm, set when the tier was demoted by the
+   *  contradiction rule — lets the display reconcile "Exploratory" with the
+   *  strong direct evidence underneath it. */
+  negativeResult?: { anchorTier: string; anchorStrength: number; anchorArm: string };
   rationale: string;
   mechanism: string;
   dims: Record<string, string>;
@@ -490,8 +496,13 @@ export default function CandidateCard({ c }: { c: Candidate }) {
   const anchorArm = c.arms?.find((a) => a.isAnchor) ?? c.arms?.[0];
   const armKey = c.signalType ? toArmKey(c.signalType) : null;
   const armLabel = armKey ? ARM_LABELS[armKey] : null;
+  // Documented negatives stay in the index for the record but render muted,
+  // so they never visually outrank pursued candidates.
   return (
-    <article className="candidate">
+    <article
+      className="candidate"
+      style={c.documentedNegative ? { opacity: 0.75, borderLeft: "3px solid var(--rule)" } : undefined}
+    >
       <div className="c-top">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
           <span className="eyebrow">{c.id}</span>
@@ -530,6 +541,29 @@ export default function CandidateCard({ c }: { c: Candidate }) {
         {isSubstrate && c.femaleApplicability && <FemaleLens fa={c.femaleApplicability} />}
 
         <p className="c-rationale">{c.rationale}</p>
+
+        {c.negativeResult && (
+          <p
+            style={{
+              fontFamily: "var(--font-plex-mono, ui-monospace, monospace)",
+              fontSize: 11,
+              lineHeight: 1.55,
+              color: "var(--brick)",
+              borderLeft: "2px solid var(--brick)",
+              paddingLeft: 10,
+              margin: "10px 0 0",
+            }}
+          >
+            {(() => {
+              const nr = c.negativeResult!;
+              const armKey = toArmKey(nr.anchorArm);
+              const armLabel = (armKey && ARM_LABELS[armKey]) ?? (nr.anchorArm ?? "anchor arm");
+              const tierText =
+                nr.anchorTier.charAt(0).toUpperCase() + nr.anchorTier.slice(1);
+              return `${tierText} ${String(armLabel).toLowerCase()} evidence, read before the contradiction rule (strength ${nr.anchorStrength}) · direction: no benefit`;
+            })()}
+          </p>
+        )}
 
         {c.evidenceCaveat && (
           <p
