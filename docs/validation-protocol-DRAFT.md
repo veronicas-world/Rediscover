@@ -61,11 +61,20 @@ that is what determines what appears on the site.
 | | who | independent of build? | prior exposure |
 |---|---|---|---|
 | R1 | Veronica Agudelo, who built the database | **No** | **99 claims in the current frame already labelled**, 5 of them revised after unblinding |
-| R2 | licensed psychiatrist, MD, published in women's health | Yes | none |
+| R2 | physician (DO) with qualitative and clinical research experience in perinatal psychiatry (NIMH- and PCORI-funded studies, 60+ semi-structured interviews, 40+ structured clinical interviews) | **No** (familial relationship to R1 — disclosed conflict of interest) | none |
 
 R1's prior exposure is disqualifying for those 99 items and they are excluded
 from R1's primary analysis. **R2's labels are the primary reference.** R1's are
 reported as a secondary comparison and as a measure of author bias.
+
+**Conflict of interest disclosure.** R2 is R1's mother. This is disclosed here
+and in any published result. The familial relationship does not affect whether
+the rubric produces consistent scores (the reliability question), but it does
+affect the credibility of the inter-rater agreement number to external readers.
+If the result is intended for publication, an independent R2 with no
+relationship to R1 should be recruited. If the result is for internal
+validation only (testing whether the rubric is usable before investing in a
+formal study), the familial R2 is acceptable with the disclosure.
 
 ## 4. Materials shown to a rater
 
