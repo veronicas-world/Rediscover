@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import BackLink from "../../components/BackLink";
+import { tierRanges } from "@/lib/substrate-helpers";
 
 /* ──────────────────────────────────────────────────────────────────────────
    Shared style tokens
@@ -146,7 +147,7 @@ const FRAMEWORK_INTRO =
 const RUBRIC: { dim: string; note: string; s0: string; s1: string; s2: string }[] = [
   {
     dim: "Corroboration",
-    note: "Independent corroboration, kept distinct from rigor and consistency so the same fact is never scored twice.",
+    note: "Independent corroboration, kept distinct from rigor so study design is not credited twice. Its top score requires sources that are both independent and in agreement, which overlaps with consistency — one reason consistency was reduced to a downgrade-only penalty in v1.4.",
     s0: "A single source (a lone review or primary study).",
     s1: "A single synthesis, or two independent sources.",
     s2: "Three or more genuinely independent, consistent sources (or one large, low-bias pivotal trial).",
@@ -182,38 +183,27 @@ const RUBRIC: { dim: string; note: string; s0: string; s1: string; s2: string }[
 ];
 
 const TIERS_INTRO =
-  "Each arm's five dimensions sum to a strength of 0-10, which is then multiplied by a female-applicability factor. The resulting arm score maps to four confidence tiers (cutoffs frozen against the real score distribution):";
+  "Each arm is graded on four dimensions plus a downgrade-only consistency penalty, summing to a strength that sets the confidence tier. A female-applicability factor is then applied to ranking and display rather than to the tier itself, so evidence that is strong but may not transfer to women is ranked lower without being recategorised as weaker. The cutoffs below are provisional: they are re-derived against the real score distribution after each rubric revision, and the current revision has not yet been applied to the corpus.";
 
-const TIERS: { name: string; range: string; color: string; soft: string; desc: string }[] = [
-  {
-    name: "Strong",
-    range: "≥ 8.0",
-    color: "var(--tier-strong)",
-    soft: "var(--tier-strong-soft)",
-    desc: "Guideline-grade: independently replicated, low-bias evidence generated in women.",
-  },
-  {
-    name: "Moderate",
-    range: "6.0 to 7.9",
-    color: "var(--tier-moderate)",
-    soft: "var(--tier-moderate-soft)",
-    desc: "Good evidence with solid rationale, not yet definitive.",
-  },
-  {
-    name: "Emerging",
-    range: "3.5 to 5.9",
-    color: "var(--tier-emerging)",
-    soft: "var(--tier-emerging-soft)",
-    desc: "A real early lead worth watching: some corroboration or mechanistic support.",
-  },
-  {
-    name: "Exploratory",
-    range: "< 3.5",
-    color: "var(--tier-exploratory)",
-    soft: "var(--tier-exploratory-soft)",
-    desc: "Thin or single-source signals, surfaced with heavy caveat for hypothesis generation.",
-  },
-];
+// Colours and descriptions are editorial; the ranges are derived from the cutoffs in
+// lib/substrate-helpers rather than restated here, so a recalibration cannot leave
+// this table publishing numbers the engine no longer uses (SCORING_SPEC §5b).
+const TIER_DESC: Record<string, string> = {
+  strong: "Guideline-grade: independently replicated, low-bias evidence generated in women.",
+  moderate: "Good evidence with solid rationale, not yet definitive.",
+  emerging: "A real early lead worth watching: some corroboration or mechanistic support.",
+  exploratory:
+    "Thin or single-source signals, surfaced with heavy caveat for hypothesis generation.",
+};
+
+const TIERS: { name: string; range: string; color: string; soft: string; desc: string }[] =
+  tierRanges().map((r) => ({
+    name: r.tier.charAt(0).toUpperCase() + r.tier.slice(1),
+    range: r.label,
+    color: `var(--tier-${r.tier})`,
+    soft: `var(--tier-${r.tier}-soft)`,
+    desc: TIER_DESC[r.tier] ?? "",
+  }));
 
 const RELIABILITY_INTRO =
   "For every signal across all three evidence arms, Whel applies five cross-cutting reliability checks:";

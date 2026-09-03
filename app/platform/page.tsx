@@ -414,10 +414,13 @@ export default async function PlatformPage() {
               Each candidate carries several independent readings, recorded separately rather than
               combined into a single number, so the basis for each reading stays visible.{" "}
               <strong>The confidence tier</strong> is our own score: each evidence arm is graded on
-              five dimensions (corroboration, rigor, specificity, plausibility, and consistency)
-              which sum to a strength out of ten, then discounted by a female-applicability
-              multiplier reflecting how far the evidence was generated in women, placing the
-              candidate in one of four tiers from exploratory to strong.
+              four dimensions (corroboration, rigor, specificity, and plausibility) plus a
+              consistency penalty that can subtract certainty when sources disagree but never add
+              it. Those sum to a strength out of eight, which sets the tier. A
+              female-applicability multiplier, reflecting how far the evidence was generated in
+              women, is then applied to ranking and display rather than to the tier itself, so
+              that strong evidence which may not transfer to women is ranked lower without being
+              recategorised as weaker evidence.
             </p>
             <p style={pBone}>
               How far the published record independently backs a pair is no longer a separate grade: it

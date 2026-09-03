@@ -14,6 +14,7 @@ import {
   toArm as _toArm, deriveHeadline as _deriveHeadline,
   formatMatrixPercentile as _formatMatrixPercentile,
   tierDisplay as _tierDisplay, tierKey as _tierKey, NOISE_BAND as _NOISE_BAND,
+  tierRanges as _tierRanges, TIER_CUTOFFS as _TIER_CUTOFFS,
 } from "./substrate-helpers.mjs";
 
 export type ArmKey = "direct" | "pathway" | "community";
@@ -43,6 +44,22 @@ export function deriveHeadline(arms: SubstrateArm[]): {
 export function formatMatrixPercentile(qr: number): string { return _formatMatrixPercentile(qr); }
 
 export const NOISE_BAND: number = _NOISE_BAND;
+
+export interface TierCutoff {
+  cut: number;
+  upper: string;
+  lower: string;
+}
+export interface TierRange {
+  tier: string;
+  min: number | null;
+  max: number | null;
+  label: string;
+}
+export const TIER_CUTOFFS = _TIER_CUTOFFS as unknown as TierCutoff[];
+export function tierRanges(precision = 1): TierRange[] {
+  return _tierRanges(precision) as unknown as TierRange[];
+}
 export function tierDisplay(score: number, storedTier: string): string {
   return _tierDisplay(score, storedTier);
 }

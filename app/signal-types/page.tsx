@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import SignalTypesAccordion from "./SignalTypesAccordion";
+import { tierRanges } from "@/lib/substrate-helpers";
 
 export const metadata: Metadata = {
   title: "Signal types & scoring criteria | Whel",
@@ -33,12 +34,22 @@ const BANDS: { band: string; shows: string; mult: string }[] = [
   { band: "F6 · Sex-dependent disadvantage", shows: "verified evidence the drug behaves worse in women", mult: "×0.50 ⚠" },
 ];
 
-const TIERS: { tier: string; cut: string; meaning: string }[] = [
-  { tier: "Strong", cut: "≥ 8.0", meaning: "guideline-grade: independently replicated, low-bias, in women" },
-  { tier: "Moderate", cut: "6.0 – 7.9", meaning: "good evidence, not yet definitive" },
-  { tier: "Emerging", cut: "3.5 – 5.9", meaning: "a real early lead worth watching" },
-  { tier: "Exploratory", cut: "< 3.5", meaning: "thin or single-source; surfaced with heavy caveat" },
-];
+// Meanings are editorial; the cutoffs are NOT written here. They come from
+// lib/substrate-helpers so a recalibration cannot leave this table stating numbers
+// the engine no longer uses (SCORING_SPEC §5b). Tiers absent from the current ladder
+// simply do not render.
+const TIER_MEANING: Record<string, string> = {
+  strong: "guideline-grade: independently replicated, low-bias, in women",
+  moderate: "good evidence, not yet definitive",
+  emerging: "a real early lead worth watching",
+  exploratory: "thin or single-source; surfaced with heavy caveat",
+};
+
+const TIERS: { tier: string; cut: string; meaning: string }[] = tierRanges().map((r) => ({
+  tier: r.tier.charAt(0).toUpperCase() + r.tier.slice(1),
+  cut: r.label,
+  meaning: TIER_MEANING[r.tier] ?? "",
+}));
 
 export default function SignalTypesPage() {
   return (

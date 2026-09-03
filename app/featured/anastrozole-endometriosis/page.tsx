@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { getCandidateBySignalId } from "@/lib/substrate-candidates";
+import {
+  frozenV13BySignalId,
+  rubricDelta,
+  contrastV13,
+  v13Distribution,
+  CURRENT_SPEC,
+  PREVIOUS_SPEC,
+} from "@/lib/scoring-history";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,6 +20,21 @@ export const metadata = {
 // anastrozole and letrozole are members). signalId = `${interventionId}__${conditionId}`.
 const SIGNAL_ID =
   "4649c778-db16-4740-80c6-29a739610666__13c33c1b-98d6-4ef0-bb1a-add1344261a5";
+
+// The comparator walkthrough (low-dose vaginal estrogen x menopause). Used only to
+// render the v1.3 contrast from frozen data — the two pairs were separated by a
+// single dimension under the old rubric, and section 03 shows that from the numbers
+// rather than asserting it in prose.
+const COMPARATOR_SIGNAL_ID =
+  "345a61ac-85d1-406f-bfff-29f45eb4c73c__e3758034-fa92-40a3-af17-80fbbdecb0d6";
+
+const NUMBER_WORD: Record<number, string> = {
+  1: "one",
+  2: "two",
+  3: "three",
+  4: "four",
+  5: "five",
+};
 
 const MONO: React.CSSProperties = {
   fontFamily: "var(--font-plex-mono, ui-monospace, SFMono-Regular, Menlo, monospace)",
@@ -104,6 +127,22 @@ export default async function AromataseInhibitorsSignalPage() {
   const c = await getCandidateBySignalId(SIGNAL_ID);
   const anchor = c?.arms?.find((a) => a.isAnchor) ?? c?.arms?.[0];
   const tierLabel = c ? TIER_LABEL[c.tier] ?? c.tier : "—";
+
+  // Rubric-correction data for section 03. All of it is derived, none written in prose.
+  const frozen = frozenV13BySignalId(SIGNAL_ID, anchor?.arm ?? "direct");
+  const delta = rubricDelta(anchor?.dimensions ?? [], frozen);
+  const contrast = contrastV13(frozen, frozenV13BySignalId(COMPARATOR_SIGNAL_ID, "direct"));
+
+  // Share of signals that sat at the modal consistency value under v1.3 — the
+  // evidence that the dimension was a near-constant. Computed from the frozen
+  // distribution so it cannot drift out of step with the snapshot.
+  const consistencyDist = (v13Distribution as {
+    dimensions: Record<string, Record<string, number>>;
+  }).dimensions.consistency;
+  const consistencyTotal = Object.values(consistencyDist).reduce((a, b) => a + b, 0);
+  const v13ConsistencyModeShare = Math.round(
+    (Math.max(...Object.values(consistencyDist)) / consistencyTotal) * 100
+  );
   const primaryClaim = c?.claims?.[0];
 
   return (
@@ -148,11 +187,14 @@ export default async function AromataseInhibitorsSignalPage() {
           <p style={{ fontSize: "1rem", lineHeight: 1.65, color: "var(--ink-2)", maxWidth: "64ch" }}>
             The engine indexes aromatase inhibitors as a class, the group that
             includes anastrozole and letrozole, both repurposing candidates for
-            endometriosis. This is the {tierLabel}-tier counterpart to the{" "}
+            endometriosis. It is the counterpart to the{" "}
             <Link href="/featured" style={LINK}>vaginal-estrogen walkthrough</Link>, and
-            the pairing is deliberate: the two signals rest on almost identical
-            dimension scores, and a single dimension separates Strong from
-            Moderate. Every figure below is read live from the substrate.
+            the pairing is deliberate: under our earlier rubric the two signals rested on
+            near-identical dimension scores and were separated into different tiers by a
+            single dimension. That dimension turned out to be measuring the wrong thing.
+            Section 03 shows what the grade said then, what it says now, and why we
+            changed it. Every figure on this page is read from the substrate or from the
+            frozen record of the earlier grading pass; none is written into the prose.
           </p>
 
           {/* Meta strip — live */}
@@ -168,7 +210,10 @@ export default async function AromataseInhibitorsSignalPage() {
           >
             <MetaCell label="Compound" value={c?.drug ?? "Aromatase inhibitors"} />
             <MetaCell label="Condition" value={c?.condition ?? "Endometriosis"} />
-            <MetaCell label="Tier (live)" value={c ? `${tierLabel} \u00b7 ${c.score.toFixed(1)} / 10` : "\u2014"} />
+            <MetaCell
+              label="Tier (live)"
+              value={c ? `${tierLabel} \u00b7 ${c.score.toFixed(1)} / ${CURRENT_SPEC.armStrengthMax}` : "\u2014"}
+            />
             <MetaCell label="Validation" value={c?.validationStatus === "clinical" ? "Clinically anchored" : "\u2014"} />
           </div>
         </div>
@@ -247,7 +292,7 @@ export default async function AromataseInhibitorsSignalPage() {
                     }}
                   >
                     <span>Score breakdown &middot; {ARM_TITLE[anchor.arm] ?? anchor.arm} arm</span>
-                    <span>strength {anchor.strength} / 10 &rarr; {tierLabel}</span>
+                    <span>strength {anchor.strength} / {CURRENT_SPEC.armStrengthMax} &rarr; {tierLabel}</span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {anchor.dimensions.map((dim) => (
@@ -287,29 +332,204 @@ export default async function AromataseInhibitorsSignalPage() {
             </div>
           </section>
 
-          {/* 03 Reading the score — the consistency hinge */}
+          {/* 03 Reading the score — the rubric correction, rendered from data.
+              NOTE: no numeric argument in this section is written into the prose.
+              Every figure comes from the frozen v1.3 snapshot or the live row, via
+              lib/scoring-history. A paragraph that spelled out "this dimension
+              scored 2, that one scored 1, and that one point is the difference"
+              is exactly what broke here, and it must not be reintroduced. */}
           <section>
             <div style={EYEBROW}>03 &middot; Reading the score</div>
-            <h2 className="font-heading" style={H2}>The single dimension that makes it Strong</h2>
+            <h2 className="font-heading" style={H2}>
+              What the grade said, and why it changed
+            </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <p style={BODY}>
-                This pair and the vaginal-estrogen pair share an identical
-                corroboration score: both rest on a single ingested synthesis, so
-                corroboration holds at 1 for each. The pooled studies inside a
-                review do not count as independent sources. What separates them is
-                consistency. Here the systematic review synthesises seven studies
-                and three RCTs whose findings concordantly point the same way, so
-                consistency scores 2. The vaginal-estrogen review offered a single
-                figure with nothing to cross-check, so its consistency stayed at 1.
+                This pair was graded under one version of our rubric and is now graded
+                under another. Both are shown below. We are keeping the old numbers on
+                the page rather than quietly replacing them, because a grading system
+                that cannot show its own corrections is asking to be taken on trust.
               </p>
+
+              {contrast && (
+                <p style={BODY}>
+                  Under {PREVIOUS_SPEC.label} this pair and the{" "}
+                  <Link href="/featured" style={LINK}>vaginal-estrogen pair</Link> scored
+                  identically on{" "}
+                  {contrast.shared.length === 1
+                    ? "one dimension"
+                    : `${NUMBER_WORD[contrast.shared.length] ?? contrast.shared.length} dimensions`}
+                  {" "}&mdash; {contrast.shared.join(", ")} &mdash; and differed on{" "}
+                  {contrast.diverging.join(", ")} alone. That single difference carried the
+                  whole gap between the two tiers they were assigned
+                  {" "}({contrast.a.tier} at {contrast.a.strength}/{PREVIOUS_SPEC.armStrengthMax}
+                  {" "}against {contrast.b.tier} at {contrast.b.strength}/
+                  {PREVIOUS_SPEC.armStrengthMax}).
+                  {contrast.onlyRescaledDims && (
+                    <>
+                      {" "}
+                      Every one of those differing dimensions is a dimension{" "}
+                      {CURRENT_SPEC.label} no longer scores the same way.
+                    </>
+                  )}
+                </p>
+              )}
+
               <p style={BODY}>
-                That one point is the whole difference between an 8.0 Strong and a
-                7.0 Moderate. It is also exactly the kind of distinction the rubric
-                exists to make legible. The question it answers is how much the
-                ingested evidence actually agrees with itself, and it leaves
-                aside how famous the drug happens to be. See the companion case
-                on the{" "}
-                <Link href="/featured" style={LINK}>vaginal-estrogen page</Link>.
+                The reason is that consistency was doing something it should not have
+                been. It awarded a point when a source contained several findings that
+                agreed, and a lower score when a source contained only one finding and
+                so offered nothing to compare. But having only one study is not evidence
+                of inconsistency, and treating it as a deduction meant most of the corpus
+                was scored on how much material happened to be in the ingested source
+                rather than on what the evidence showed. Measured across every active
+                signal, the dimension sat at a single value for{" "}
+                {v13ConsistencyModeShare}% of them: it was behaving as a near-constant
+                that inflated every score, not as a measurement.
+              </p>
+
+              <p style={BODY}>
+                Established evidence-grading practice already had the answer. Under{" "}
+                <a
+                  href="https://www.gradeworkinggroup.org/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={LINK}
+                >
+                  GRADE
+                </a>
+                , inconsistency can only take certainty away, never add it: disagreement
+                between studies is a reason to downgrade, and a single study is simply not
+                assessable for consistency. {CURRENT_SPEC.label} adopts that. Consistency
+                is now a penalty in the range{" "}
+                {CURRENT_SPEC.consistencyRange[0]} to {CURRENT_SPEC.consistencyRange[1]},
+                applied only when sources actually disagree, which drops the maximum
+                strength from {PREVIOUS_SPEC.armStrengthMax} to{" "}
+                {CURRENT_SPEC.armStrengthMax}.
+              </p>
+
+              {delta && (
+                <div
+                  style={{
+                    backgroundColor: "var(--paper)",
+                    border: "1px solid var(--rule)",
+                    padding: "20px 22px",
+                    marginTop: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      ...MONO,
+                      fontSize: "10px",
+                      letterSpacing: "0.2em",
+                      textTransform: "uppercase",
+                      color: "var(--muted)",
+                      marginBottom: 14,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <span>Same evidence, both rubrics</span>
+                    <span>
+                      {delta.before.spec.label} {delta.before.strength}/{delta.before.max}
+                      {" \u2192 "}
+                      {delta.rescored
+                        ? `${delta.after.spec.label} ${delta.after.strength}/${delta.after.max}`
+                        : `${delta.after.spec.label} pending rescore`}
+                    </span>
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0, 130px) 64px 64px 1fr",
+                        gap: 14,
+                        ...MONO,
+                        fontSize: 10,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        color: "var(--muted)",
+                        paddingBottom: 6,
+                        borderBottom: "1px solid var(--rule)",
+                      }}
+                    >
+                      <span>Dimension</span>
+                      <span>{delta.before.spec.label}</span>
+                      <span>{delta.after.spec.label}</span>
+                      <span>What changed</span>
+                    </div>
+
+                    {delta.rows.map((row) => (
+                      <div
+                        key={row.key}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "minmax(0, 130px) 64px 64px 1fr",
+                          gap: 14,
+                          alignItems: "baseline",
+                        }}
+                      >
+                        <div
+                          className="font-heading"
+                          style={{ fontSize: "0.9rem", fontWeight: 500, color: "var(--ink)" }}
+                        >
+                          {row.label}
+                        </div>
+                        <div style={{ ...MONO, fontSize: "0.875rem", color: "var(--muted)" }}>
+                          {row.before ?? "\u2014"}
+                        </div>
+                        <div
+                          style={{
+                            ...MONO,
+                            fontSize: "0.875rem",
+                            fontWeight: 500,
+                            color: row.changed ? "var(--green-deep)" : "var(--ink-2)",
+                          }}
+                        >
+                          {delta.rescored ? (row.after ?? "\u2014") : "\u2014"}
+                        </div>
+                        <div style={{ fontSize: "0.85rem", color: "var(--ink-2)", lineHeight: 1.55 }}>
+                          {row.rescaled
+                            ? "Rescaled: now a penalty that can only subtract, so agreement earns nothing and a lone study is not marked down."
+                            : row.changed
+                              ? "Re-scored under the revised anchors."
+                              : "Unchanged."}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {!delta.rescored && (
+                    <div
+                      style={{
+                        marginTop: 16,
+                        paddingTop: 14,
+                        borderTop: "1px solid var(--rule)",
+                        fontSize: "0.85rem",
+                        color: "var(--ink-2)",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      The revised rubric is published and in force, but the corpus has not
+                      yet been regraded under it, so the {CURRENT_SPEC.label} column is
+                      blank rather than guessed. Regrading the corpus is a single
+                      deliberate pass; this page will fill in when it runs.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <p style={BODY}>
+                What this does not do is make the ranking sharper. Removing a point that
+                nearly every signal received lowers the floor; it does not spread the
+                results out. On the evidence we hold, these two pairs are closer together
+                than the old grade implied, and saying so is the correction. Whether the
+                revised risk-of-bias and outcome-directness anchors separate them on
+                grounds that hold up is a question the regrade answers, and we would
+                rather publish that answer than pre-empt it.
               </p>
             </div>
           </section>

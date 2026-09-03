@@ -1,5 +1,11 @@
 import Link from "next/link";
 import { getCandidateBySignalId } from "@/lib/substrate-candidates";
+import {
+  frozenV13BySignalId,
+  rubricDelta,
+  CURRENT_SPEC,
+  PREVIOUS_SPEC,
+} from "@/lib/scoring-history";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -119,6 +125,12 @@ export default async function FeaturedSignalPage() {
   const c = await getCandidateBySignalId(SIGNAL_ID);
   const anchor = c?.arms?.find((a) => a.isAnchor) ?? c?.arms?.[0];
   const tierLabel = c ? TIER_LABEL[c.tier] ?? c.tier : "—";
+
+  // Rubric-correction data, derived not written. See lib/scoring-history: prose in
+  // this file must not spell out a dimension score, because the next rescore would
+  // leave the sentence contradicting the live figures directly above it.
+  const frozen = frozenV13BySignalId(SIGNAL_ID, anchor?.arm ?? "direct");
+  const delta = rubricDelta(anchor?.dimensions ?? [], frozen);
   const primaryClaim = c?.claims?.[0];
 
   return (
@@ -183,7 +195,7 @@ export default async function FeaturedSignalPage() {
             <MetaCell label="Condition" value={c?.condition ?? "Menopause"} />
             <MetaCell
               label="Tier (live)"
-              value={c ? `${tierLabel} \u00b7 ${c.score.toFixed(1)} / 10` : "\u2014"}
+              value={c ? `${tierLabel} \u00b7 ${c.score.toFixed(1)} / ${CURRENT_SPEC.armStrengthMax}` : "\u2014"}
             />
             <MetaCell
               label="Validation"
@@ -277,7 +289,7 @@ export default async function FeaturedSignalPage() {
                     }}
                   >
                     <span>Score breakdown &middot; {ARM_TITLE[anchor.arm] ?? anchor.arm} arm</span>
-                    <span>strength {anchor.strength} / 10 &rarr; {tierLabel}</span>
+                    <span>strength {anchor.strength} / {CURRENT_SPEC.armStrengthMax} &rarr; {tierLabel}</span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {anchor.dimensions.map((dim) => (
@@ -331,29 +343,32 @@ export default async function FeaturedSignalPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <p style={BODY}>
                 Rigor and specificity are both at the ceiling: the source is a
-                review (the highest design tier the rubric recognises) and it
-                names the intervention and the condition explicitly. What holds
-                the score back is corroboration and consistency. The engine
-                held corroboration at 1 because a single review is one
-                synthesis; the trials pooled inside it do not count as
-                independent sources. It scored consistency 1 because, with only
-                one source on file, agreement across independent studies cannot
-                be assessed and defaults to neutral.
+                review, the highest design tier the rubric recognises, and it names
+                the intervention and the condition explicitly. What holds the score
+                back is corroboration. The engine keeps it low because a single
+                review is one synthesis, and the trials pooled inside it do not
+                count as independent sources. This is the engine refusing to
+                inflate: the underlying therapy is guideline-backed and well
+                replicated in the wider literature, but the model only credits what
+                it has ingested and verified verbatim.
               </p>
-              <p style={BODY}>
-                This is the engine refusing to inflate. The underlying therapy is
-                guideline-backed and well replicated in the wider literature, but
-                the model only credits what it has ingested and verified
-                verbatim. A single point of consistency is the entire distance
-                between this {tierLabel} signal and a Strong one. The companion
-                walkthrough,{" "}
-                <Link href="/featured/anastrozole-endometriosis" style={LINK}>
-                  aromatase inhibitors for endometriosis
-                </Link>
-                , shows the mirror image: the same corroboration score of 1, but
-                a systematic review whose pooled studies agree pushes consistency
-                to 2 and the pair to Strong.
-              </p>
+              {delta && (
+                <p style={BODY}>
+                  This signal was also caught by a correction to the rubric itself.
+                  Under {PREVIOUS_SPEC.label} it was separated from the{" "}
+                  <Link href="/featured/anastrozole-endometriosis" style={LINK}>
+                    aromatase-inhibitor walkthrough
+                  </Link>{" "}
+                  by the consistency dimension alone, which credited a source for
+                  containing several findings that agreed and marked one down for
+                  containing only a single finding. Having one study is not evidence
+                  of inconsistency, so {CURRENT_SPEC.label} reduced consistency to a
+                  penalty that applies only when sources genuinely disagree. The two
+                  signals are closer together than the earlier grade implied. The
+                  companion page shows that correction in full, with both sets of
+                  numbers side by side.
+                </p>
+              )}
             </div>
           </section>
 

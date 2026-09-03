@@ -3,7 +3,7 @@ import Link from "next/link";
 import CandidateCard from "@/app/components/CandidateCard";
 import CandidateExplorer, { type ExplorerItem } from "./CandidateExplorer";
 import { getCandidates, getCorpusScope } from "@/lib/substrate-candidates";
-import { tierKey } from "@/lib/substrate-helpers";
+import { tierKey, tierRanges } from "@/lib/substrate-helpers";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -22,12 +22,12 @@ const TIER_LABELS: Record<Tier, string> = {
   emerging: "Emerging",
   exploratory: "Exploratory",
 };
-const TIER_CUTS: Record<Tier, string> = {
-  strong: "≥8.0",
-  moderate: "6.0–7.9",
-  emerging: "3.5–5.9",
-  exploratory: "<3.5",
-};
+// Derived from the cutoffs in lib/substrate-helpers, never written out here: a
+// hardcoded copy silently contradicts the cutoffs actually in force after every
+// recalibration (SCORING_SPEC §5b).
+const TIER_CUTS: Record<string, string> = Object.fromEntries(
+  tierRanges().map((r) => [r.tier, r.label.replace(/ /g, "")])
+);
 
 function slugFor(c: { conditionId?: string; condition: string }): string {
   return c.conditionId ?? c.condition.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");

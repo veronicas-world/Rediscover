@@ -132,8 +132,55 @@ export default function MethodologyChangelogPage() {
           }}
         >
 
-          {/* v4.2 — claim span repair and entailment re-score */}
+          {/* v4.3 — rubric correction: downgrade-only consistency */}
           <EntryWrapper isFirst>
+            <div style={ENTRY_EYEBROW}>
+              Methodology v4.3 &middot; September 2, 2026
+            </div>
+            <p style={ENTRY_PARA}>
+              A correction to the scoring rubric, published before the corpus is
+              regraded under it. Test-retest measurement and a distribution audit
+              found that three of the five dimensions were carrying almost no
+              information: consistency sat at a single value for 77 percent of
+              signals, corroboration is capped near one for 92 percent of them by
+              single-source ingestion, and specificity was at its maximum for 67
+              percent. The practical effect was a floor of roughly three points
+              that every signal received before any judgement was applied, which
+              is why most signals landed in one tier.
+            </p>
+            <p style={ENTRY_PARA_NEXT}>
+              The main fix is that consistency is now{" "}
+              <em>downgrade-only</em>, following GRADE: sources that disagree cost
+              the signal points, and a single source is treated as not assessable
+              rather than silently worth a point. Under the previous rubric a
+              single study scored the neutral value and contributed to the
+              strength total; it no longer does. Rigor now distinguishes a
+              randomised trial at low risk of bias from one at high risk, and
+              specificity now asks whether the measured outcome is the
+              patient-relevant endpoint or a surrogate standing in for it. The
+              pathway arm, which had no score anchors at all, was given them, with
+              corroboration counted in independent mechanistic lines rather than
+              documents. Tier cutoffs are explicitly provisional until the corpus
+              has been regraded and they can be re-derived from the new
+              distribution.
+            </p>
+            <p style={ENTRY_PARA_NEXT}>
+              One gain came from a rule nobody was looking at. The contradiction
+              rule previously stated that a flagged pair &ldquo;cannot score
+              consistency 2&rdquo;, which on the old scale allowed a pair with a
+              recorded head-to-head disagreement to sit at the neutral value and
+              pay nothing for it. On the new scale a flagged pair must carry a
+              penalty of at least one point. That is the only place this revision
+              adds discrimination rather than removing a constant, and it was
+              found while restating the rule for the new scale, not while looking
+              for gains. The featured walkthroughs show the correction worked
+              through on real pairs, with the previous and current grades side by
+              side.
+            </p>
+          </EntryWrapper>
+
+          {/* v4.2 — claim span repair and entailment re-score */}
+          <EntryWrapper>
             <div style={ENTRY_EYEBROW}>
               Methodology v4.2 &middot; July 31, 2026
             </div>
