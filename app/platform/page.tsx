@@ -511,7 +511,7 @@ export default async function PlatformPage() {
             <p style={pBone}>
               Because Whel records the graded evidence and the regulatory status side by side, this
               is something the index can simply be asked. Filtering the candidates for{" "}
-              <strong>strong or moderate evidence, off-label use, and an available generic</strong>{" "}
+              <strong>strong or emerging evidence, off-label use, and an available generic</strong>{" "}
               returns a set of pairs sitting in exactly that position. Letrozole in PCOS is the
               clearest illustration: it carries strong graded evidence here and has been studied in
               dozens of registered trials for the condition, and it remains an off-label use of a
