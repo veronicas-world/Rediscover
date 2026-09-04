@@ -395,10 +395,23 @@ def _user_prompt(conn, key, claims):
     return "\n".join(lines)
 
 
-def _num_contradictions(conn, iv, cd):
+def _num_contradictions(conn, iv, cd, claim_ids):
+    """Count contradictions among the claims behind THIS signal, not all
+    contradictions for the drug/condition pair.
+
+    The rubric asks whether THIS signal's sources agree in direction. The
+    contradictions table is keyed on (intervention_id, condition_id), so
+    without scoping, a safety signal inherits a contradiction between two
+    efficacy claims it doesn't contain. Only contradictions where at least
+    one of the two claims belongs to this signal should count.
+    """
+    if not claim_ids:
+        return 0
+    ph = ",".join("?" for _ in claim_ids)
     return conn.execute(
-        "SELECT COUNT(*) FROM contradictions WHERE intervention_id=? AND condition_id=?",
-        (iv, cd)).fetchone()[0]
+        f"SELECT COUNT(*) FROM contradictions WHERE intervention_id=? AND condition_id=?"
+        f" AND (claim_a_id IN ({ph}) OR claim_b_id IN ({ph}))",
+        (iv, cd, *claim_ids, *claim_ids)).fetchone()[0]
 
 
 def _store_ready(conn):
@@ -512,11 +525,15 @@ def run(limit=None, model=None, only_unscored=False):
                 cap_note = f"[Capped at {ceiling}: {n_docs} distinct source document(s).]"
                 rats["corroboration"] = (rats["corroboration"] + " " + cap_note).strip()
 
-        # contradictions (§4): flag from the table; a recorded head-to-head
-        # disagreement must cost at least one point of consistency penalty. Under the
-        # old 0-2 scale this rule capped at 1, which let a flagged pair sit at the
-        # neutral score and pay nothing; on the downgrade-only scale it bites (§5d).
-        nco = _num_contradictions(conn, iv, cd)
+        # contradictions (§4): flag from the table, scoped to THIS signal's own
+        # claims. A recorded head-to-head disagreement between two claims behind
+        # this signal must cost at least one point of consistency penalty. Under
+        # the old 0-2 scale this rule capped at 1, which let a flagged pair sit at
+        # the neutral score and pay nothing; on the downgrade-only scale it bites
+        # (§5d). Scoping to the signal's own claims prevents a safety signal from
+        # inheriting a contradiction between two efficacy claims it doesn't contain.
+        signal_claim_ids = [c["id"] for c in claims]
+        nco = _num_contradictions(conn, iv, cd, signal_claim_ids)
         if nco > 0:
             dims["consistency"] = min(dims["consistency"], -1)
 
