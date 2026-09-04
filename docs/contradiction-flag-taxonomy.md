@@ -20,11 +20,17 @@ The `contradictions` table has **3 rows**. All 3 are **intra-document** —
 both claims in each pair come from the same source document. There are zero
 cross-document contradictions.
 
-### Row 1 — MHT / menopause
+One row (Row 1) is **stale**: both claims now have
+`entailment_label = "neutral"` (no longer entailed). The current detection
+script only compares entailed claims, so this row would not be formed by a
+re-run. It remains in the table from an earlier detection run.
+
+### Row 1 — MHT / menopause (stale: claims no longer entailed)
 
 - **Claims:** "MHT reduces cardiovascular events" (positive) vs "MHT does not
   reduce all-cause mortality" (null)
 - **Same document:** yes
+- **Entailment:** both claims now `neutral` (not `entailed`)
 - **Why it's not a real contradiction:** different outcomes (cardiovascular
   events vs all-cause mortality) AND different populations (general
   postmenopausal vs "early acceptance" timing qualifier). Gate 3 (same
@@ -77,6 +83,35 @@ have rejected them for the right reasons (different comparator, different
 outcome, different population) or for the wrong reasons (the v1 prompt
 does not check those gates). Without rejection rationales, the rejection
 rate is not auditable.
+
+## Known property of the v1 detector: intra-document bias
+
+The v1 detector does not distinguish intra-document from cross-document
+pairs. It compares ALL claims within each `(intervention, condition)`
+group, regardless of source. This produces a candidate pool biased toward
+intra-document pairs, and the NLI accepts only intra-document pairs.
+
+| | Candidate pairs formed | Accepted by NLI | Acceptance rate |
+|---|---|---|---|
+| Cross-document | 46 | 0 | 0% |
+| Intra-document | 77 | 2 | 2.6% |
+| **Total** | **123** | **2** | **1.6%** |
+
+Two biases, both pointing the same direction:
+
+1. **Volume bias:** 77 of 123 candidate pairs (63%) are intra-document.
+   Review articles commonly make multiple claims with different directions
+   about the same drug ("helps for X, doesn't help for Y"), and these all
+   become intra-document candidates.
+2. **Acceptance bias:** The NLI accepted 2 of 77 intra-document pairs
+   (2.6%) and 0 of 46 cross-document pairs (0%). All accepted contradictions
+   are within-source — the pairs that cannot constitute source
+   disagreement.
+
+The v1 detector preferentially surfaces within-source tensions. The v2
+prompt (not yet run) records `same_document` as a field and adds 4 gates
+that would reject all 3 existing rows, but the v1 detector's bias is a
+known property of the current data.
 
 ## Fixes applied
 
@@ -163,6 +198,7 @@ table. All on gated pages (SIGNALS_PUBLISHED = false).
 |---|---|
 | Contradiction rows in table | 3 |
 | Intra-document rows | 3 (100%) |
+| Stale rows (claims no longer entailed) | 1 (Row 1) |
 | Cross-document contradictions | 0 |
 | Signals flagged (original) | 7 |
 | Signals flagged (Fix 1: scope to own claims) | 3 |
@@ -170,9 +206,14 @@ table. All on gated pages (SIGNALS_PUBLISHED = false).
 | Groups with single-document coverage | 99/114 (87%) |
 | Cross-document conflict pairs sent to NLI | 46 |
 | Cross-document contradictions confirmed | 0 |
+| Intra-document conflict pairs sent to NLI | 77 |
+| Intra-document contradictions confirmed | 2 |
+| v1 detector acceptance rate (intra-doc) | 2.6% |
+| v1 detector acceptance rate (cross-doc) | 0% |
 | NLI rejection rationales recorded | 0 (v1 has no rejection log) |
 
 The consistency penalty is inert: it fires on 0 signals after both fixes.
 The "zero contradictions" finding is a coverage limitation (87% single-source),
-not evidence of consensus. The 46 NLI rejections are not auditable without
-the v2 rejection log.
+not evidence of consensus. The v1 detector preferentially surfaces
+intra-document pairs (63% of candidates, 100% of acceptances). The 46
+cross-document NLI rejections are not auditable without the v2 rejection log.
