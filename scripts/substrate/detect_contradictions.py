@@ -75,7 +75,17 @@ def _pair_key(a, b):
     return tuple(sorted((a, b)))
 
 
-def run():
+def run(limit=None, dry_run=False):
+    """Surface contradictions among entailed efficacy claims.
+
+    Args:
+        limit: if set, only evaluate this many candidate pairs (NLI calls).
+            Useful for verifying the pipeline without spending full credits.
+        dry_run: if True, list candidate pairs without calling the NLI.
+            Zero credits. Does not write to the contradictions table or the
+            rejection log. Prints the candidate pairs that would be sent to
+            the NLI so the claim set can be verified.
+    """
     conn = db.connect()
     # Only ENTAILED efficacy claims are eligible. A contradiction is only
     # trustworthy if BOTH sides faithfully represent their sources; a claim that
@@ -100,6 +110,23 @@ def run():
                 (a["id"], b["id"], b["id"], a["id"])).fetchone():
                 continue
             candidates.append((iid, cid, a, b))
+
+    if dry_run:
+        print(f"  DRY RUN: {len(candidates)} candidate pairs would be sent to NLI")
+        for i, (iid, cid, a, b) in enumerate(candidates):
+            same_doc = a["document_id"] == b["document_id"]
+            print(f"  [{i+1}] dir=({a['direction']}/{b['direction']}) "
+                  f"same_doc={same_doc} "
+                  f"outcome=({a['outcome'] or '?'}/{b['outcome'] or '?'})")
+            print(f"      A: {a['text'][:80]}")
+            print(f"      B: {b['text'][:80]}")
+        conn.close()
+        return 0
+
+    if limit is not None:
+        candidates = candidates[:limit]
+        print(f"  --limit {limit}: evaluating first {len(candidates)} of "
+              f"{len(candidates)} candidate pairs")
 
     def _check(cand):
         _, _, a, b = cand

@@ -14,13 +14,27 @@ The rescore sequence has four stages, and they MUST run in this order:
      contradiction row references two claims, and if either claim's
      entailment_label is no longer "entailed", the row is stale.
 
-  3. REBUILD CONTRADICTIONS  (DELETE + detect_contradictions.run)
-     Delete ALL rows from the contradictions table, then re-run detection
-     against the current claim set. This step is NOT optional and NOT
-     idempotent with append: detect_contradictions.py skips pairs that
-     already have a row, so without the delete, stale rows survive and
-     score_claims.py reads contradictions computed against a claim set
-     that no longer exists.
+  3. REBUILD CONTRADICTIONS  (backup + DELETE + detect_contradictions.run)
+     Back up existing rows to a timestamped JSON file, delete ALL rows from
+     the contradictions table, then re-run detection against the current
+     claim set. This step is NOT optional and NOT idempotent with append:
+     detect_contradictions.py skips pairs that already have a row, so
+     without the delete, stale rows survive and score_claims.py reads
+     contradictions computed against a claim set that no longer exists.
+
+     TRANSACTION NOTE: The DELETE and the regeneration CANNOT be wrapped in
+     a single SQLite transaction. detect_contradictions.run() opens its own
+     connection via db.connect() and commits after each found contradiction.
+     A transaction on a different connection would not protect the DELETE.
+     Safety relies on the JSON backup: if stage 3 dies partway, the backup
+     has the pre-rescore rows and the table has a partial set from the
+     current run. Re-running --from-stage 3 starts fresh (see below).
+
+     RE-RUN SAFETY: --from-stage 3 is safe to re-run against a partially
+     rebuilt table. It backs up whatever rows exist (from the failed run),
+     deletes them, and re-runs detection from scratch. All candidate pairs
+     are re-evaluated because the table is empty after the DELETE. The cost
+     is that NLI calls from the failed run are repeated.
 
   4. SCORE SIGNALS           (score_claims.run)
      Score signals against the rebuilt contradictions table.
@@ -30,15 +44,20 @@ against stale contradiction data. The integrity check
 (`--check-integrity`) catches this after the fact but does not fix it.
 
 Usage (from repo root):
-    python3 scripts/substrate/rescore.py                # full rescore
-    python3 scripts/substrate/rescore.py --from-stage 3 # resume from contradictions
-    python3 scripts/substrate/rescore.py --check-integrity  # standalone check
+    python3 scripts/substrate/rescore.py                     # full rescore
+    python3 scripts/substrate/rescore.py --from-stage 3      # resume from stage 3
+    python3 scripts/substrate/rescore.py --check-integrity   # standalone check
+    python3 scripts/substrate/rescore.py --dry-run           # list stage 3 candidates, no NLI
+    python3 scripts/substrate/rescore.py --limit 5           # stage 3 with 5 NLI calls only
 
 HARD RULE: if Anthropic credits run out mid-run, we STOP. We never fabricate
 entailment or contradiction output. Re-run with --from-stage to resume.
 """
+import json
 import sys
 import argparse
+from datetime import datetime, timezone
+from pathlib import Path
 
 import db
 import extract_claims
@@ -46,6 +65,8 @@ import verify_provenance
 import detect_contradictions
 import score_claims
 from llm import usage_snapshot, CreditsExhausted
+
+AUDIT_DIR = Path(__file__).resolve().parent.parent / "audit-output"
 
 
 STAGES = [
@@ -79,6 +100,32 @@ def check_integrity():
     return len(stale), [dict(r) for r in stale]
 
 
+def _backup_contradictions():
+    """Write all existing contradiction rows to a timestamped JSON file in
+    audit-output/. Returns the backup path. This runs BEFORE the DELETE so
+    the rows are recoverable if stage 3 dies partway.
+    """
+    conn = db.connect()
+    rows = conn.execute(
+        "SELECT c.*, ca.text AS claim_a_text, cb.text AS claim_b_text, "
+        "ca.entailment_label AS ent_a, cb.entailment_label AS ent_b "
+        "FROM contradictions c "
+        "JOIN claims ca ON c.claim_a_id = ca.id "
+        "JOIN claims cb ON c.claim_b_id = cb.id"
+    ).fetchall()
+    conn.close()
+
+    AUDIT_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    path = AUDIT_DIR / f"contradictions-backup-{ts}.json"
+    path.write_text(json.dumps({
+        "backed_up_at": datetime.now(timezone.utc).isoformat(),
+        "row_count": len(rows),
+        "rows": [dict(r) for r in rows],
+    }, indent=2) + "\n")
+    return path, len(rows)
+
+
 def _print_usage(stage):
     u = usage_snapshot()
     print(f"  [usage after {stage}] {u['calls']} calls, "
@@ -93,6 +140,13 @@ def main():
                          "3=contradictions, 4=score)")
     ap.add_argument("--check-integrity", action="store_true",
                     help="run only the contradiction integrity check and exit")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="list stage 3 candidate pairs without calling NLI "
+                         "(zero credits). Does not modify the database.")
+    ap.add_argument("--limit", type=int, default=None,
+                    help="stage 3 only: evaluate at most N candidate pairs "
+                         "(N NLI calls). Useful for verifying the pipeline "
+                         "without spending full credits.")
     args = ap.parse_args()
 
     if args.check_integrity:
@@ -108,6 +162,14 @@ def main():
         print("\nRebuild the contradictions table:")
         print("  python3 scripts/substrate/rescore.py --from-stage 3")
         return 1
+
+    # --dry-run: list stage 3 candidates without NLI calls or DELETE
+    if args.dry_run:
+        print("== Stage 3 dry run (no NLI, no DELETE) ==")
+        db.init_db()
+        detect_contradictions.run(dry_run=True)
+        print("\nDRY RUN — nothing was modified. Re-run without --dry-run to apply.")
+        return 0
 
     print("== Whel rescore ==")
     db.init_db()
@@ -131,14 +193,18 @@ def main():
             _print_usage("entailment")
 
         if args.from_stage <= 3:
-            print("\n[stage 3] Rebuild contradictions (DELETE + re-detect) ...")
+            print("\n[stage 3] Rebuild contradictions (backup + DELETE + re-detect) ...")
+            # Back up existing rows before DELETE
+            backup_path, n_old = _backup_contradictions()
+            print(f"  backed up {n_old} row(s) to {backup_path}")
+            # Delete all rows
             conn = db.connect()
-            n_old = conn.execute("SELECT COUNT(*) FROM contradictions").fetchone()[0]
             conn.execute("DELETE FROM contradictions")
             conn.commit()
             conn.close()
             print(f"  deleted {n_old} existing contradiction row(s)")
-            detect_contradictions.run()
+            # Regenerate
+            detect_contradictions.run(limit=args.limit)
             _print_usage("contradictions")
 
         if args.from_stage <= 4:
@@ -168,6 +234,7 @@ def main():
         print("  Resume with: python3 scripts/substrate/rescore.py "
               f"--from-stage {min(args.from_stage, 4)}")
         print("  (Adjust --from-stage to the last stage that completed.)")
+        print("  The pre-rescore contradictions are backed up in audit-output/.")
         print("!" * 64)
         return 3
 
