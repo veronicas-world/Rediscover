@@ -3,171 +3,176 @@
 ## What the flag is
 
 `contradiction_flag` is a boolean column on `substrate_signals`. It is set to
-`true` when `num_contradictions > 0` — that is, when the `contradictions` table
-contains at least one row for the same `(intervention_id, condition_id)` pair.
+`true` when `num_contradictions > 0` — that is, when the `contradictions`
+table contains at least one row involving a claim that belongs to this
+signal.
 
 The `contradictions` table is populated by `detect_contradictions.py`, which
-compares **efficacy claims only** (aspect = 'efficacy', entailment = 'entailed')
-within each `(intervention, condition)` group, looking for pairs with
-conflicting directions (positive vs negative, positive vs null, negative vs
-null), and confirming each candidate with an NLI check (score >= 0.6).
+compares **efficacy claims only** (aspect = 'efficacy', entailment =
+'entailed') within each `(intervention, condition)` group, looking for pairs
+with conflicting directions (positive vs negative, positive vs null,
+negative vs null), and confirming each candidate with an NLI check (score
+>= 0.6).
 
-The flag is written by `scripts/substrate/score_claims.py` line 582:
-`1 if nco > 0 else 0`, where `nco = _num_contradictions(conn, iv, cd)` counts
-rows in `contradictions WHERE intervention_id=? AND condition_id=?`.
+## What the table actually contains
 
-## The three things the flag conflates
+The `contradictions` table has **3 rows**. All 3 are **intra-document** —
+both claims in each pair come from the same source document. There are zero
+cross-document contradictions.
 
-The flag counts ALL contradiction rows for the drug/condition pair, regardless
-of which signal's sources they come from. The contradiction detection only
-compares efficacy claims, but the penalty is applied to ALL signals for the
-pair, including safety and "other" aspects. This means the flag conflates
-three distinct things:
+### Row 1 — MHT / menopause
 
-### 1. Direction disagreement between sources on one outcome (2 of 7)
+- **Claims:** "MHT reduces cardiovascular events" (positive) vs "MHT does not
+  reduce all-cause mortality" (null)
+- **Same document:** yes
+- **Why it's not a real contradiction:** different outcomes (cardiovascular
+  events vs all-cause mortality) AND different populations (general
+  postmenopausal vs "early acceptance" timing qualifier). Gate 3 (same
+  outcome) and Gate 4 (same population) would both reject this pair.
 
-Two efficacy claims about the same drug/condition have conflicting directions
-(positive vs negative or null), confirmed by NLI as a genuine contradiction.
+### Row 2 — anti-androgens + lifestyle / PCOS
 
-This IS what the v1.4 consistency penalty rule asks about: "mixed direction
-across sources" (penalty -1) or "direct conflict on the primary outcome"
-(penalty -2).
+- **Claims:** "anti-androgens + lifestyle superior to metformin + lifestyle
+  for hirsutism" (positive) vs "anti-androgens + lifestyle not superior to
+  placebo + lifestyle for hirsutism" (null)
+- **Same document:** yes
+- **Why it's not a real contradiction:** same outcome (hirsutism) but
+  different comparators (metformin vs placebo). Gate 2 (same comparator)
+  would reject this pair.
 
-**Example:** `anti-androgens + lifestyle / PCOS / direct / efficacy`
-— rationale: "Results are mixed: anti-androgens + lifestyle were superior to
-metformin + lifestyle for hirsutism and SHBG but NOT superior to placebo +
-lifestyle for the same outcomes."
+### Row 3 — metformin / PCOS
 
-**Count:** 2 of 7 flagged signals.
+- **Claims:** "metformin improves hirsutism" (positive) vs "metformin does
+  not improve free androgen index" (null)
+- **Same document:** yes
+- **Why it's not a real contradiction:** different outcomes (hirsutism vs
+  free androgen index). Gate 3 (same outcome) would reject this pair.
 
-### 2. Benefit-versus-harm across outcomes for the same drug (3 of 7, all MHT/menopause)
+## Coverage limitation
 
-The drug has beneficial effects on some outcomes (e.g., vasomotor symptom
-relief, fracture reduction) and harmful effects on others (e.g., stroke,
-VTE). The contradiction detection compares efficacy claims across ALL
-outcomes for the same drug/condition — a claim saying "MHT reduces
-vasomotor symptoms" (positive) can be flagged against a claim saying "MHT
-does not improve cognitive function" (null). These are different outcomes,
-not source disagreement on the same outcome.
+The "zero cross-document contradictions" finding is a coverage limitation,
+not evidence of consensus.
 
-The v1.4 consistency rule asks about direction agreement **for a given
-outcome**. Sources can agree on every individual outcome (penalty 0) while
-the drug still has a contradiction flag because some outcomes are beneficial
-and others are not.
+- **99 of 114** (intervention, condition) groups (87%) have entailed
+  efficacy claims from a **single document**. There is no second source to
+  disagree with.
+- **15 groups** have 2+ documents. Within those, **221 cross-document claim
+  pairs** were formed. Of those, **46 had opposing directions** and were
+  sent to the NLI for confirmation.
+- The NLI **rejected all 46**. Zero cross-document contradictions were
+  confirmed.
 
-**Example:** `menopausal hormone therapy / menopause / direct / safety`
-— rationale: "Two independent reviews agree on direction: MHT increases
-stroke risk... Findings are concordant across sources for the principal
-harms." Sources agree on direction for the safety outcome, but the flag is
-set because of a contradiction between efficacy claims about different
-outcomes for the same drug.
+| Drug | Condition | Cross-doc pairs | Conflict pairs (sent to NLI) | Confirmed |
+|---|---|---|---|---|
+| MHT | menopause | 87 | 24 | 0 |
+| metformin | PCOS | 29 | 15 | 0 |
+| DIENOGEST | adenomyosis | 36 | 6 | 0 |
+| inositol | PCOS | 3 | 1 | 0 |
+| 11 other groups | — | 66 | 0 | 0 |
+| **Total** | | **221** | **46** | **0** |
 
-**Count:** 3 of 7 flagged signals.
+The 46 NLI rejections are **not recorded** — the current detection script
+(`detect_contradictions.py` v1) does not log rejected pairs. The NLI may
+have rejected them for the right reasons (different comparator, different
+outcome, different population) or for the wrong reasons (the v1 prompt
+does not check those gates). Without rejection rationales, the rejection
+rate is not auditable.
 
-### 3. Cross-signal or cross-aspect tension (2 of 7)
+## Fixes applied
 
-The contradiction is between different signals for the same drug/condition,
-not between sources within one signal. The `_num_contradictions` function
-counts ALL contradiction rows for the `(intervention_id, condition_id)` pair,
-so a contradiction between two efficacy claims affects the `contradiction_flag`
-on the safety signal and the community signal for the same pair, even though
-those signals' own sources agree.
+### Fix 1 — Scope to signal's own claims (committed `0c3d241`)
 
-**Example:** `metformin / PCOS / direct / safety` — rationale: "Only a single
-source is provided, so directional consistency across studies cannot be
-assessed and is scored as n/a (1)." The safety signal has one source and
-cannot have direction disagreement, but it inherits the flag from a
-contradiction between efficacy claims for metformin/PCOS.
+The original `_num_contradictions` counted ALL contradiction rows for the
+`(intervention_id, condition_id)` pair. A safety signal inherited a
+contradiction between two efficacy claims it didn't contain.
 
-**Count:** 2 of 7 flagged signals.
+**Fix:** `_num_contradictions` now only counts contradictions where at least
+one of the two claims belongs to this signal's claim set.
+
+**Effect:** 3 of 7 flagged signals survive (the other 4 didn't contain any
+of the 6 claims in the 3 contradiction rows).
+
+### Fix 2 — Exclude same-document contradictions (committed)
+
+All 3 contradiction rows are intra-document. A within-source tension is not
+a between-source consistency signal.
+
+**Fix:** `_num_contradictions` now joins with the `claims` table and excludes
+rows where `ca.document_id = cb.document_id` (both non-NULL and equal).
+
+**Effect:** All 3 surviving rows are intra-document, so the consistency
+penalty fires on **0 signals** after both fixes. The `contradiction_flag`
+is effectively dead in the current corpus.
+
+### Fix 3 — Revised detection prompt (not yet run)
+
+`detect_contradictions.py` v2 adds:
+- **4 gates** (intervention, comparator, outcome, population) — a pair must
+  pass all 4 before direction is checked
+- **`same_document` field** — recorded as a field, not a rejection
+- **JSONL rejection log** — every evaluated pair is logged with the gate
+  that rejected it and a one-line rationale, so the rejection rate is
+  auditable
+
+The v2 prompt would have **rejected all 3 existing rows** (each fails at
+least one gate). It has not been run against the corpus yet.
 
 ## How the flag is used
 
 ### Scoring (arm_strength)
 
-`score_claims.py` line 519-520:
-```python
-nco = _num_contradictions(conn, iv, cd)
-if nco > 0:
-    dims["consistency"] = min(dims["consistency"], -1)
-```
+`score_claims.py` reads `num_contradictions` and, if > 0, caps the
+consistency penalty at -1 (§5d of SCORING_SPEC.md). Since
+`arm_strength = max(0, sum(dims.values()))`, this reduces arm_strength by
+at least 1.
 
-The flag DOES feed `arm_strength` through the consistency penalty. When
-there are any contradiction rows for the drug/condition pair, the consistency
-score is capped at -1. Since `arm_strength = max(0, sum(dims.values()))`,
-this reduces arm_strength by at least 1.
-
-In the v1.3 run, the old code capped consistency at 1 (not -1), so signals
-already at consistency = 1 paid nothing. In the v1.4 rescore, the new code
-sets consistency = min(consistency, -1), which is a 2-point drop for signals
-currently at consistency = 1.
-
-**Scoring bug:** The penalty is applied to ALL signals for the
-drug/condition pair, including safety and "other" aspects whose own sources
-agree on direction. MHT/menopause/direct/safety will be scored down in the
-v1.4 rescore for a contradiction between efficacy claims, even though the
-safety signal's sources agree that MHT increases stroke risk.
+After Fix 1 + Fix 2, `num_contradictions` is 0 for every signal. The
+consistency penalty never fires. The flag is inert.
 
 ### Display (gated)
 
-`CandidateCard.tsx` line 601:
-```tsx
-{c.arms.some((a) => a.contradictionFlag) && (
-  <span className="m" style={{ color: "var(--brick)" }}>
-    <b>⚠ Contradiction</b>
-  </span>
-)}
-```
-
-`CandidateCard.tsx` line 220-222 (RelBadge):
-```tsx
-const labels = { supports: "Evidence supports",
-                 contradicts: "Contradiction present",
-                 silent: "Evidence silent" };
-```
-
-`conditions/[slug]/substrate/page.tsx` lines 246-294: renders a
-"Contradictions surfaced" count and list from the `contradictions` table.
-
-All on gated pages (candidates, featured, access/preview,
-conditions/[slug]/substrate).
+`CandidateCard.tsx` renders a "⚠ Contradiction" badge when
+`contradictionFlag` is true. `conditions/[slug]/substrate/page.tsx` renders
+a "Contradictions surfaced" count and list from the `contradictions`
+table. All on gated pages (SIGNALS_PUBLISHED = false).
 
 ### Ranking/sort
 
 `contradiction_flag` does NOT feed ranking or sort order. The sort uses
-`negLast` which is based on `documentedNegative` (from
-`negativeNote`/`negativeEvidence`), not `anyContradiction`.
+`negLast` which is based on `documentedNegative`, not
+`anyContradiction`.
 
 ## Where the flag gets set
 
 **Writer:** `scripts/substrate/score_claims.py`
-- `_num_contradictions(conn, iv, cd)` counts rows in `contradictions` for
-  this `(intervention_id, condition_id)` pair
+- `_num_contradictions(conn, iv, cd, claim_ids)` counts rows in
+  `contradictions` involving this signal's claims, excluding same-document
+  pairs
 - `1 if nco > 0 else 0` writes `contradiction_flag`
 - `nco` writes `num_contradictions`
 
 **Detection:** `scripts/substrate/detect_contradictions.py`
-- Only compares efficacy claims (aspect = 'efficacy', entailment = 'entailed')
-- Only compares claims with conflicting directions (positive vs
-  negative/null)
-- NLI check confirms genuine contradiction (score >= 0.6)
-- Records in `contradictions` table
-
-**What it tests at write time:** "Are there any rows in the `contradictions`
-table for this drug/condition pair?" It does NOT test direction agreement
-within this signal's own sources. It tests whether ANY two efficacy claims
-for this drug/condition have been flagged as contradicting each other by the
-NLI check.
+- v1 (current, committed): compares efficacy claims with conflicting
+  directions, NLI confirms (score >= 0.6), no rejection logging
+- v2 (revised, not yet run): 4 gates + same_document field + JSONL
+  rejection log
 
 ## Summary
 
-| Thing the flag conflates | Count | v1.4 consistency? | Scoring impact |
-|---|---|---|---|
-| Direction disagreement on one outcome | 2/7 | Yes — this is what the rule asks about | Correct penalty |
-| Benefit-vs-harm across outcomes | 3/7 | No — sources agree on each outcome | Incorrect penalty |
-| Cross-signal/cross-aspect tension | 2/7 | No — signal's own sources agree | Incorrect penalty |
+| Finding | Value |
+|---|---|
+| Contradiction rows in table | 3 |
+| Intra-document rows | 3 (100%) |
+| Cross-document contradictions | 0 |
+| Signals flagged (original) | 7 |
+| Signals flagged (Fix 1: scope to own claims) | 3 |
+| Signals flagged (Fix 1 + Fix 2: exclude same-doc) | 0 |
+| Groups with single-document coverage | 99/114 (87%) |
+| Cross-document conflict pairs sent to NLI | 46 |
+| Cross-document contradictions confirmed | 0 |
+| NLI rejection rationales recorded | 0 (v1 has no rejection log) |
 
-The flag fires on 7 of 226 signals. Only 2 of those 7 are what the v1.4
-consistency rule asks about. The other 5 are measuring something different.
-The rescore will apply the -1 consistency penalty to all 7, penalizing 5
-signals for something that is not direction disagreement.
+The consistency penalty is inert: it fires on 0 signals after both fixes.
+The "zero contradictions" finding is a coverage limitation (87% single-source),
+not evidence of consensus. The 46 NLI rejections are not auditable without
+the v2 rejection log.

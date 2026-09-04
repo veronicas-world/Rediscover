@@ -404,13 +404,21 @@ def _num_contradictions(conn, iv, cd, claim_ids):
     without scoping, a safety signal inherits a contradiction between two
     efficacy claims it doesn't contain. Only contradictions where at least
     one of the two claims belongs to this signal should count.
+
+    Same-document contradictions (both claims from one source) are excluded.
+    A within-source tension is not a between-source consistency signal.
     """
     if not claim_ids:
         return 0
     ph = ",".join("?" for _ in claim_ids)
     return conn.execute(
-        f"SELECT COUNT(*) FROM contradictions WHERE intervention_id=? AND condition_id=?"
-        f" AND (claim_a_id IN ({ph}) OR claim_b_id IN ({ph}))",
+        f"SELECT COUNT(*) FROM contradictions c"
+        f" JOIN claims ca ON c.claim_a_id = ca.id"
+        f" JOIN claims cb ON c.claim_b_id = cb.id"
+        f" WHERE c.intervention_id=? AND c.condition_id=?"
+        f" AND (c.claim_a_id IN ({ph}) OR c.claim_b_id IN ({ph}))"
+        f" AND NOT (ca.document_id IS NOT NULL AND cb.document_id IS NOT NULL"
+        f" AND ca.document_id = cb.document_id)",
         (iv, cd, *claim_ids, *claim_ids)).fetchone()[0]
 
 
