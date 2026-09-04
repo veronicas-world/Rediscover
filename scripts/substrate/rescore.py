@@ -44,11 +44,13 @@ against stale contradiction data. The integrity check
 (`--check-integrity`) catches this after the fact but does not fix it.
 
 Usage (from repo root):
-    python3 scripts/substrate/rescore.py                     # full rescore
-    python3 scripts/substrate/rescore.py --from-stage 3      # resume from stage 3
-    python3 scripts/substrate/rescore.py --check-integrity   # standalone check
-    python3 scripts/substrate/rescore.py --dry-run           # list stage 3 candidates, no NLI
-    python3 scripts/substrate/rescore.py --limit 5           # stage 3 with 5 NLI calls only
+    python3 scripts/substrate/rescore.py                              # full rescore
+    python3 scripts/substrate/rescore.py --from-stage 3               # resume from stage 3
+    python3 scripts/substrate/rescore.py --check-integrity            # standalone check
+    python3 scripts/substrate/rescore.py --dry-run                    # list stage 3 candidates, no NLI
+    python3 scripts/substrate/rescore.py --limit 5                    # stage 3, 5 NLI calls, NO DELETE (safe test)
+    python3 scripts/substrate/rescore.py --limit 5 --i-know-this-deletes  # stage 3, 5 NLI calls, WITH DELETE
+    python3 scripts/substrate/rescore.py --restore-backup PATH         # restore rows from a backup file
 
 HARD RULE: if Anthropic credits run out mid-run, we STOP. We never fabricate
 entailment or contradiction output. Re-run with --from-stage to resume.
@@ -68,13 +70,12 @@ from llm import usage_snapshot, CreditsExhausted
 
 AUDIT_DIR = Path(__file__).resolve().parent.parent / "audit-output"
 
-
-STAGES = [
-    (1, "re-extract claims", "extract_claims"),
-    (2, "re-run entailment", "verify_provenance"),
-    (3, "rebuild contradictions", "detect_contradictions"),
-    (4, "score signals", "score_claims"),
-]
+# Columns in the contradictions table. The backup JSON includes joined
+# claim fields (claim_a_text, etc.) that must be filtered out on restore.
+CONTRADICTION_COLUMNS = (
+    "id", "claim_a_id", "claim_b_id", "intervention_id", "condition_id",
+    "nli_label", "nli_score", "rationale", "model_name", "created_at",
+)
 
 
 def check_integrity():
@@ -126,6 +127,46 @@ def _backup_contradictions():
     return path, len(rows)
 
 
+def _restore_backup(path):
+    """Read a contradictions-backup-*.json file and write those rows back
+    to the contradictions table, replacing whatever is there. Returns the
+    number of rows restored.
+    """
+    data = json.loads(Path(path).read_text())
+    rows = data.get("rows", [])
+    conn = db.connect()
+    conn.execute("DELETE FROM contradictions")
+    restored = 0
+    for row in rows:
+        # Filter to only the columns the contradictions table has.
+        # The backup JSON includes joined fields (claim_a_text, ent_a, etc.)
+        # that are not columns on the contradictions table.
+        values = {k: row.get(k) for k in CONTRADICTION_COLUMNS}
+        cols = ", ".join(CONTRADICTION_COLUMNS)
+        ph = ", ".join("?" for _ in CONTRADICTION_COLUMNS)
+        conn.execute(
+            f"INSERT OR REPLACE INTO contradictions ({cols}) VALUES ({ph})",
+            [values[k] for k in CONTRADICTION_COLUMNS],
+        )
+        restored += 1
+    conn.commit()
+    conn.close()
+    return restored
+
+
+def _print_integrity():
+    count, details = check_integrity()
+    if count == 0:
+        print("contradiction integrity: OK (0 stale rows)")
+    else:
+        print(f"contradiction integrity: FAIL ({count} stale row(s))")
+        for d in details:
+            print(f"  row {d['id']}: "
+                  f"claim_a ent={d['ent_a']} pv={d['pv_a']}, "
+                  f"claim_b ent={d['ent_b']} pv={d['pv_b']}")
+    return count
+
+
 def _print_usage(stage):
     u = usage_snapshot()
     print(f"  [usage after {stage}] {u['calls']} calls, "
@@ -145,23 +186,34 @@ def main():
                          "(zero credits). Does not modify the database.")
     ap.add_argument("--limit", type=int, default=None,
                     help="stage 3 only: evaluate at most N candidate pairs "
-                         "(N NLI calls). Useful for verifying the pipeline "
-                         "without spending full credits.")
+                         "(N NLI calls). By default does NOT delete the table "
+                         "(safe test). Use --i-know-this-deletes to run the "
+                         "full backup + DELETE + regenerate.")
+    ap.add_argument("--i-know-this-deletes", action="store_true",
+                    help="with --limit: run the full stage 3 (backup + DELETE "
+                         "+ regenerate with limit N). Without this flag, "
+                         "--limit skips the DELETE and runs detection against "
+                         "the existing table.")
+    ap.add_argument("--restore-backup", type=str, default=None, metavar="PATH",
+                    help="restore contradiction rows from a backup JSON file. "
+                         "Replaces all existing rows. Runs the integrity check "
+                         "afterward.")
     args = ap.parse_args()
 
     if args.check_integrity:
-        count, details = check_integrity()
-        if count == 0:
-            print("contradiction integrity: OK (0 stale rows)")
-            return 0
-        print(f"contradiction integrity: FAIL ({count} stale row(s))")
-        for d in details:
-            print(f"  row {d['id']}: "
-                  f"claim_a ent={d['ent_a']} pv={d['pv_a']}, "
-                  f"claim_b ent={d['ent_b']} pv={d['pv_b']}")
-        print("\nRebuild the contradictions table:")
-        print("  python3 scripts/substrate/rescore.py --from-stage 3")
-        return 1
+        count = _print_integrity()
+        return 0 if count == 0 else 1
+
+    if args.restore_backup:
+        path = Path(args.restore_backup)
+        if not path.exists():
+            print(f"ERROR: backup file not found: {path}", file=sys.stderr)
+            return 1
+        print(f"== Restoring contradictions from {path} ==")
+        restored = _restore_backup(path)
+        print(f"  restored {restored} row(s)")
+        _print_integrity()
+        return 0
 
     # --dry-run: list stage 3 candidates without NLI calls or DELETE
     if args.dry_run:
@@ -169,6 +221,21 @@ def main():
         db.init_db()
         detect_contradictions.run(dry_run=True)
         print("\nDRY RUN — nothing was modified. Re-run without --dry-run to apply.")
+        return 0
+
+    # --limit without --i-know-this-deletes: safe test, no DELETE
+    limit_is_test = args.limit is not None and not args.i_know_this_deletes
+    if limit_is_test:
+        print("== Stage 3 limited test (NO DELETE — existing rows preserved) ==")
+        print(f"  --limit {args.limit}: evaluating {args.limit} candidate pairs")
+        print(f"  (existing contradiction rows are NOT deleted. New findings")
+        print(f"   will be appended. This is a test, not a rebuild.)")
+        db.init_db()
+        detect_contradictions.run(limit=args.limit)
+        _print_integrity()
+        print("\nTo do a full rebuild with this limit, add --i-know-this-deletes.")
+        print("To restore the table afterward, use --restore-backup with the")
+        print("backup file from audit-output/.")
         return 0
 
     print("== Whel rescore ==")
@@ -194,6 +261,9 @@ def main():
 
         if args.from_stage <= 3:
             print("\n[stage 3] Rebuild contradictions (backup + DELETE + re-detect) ...")
+            if args.limit is not None:
+                print(f"  --limit {args.limit} --i-know-this-deletes: "
+                      f"full rebuild with limited NLI calls")
             # Back up existing rows before DELETE
             backup_path, n_old = _backup_contradictions()
             print(f"  backed up {n_old} row(s) to {backup_path}")
@@ -216,16 +286,7 @@ def main():
         stopped = str(e)
 
     # Post-run integrity check
-    count, details = check_integrity()
-    if count > 0:
-        print(f"\nWARNING: {count} stale contradiction row(s) remain after rescore. "
-              f"This should not happen — investigate.")
-        for d in details:
-            print(f"  row {d['id']}: "
-                  f"claim_a ent={d['ent_a']} pv={d['pv_a']}, "
-                  f"claim_b ent={d['ent_b']} pv={d['pv_b']}")
-    else:
-        print("\ncontradiction integrity: OK (0 stale rows)")
+    _print_integrity()
 
     if stopped:
         print("\n" + "!" * 64)
@@ -235,6 +296,8 @@ def main():
               f"--from-stage {min(args.from_stage, 4)}")
         print("  (Adjust --from-stage to the last stage that completed.)")
         print("  The pre-rescore contradictions are backed up in audit-output/.")
+        print("  Restore with: python3 scripts/substrate/rescore.py "
+              f"--restore-backup {backup_path}")
         print("!" * 64)
         return 3
 

@@ -17,11 +17,13 @@ The driver script `scripts/substrate/rescore.py` enforces this order.
 Run it from the repo root:
 
 ```bash
-python3 scripts/substrate/rescore.py                     # full rescore
-python3 scripts/substrate/rescore.py --from-stage 3       # resume from stage 3
-python3 scripts/substrate/rescore.py --check-integrity    # standalone check
-python3 scripts/substrate/rescore.py --dry-run           # list stage 3 candidates, no NLI
-python3 scripts/substrate/rescore.py --limit 5           # stage 3 with 5 NLI calls only
+python3 scripts/substrate/rescore.py                              # full rescore
+python3 scripts/substrate/rescore.py --from-stage 3               # resume from stage 3
+python3 scripts/substrate/rescore.py --check-integrity            # standalone check
+python3 scripts/substrate/rescore.py --dry-run                    # list stage 3 candidates, no NLI
+python3 scripts/substrate/rescore.py --limit 5                    # stage 3, 5 NLI calls, NO DELETE (safe test)
+python3 scripts/substrate/rescore.py --limit 5 --i-know-this-deletes  # stage 3, 5 NLI calls, WITH DELETE
+python3 scripts/substrate/rescore.py --restore-backup PATH        # restore rows from a backup file
 ```
 
 ## Why each stage matters
@@ -94,9 +96,9 @@ failed run are repeated — there is no resume-within-stage-3 mechanism.
 consistency penalty (§5d of SCORING_SPEC.md). Running this stage before
 stage 3 means scoring against stale contradiction data.
 
-## Verifying stage 3 without spending credits
+## Verifying stage 3
 
-### Dry run (zero credits)
+### Dry run — the safe verification (zero credits)
 
 ```bash
 python3 scripts/substrate/rescore.py --dry-run
@@ -107,17 +109,29 @@ same-document flag, outcome, and claim text (truncated). Does not DELETE,
 does not call the NLI, does not modify the database. Use this to verify
 the claim set is correct after stages 1 and 2.
 
-### Limited run (N NLI calls)
+### Limited run — a real run (N NLI calls)
 
 ```bash
-python3 scripts/substrate/rescore.py --from-stage 3 --limit 5
+python3 scripts/substrate/rescore.py --limit 5                          # safe: NO DELETE
+python3 scripts/substrate/rescore.py --limit 5 --i-know-this-deletes     # real: backup + DELETE + regenerate
 ```
 
-Runs the full stage 3 (backup + DELETE + regenerate) but only sends 5
-candidate pairs to the NLI. The table will have at most 5 evaluated rows
-(not a complete rebuild). Use this to verify the NLI calls and rejection
-log work end-to-end without spending full credits. To complete the
-rebuild, re-run `--from-stage 3` without `--limit`.
+**`--limit N` without `--i-know-this-deletes`** is the safe default. It
+does NOT delete the table. It runs `detect_contradictions.run(limit=N)`
+against the existing table, which evaluates N candidate pairs (skipping
+pairs that already have rows) and appends any new contradictions found.
+The existing rows are preserved. This is a test, not a rebuild — the
+table will have old rows plus whatever the limited run found.
+
+**`--limit N --i-know-this-deletes`** is the destructive variant. It runs
+the full stage 3 (backup + DELETE + regenerate with limit N). The table
+will have at most N evaluated rows. Use this to verify the backup + DELETE
++ NLI pipeline end-to-end. To complete the rebuild, re-run `--from-stage 3`
+without `--limit`.
+
+The safe default exists because someone reaching for `--limit` is
+precisely someone who is short on credits. The cheapest way to test
+stage 3 should not also be the one that wipes the table.
 
 ### Integrity check (zero credits)
 
@@ -133,6 +147,20 @@ As of 2026-09-04, this count is **1** (the stale MHT/menopause row whose
 both claims moved to `entailment_label = "neutral"`). It will return to
 zero after the next rescore runs stage 3.
 
+## Restoring a backup
+
+```bash
+python3 scripts/substrate/rescore.py --restore-backup scripts/audit-output/contradictions-backup-20260904T120000Z.json
+```
+
+Reads a `contradictions-backup-*.json` file, deletes all existing rows
+from the contradictions table, and inserts the backed-up rows. Prints
+how many rows were restored and runs the integrity check afterward.
+
+Use this if a stage 3 run died partway and you want to get back to the
+pre-rescore state before trying again. The backup files are in
+`scripts/audit-output/` with timestamps in the filename.
+
 ## Credits exhaustion
 
 If Anthropic credits run out mid-rescore, the driver stops immediately.
@@ -142,6 +170,12 @@ stage that completed:
 
 ```bash
 python3 scripts/substrate/rescore.py --from-stage 3
+```
+
+To restore the pre-rescore contradictions from the backup:
+
+```bash
+python3 scripts/substrate/rescore.py --restore-backup scripts/audit-output/contradictions-backup-{timestamp}.json
 ```
 
 ## Relationship to the initial pipeline
