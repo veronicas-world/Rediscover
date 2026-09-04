@@ -20,11 +20,43 @@ Remapping the v1.3 snapshot onto the 0–8 scale puts **0 signals at score 8**
 (with penalty) or **1 signal** (without penalty). The old 12 Strong signals
 all remap to 6–7. Strong is empty or nearly empty under 7.5.
 
+**3.5 is also wrong.** The remapped mode is 4 (54 signals), near-mode 5 (52).
+Rule (b) says no cutoff on or adjacent to a modal value. 3.5 sits directly
+adjacent to the mode. Both cutoffs were derived on the old lattice and both
+need re-deriving.
+
+**Structural findings from the remap** (run `python3 scripts/remap-snapshot-to-v14.py`):
+
+- **The consistency penalty is inert.** It fires on 4 of 226 signals (1.8%).
+  The other 222 get penalty 0. As a discriminator between tiers, it does
+  nothing. The v1.4 rule needs direction-agreement data the snapshot doesn't
+  carry (see `scripts/remap-snapshot-to-v14.py` docstring, WHAT IT DOES NOT DO).
+
+- **Half the corpus is capped at 6.** 116 signals (51%) are single-source
+  (corroboration = 0), so their arithmetic maximum on the 0–8 scale is 6
+  (three dimensions at 2, corroboration at 0). Any Strong cutoff above 6
+  excludes half the corpus by construction.
+
+- **The top of the scale is structurally unreachable.** 4 signals score 7,
+  0–1 score 8. The cliff at 6 (37 signals → 4 → 0) means no cutoff produces
+  a Strong tier that is both non-trivial in size and sits in a sparse region.
+  63% of signals are packed into scores 4–6. This is not a cutoff problem;
+  it is a rubric question: whether four 0–2 dimensions can produce enough
+  spread at the top to distinguish "strong" from "emerging."
+
+- **The "pessimistic" scenario is NOT a lower bound.** Assigning -1 to all
+  174 signals at old consistency = 1 would double-penalize single-source
+  rows whose rationale reads "n/a" — penalizing them through corroboration
+  (already 0) and consistency (−1) both. The v1.4 rule specifically exempts
+  single-source signals from the penalty. Do not cite the pessimistic
+  scenario as a bound.
+
 **Action:** Run the rescore, derive new cutoffs on the post-rescore lattice
 following SCORING_SPEC §5b rules (a) and (b), freeze them, and update
 `TIER_CUTOFFS` here. This is the single most important blocker.
 
 **Source:** SCORING_SPEC.md lines 272, 276–278, 322–324.
+**Diagnostic:** `scripts/remap-snapshot-to-v14.py`
 
 ---
 
