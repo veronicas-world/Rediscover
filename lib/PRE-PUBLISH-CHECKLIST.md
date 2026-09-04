@@ -134,8 +134,7 @@ count objects, label maps, Zod enum, and prose.
 - `lib/corpus-query.ts`: `dist` count object still seeds `moderate: 0`;
   feeds MCP `whel_corpus_meta` tier distribution. Reads from
   `lib/corpus-snapshot.json` which still holds v1.3 "moderate" tier values.
-- `app/signal-types/SignalTypesAccordion.tsx`: prose "tops out at Moderate
-  on its own."
+  Gated and machine-facing — can wait until rescore.
 - Historical audit prose in `app/about/technical-architecture/page.tsx` and
   `app/about/methodology/changelog/page.tsx` references v1.3 "Moderate"
   tier counts — intentional historical record, left as-is.

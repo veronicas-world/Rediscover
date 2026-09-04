@@ -2,10 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-// Type-only import from the shared helper (erased at build time, so a "use
-// client" component can use it); the runtime function stays local below because
-// the .mjs shared helper cannot be pulled into a client bundle.
-import type { TierKey } from "@/lib/substrate-helpers";
+import { tierKey, type TierKey } from "@/lib/substrate-helpers";
 
 /**
  * Serializable facet metadata for one candidate, computed on the server and
@@ -42,17 +39,6 @@ export type ExplorerItem = {
   card: ReactNode;
 };
 
-/** Normalize a display tier (may span, e.g. "strong–emerging") to the lower tier.
- *  Client component — can import the type but not the runtime function from the
- *  .mjs shared helper, so this local copy mirrors tierKey()/tierLc() in
- *  lib/substrate-helpers, including the v1.3 "moderate" → "emerging" shim. */
-function tierKey(t: string): TierKey {
-  const k = t.toLowerCase();
-  const lower = k.includes("–") ? k.split("–").pop()! : k;
-  if (lower === "strong" || lower === "emerging") return lower;
-  if (lower === "moderate") return "emerging"; // v1.3 shim, mirrors tierLc()
-  return "exploratory";
-}
 type ValKey = NonNullable<ExplorerItem["validation"]>;
 type ArmKey = NonNullable<ExplorerItem["signalArm"]>;
 type MarkerKey =

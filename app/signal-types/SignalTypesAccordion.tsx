@@ -111,7 +111,7 @@ const CARDS: Card[] = [
         causation or incidence. Because structured sources have no study population, every
         pathway signal defaults to the <em>female-applicability-unconfirmed</em> band (see
         below). Mechanistic evidence is not clinical-in-women evidence, so the Pathway arm
-        tops out at Moderate on its own.
+        tops out at Emerging on its own.
       </>
     ),
   },
