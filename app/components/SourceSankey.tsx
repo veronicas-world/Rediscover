@@ -3,8 +3,12 @@
 // Arm heights are proportional to arm_count if available; otherwise equal.
 // Source nodes are equal-height (source-level counts require a separate join).
 
+// Import the 3-tier taxonomy from the shared helper (server component) and
+// re-export it so existing consumers keep working.
+import type { TierKey } from "@/lib/substrate-helpers";
+export type { TierKey };
+
 export type ArmKey = "direct" | "cross" | "pathway" | "community";
-export type TierKey = "strong" | "moderate" | "emerging" | "exploratory";
 
 export type SankeyProps = {
   tierCounts: Record<TierKey, number>;
@@ -29,9 +33,11 @@ const ARMS = [
   { id: "community" as ArmKey, label: "Community Forum Reports", color: "#8C4A2E", bgOpacity: 0.1 },
 ] as const;
 
+// Display data for the 3-tier taxonomy. Not in the shared helper; must stay in
+// sync with the 3-tier TierKey in lib/substrate-helpers. Range strings are
+// display-only and derived from TIER_CUTOFFS in lib/substrate-helpers.
 const TIERS = [
   { id: "strong"      as TierKey, label: "Strong",      range: "9–10", color: "#1F2A1C" },
-  { id: "moderate"    as TierKey, label: "Moderate",    range: "7–8",  color: "#4D5E4D" },
   { id: "emerging"    as TierKey, label: "Emerging",    range: "4–6",  color: "#8C9577" },
   { id: "exploratory" as TierKey, label: "Exploratory", range: "0–3",  color: "#B5B19A" },
 ] as const;

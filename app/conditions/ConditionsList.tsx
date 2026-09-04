@@ -1,6 +1,5 @@
 import Link from "next/link";
-
-type TierKey = "strong" | "moderate" | "emerging" | "exploratory";
+import type { TierKey } from "@/lib/substrate-helpers";
 
 export type ConditionWithStats = {
   id: string;
@@ -14,14 +13,15 @@ export type ConditionWithStats = {
 
 // ── Visual constants ─────────────────────────────────────────────────────────
 
+// Visual constants for the 3-tier taxonomy. Not in the shared helper; must stay
+// in sync with the 3-tier TierKey in lib/substrate-helpers.
 const TIER_BAR: Record<TierKey, string> = {
   strong: "var(--tier-strong)",
-  moderate: "var(--tier-moderate)",
   emerging: "var(--tier-emerging)",
   exploratory: "var(--tier-exploratory)",
 };
 
-const TIER_ORDER: TierKey[] = ["strong", "moderate", "emerging", "exploratory"];
+const TIER_ORDER: TierKey[] = ["strong", "emerging", "exploratory"];
 
 const MONO: React.CSSProperties = {
   fontFamily: "var(--font-plex-mono, ui-monospace, monospace)",
@@ -129,7 +129,7 @@ function ConditionCard({ c }: { c: ConditionWithStats }) {
             }}
           >
             <span>
-              {c.tierCounts.strong} strong · {c.tierCounts.moderate} moderate
+              {c.tierCounts.strong} strong · {c.tierCounts.emerging} emerging
             </span>
             <span style={{ color: "var(--moss)", fontWeight: 500 }}>Open →</span>
           </div>

@@ -7,7 +7,7 @@ export type ConditionPanel = {
   slug: string;
   label: string;
   count: number;
-  /** e.g. "3 strong · 14 moderate · 12 emerging" */
+  /** e.g. "3 strong · 14 emerging · 12 exploratory" */
   tierSummary: string;
   cards: ReactNode;
 };

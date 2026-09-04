@@ -31,7 +31,7 @@ const handler = createMcpHandler(
       "List/filter Whel candidates as compact summaries. Defaults to the clean single-agent drug index (what the site shows). Filters: condition, tier, arm, regulatory (on-label/off-label/no-label/generic), drug substring, curationClass ('all' includes combinations/supplements/excluded/class). Paginated.",
       {
         condition: z.string().optional(),
-        tier: z.enum(["strong", "moderate", "emerging", "exploratory"]).optional(),
+        tier: z.enum(["strong", "emerging", "exploratory"]).optional(),
         arm: z.enum(["direct", "pathway", "community"]).optional(),
         regulatory: z.enum(["on-label", "off-label", "no-label", "generic"]).optional(),
         curationClass: z.enum(["drug", "combination", "supplement", "exclude", "class", "all"]).optional(),

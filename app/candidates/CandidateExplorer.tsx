@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
+// Type-only import from the shared helper (erased at build time, so a "use
+// client" component can use it); the runtime function stays local below because
+// the .mjs shared helper cannot be pulled into a client bundle.
+import type { TierKey } from "@/lib/substrate-helpers";
 
 /**
  * Serializable facet metadata for one candidate, computed on the server and
@@ -38,12 +42,16 @@ export type ExplorerItem = {
   card: ReactNode;
 };
 
-type TierKey = "strong" | "moderate" | "emerging" | "exploratory";
-/** Normalize a display tier (may span, e.g. "strong–moderate") to the lower tier. */
+/** Normalize a display tier (may span, e.g. "strong–emerging") to the lower tier.
+ *  Client component — can import the type but not the runtime function from the
+ *  .mjs shared helper, so this local copy mirrors tierKey()/tierLc() in
+ *  lib/substrate-helpers, including the v1.3 "moderate" → "emerging" shim. */
 function tierKey(t: string): TierKey {
   const k = t.toLowerCase();
   const lower = k.includes("–") ? k.split("–").pop()! : k;
-  return lower === "strong" || lower === "moderate" || lower === "emerging" ? (lower as TierKey) : "exploratory";
+  if (lower === "strong" || lower === "emerging") return lower;
+  if (lower === "moderate") return "emerging"; // v1.3 shim, mirrors tierLc()
+  return "exploratory";
 }
 type ValKey = NonNullable<ExplorerItem["validation"]>;
 type ArmKey = NonNullable<ExplorerItem["signalArm"]>;
@@ -51,14 +59,15 @@ type MarkerKey =
   | "matrix" | "sexpk" | "phase" | "graph" | "trials"
   | "onlabel" | "offlabel" | "generic" | "unsponsored";
 
-const TIER_ORDER: TierKey[] = ["strong", "moderate", "emerging", "exploratory"];
+// Display constants for the 3-tier taxonomy. Not in the shared helper; must stay
+// in sync with the 3-tier TierKey in lib/substrate-helpers.
+const TIER_ORDER: TierKey[] = ["strong", "emerging", "exploratory"];
 const TIER_LABELS: Record<TierKey, string> = {
   strong: "Strong",
-  moderate: "Moderate",
   emerging: "Emerging",
   exploratory: "Exploratory",
 };
-const TIER_RANK: Record<TierKey, number> = { strong: 0, moderate: 1, emerging: 2, exploratory: 3 };
+const TIER_RANK: Record<TierKey, number> = { strong: 0, emerging: 1, exploratory: 2 };
 
 const VAL_ORDER: ValKey[] = ["clinical", "unvalidated_signal", "preliminary"];
 const VAL_LABELS: Record<ValKey, string> = {
@@ -111,13 +120,13 @@ function markerActive(it: ExplorerItem, m: MarkerKey): boolean {
     case "generic": return it.genericAvailable;
     // Evidence with no route to a label: the condition is an off-label use, the
     // molecule is already generic, and the evidence is graded strong or
-    // moderate. Nobody can recoup the cost of a registration trial on a
+    // emerging. Nobody can recoup the cost of a registration trial on a
     // generic, so these stay off-label however good the evidence gets. This is
     // a structural observation about the incentive, not a claim that the drug
     // should be used or that a trial should be run.
     case "unsponsored":
       return it.offLabel && it.genericAvailable
-        && (it.tier === "strong" || it.tier === "moderate");
+        && (it.tier === "strong" || it.tier === "emerging");
   }
 }
 
@@ -415,7 +424,7 @@ export default function CandidateExplorer({ items }: { items: ExplorerItem[] }) 
             }}
           >
             <strong style={{ color: "var(--ink)" }}>No sponsor.</strong> Graded strong or
-            moderate for this condition, used off-label, and already generic. A registration
+            emerging for this condition, used off-label, and already generic. A registration
             trial is what moves an indication onto the label, and its cost cannot be recouped on
             a generic, so these pairs tend to stay off-label however strong the evidence becomes.
             Descriptive context about the incentive structure. Not a recommendation to use a

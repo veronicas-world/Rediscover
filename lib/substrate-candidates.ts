@@ -453,7 +453,7 @@ export async function getCorpusScope(): Promise<{ signals: number; conditions: n
 }
 
 export interface HomeConditionStat {
-  strong: number; moderate: number; emerging: number; exploratory: number; total: number;
+  strong: number; emerging: number; exploratory: number; total: number;
 }
 
 /**
@@ -487,7 +487,7 @@ export async function getSubstrateHomeData(): Promise<{
   for (const c of all) {
     const slug = c.conditionId ?? c.condition.toLowerCase();
     let s = byCondition.get(slug);
-    if (!s) { s = { strong: 0, moderate: 0, emerging: 0, exploratory: 0, total: 0 }; byCondition.set(slug, s); }
+    if (!s) { s = { strong: 0, emerging: 0, exploratory: 0, total: 0 }; byCondition.set(slug, s); }
     s[tierKey(c.tier)] += 1;
     s.total += 1;
   }

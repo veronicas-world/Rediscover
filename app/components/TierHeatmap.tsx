@@ -3,7 +3,10 @@
 
 import Link from "next/link";
 
-export type TierKey = "strong" | "moderate" | "emerging" | "exploratory";
+// Import the 3-tier taxonomy from the shared helper (server component) and
+// re-export it so existing consumers keep working.
+import type { TierKey } from "@/lib/substrate-helpers";
+export type { TierKey };
 
 export type HeatmapRow = {
   id: string;
@@ -13,9 +16,10 @@ export type HeatmapRow = {
   total: number;
 };
 
+// Display data for the 3-tier taxonomy. Not in the shared helper; must stay in
+// sync with the 3-tier TierKey in lib/substrate-helpers.
 const TIERS: { key: TierKey; label: string }[] = [
   { key: "strong", label: "Strong" },
-  { key: "moderate", label: "Moderate" },
   { key: "emerging", label: "Emerging" },
   { key: "exploratory", label: "Exploratory" },
 ];
@@ -25,7 +29,6 @@ function cellBg(tier: TierKey, intensity: number): string {
   const i = Math.min(1, Math.max(0, intensity));
   const ramps: Record<TierKey, { L0: number; LRange: number; C: number; H: number }> = {
     strong:      { L0: 0.96, LRange: 0.50, C: 0.05,  H: 130 },
-    moderate:    { L0: 0.96, LRange: 0.45, C: 0.045, H: 125 },
     emerging:    { L0: 0.96, LRange: 0.40, C: 0.06,  H: 95  },
     exploratory: { L0: 0.96, LRange: 0.30, C: 0.02,  H: 85  },
   };
@@ -57,7 +60,7 @@ export default function TierHeatmap({ rows }: { rows: HeatmapRow[] }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(160px, 220px) repeat(4, 1fr) 80px",
+            gridTemplateColumns: "minmax(160px, 220px) repeat(3, 1fr) 80px",
             border: "1px solid var(--ink)",
             background: "var(--paper)",
             minWidth: 640,

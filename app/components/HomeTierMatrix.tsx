@@ -8,15 +8,15 @@ export interface MatrixRow {
   slug: string;
   flagship?: boolean;
   strong: number;
-  moderate: number;
   emerging: number;
   exploratory: number;
   total: number;
 }
 
+// Display data for the 3-tier taxonomy. Not in the shared helper; must stay in
+// sync with the 3-tier TierKey in lib/substrate-helpers.
 const TIERS: { key: keyof Omit<MatrixRow, "id" | "name" | "slug" | "flagship" | "total">; label: string }[] = [
   { key: "strong",      label: "Strong" },
-  { key: "moderate",    label: "Moderate" },
   { key: "emerging",    label: "Emerging" },
   { key: "exploratory", label: "Exploratory" },
 ];
@@ -24,7 +24,6 @@ const TIERS: { key: keyof Omit<MatrixRow, "id" | "name" | "slug" | "flagship" | 
 function shade(tier: string, v: number, max: number): { bg: string; fg: string } {
   const base: Record<string, [number, number, number]> = {
     strong:      [0.34, 0.045, 134],
-    moderate:    [0.55, 0.05,  128],
     emerging:    [0.78, 0.06,  128],
     exploratory: [0.9,  0.04,  120],
   };
@@ -46,7 +45,7 @@ export default function HomeTierMatrix({ rows }: { rows: MatrixRow[] }) {
       <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
       <div style={{
         display: "grid",
-        gridTemplateColumns: "minmax(132px,180px) repeat(4,1fr) 64px",
+        gridTemplateColumns: "minmax(132px,180px) repeat(3,1fr) 64px",
         minWidth: 520,
         gap: 1,
         background: "var(--line)",

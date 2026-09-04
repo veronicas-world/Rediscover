@@ -72,9 +72,10 @@ const LINK: React.CSSProperties = {
   textUnderlineOffset: "2px",
 };
 
+// Display labels for the 3-tier taxonomy. Not in the shared helper; must stay
+// in sync with the 3-tier TierKey in lib/substrate-helpers.
 const TIER_LABEL: Record<string, string> = {
   strong: "Strong",
-  moderate: "Moderate",
   emerging: "Emerging",
   exploratory: "Exploratory",
 };

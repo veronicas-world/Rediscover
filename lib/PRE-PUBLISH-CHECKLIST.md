@@ -68,104 +68,77 @@ order and includes an integrity check (`--check-integrity`).
 
 ---
 
-## 2. Components with local 4-tier types that shadow the shared helper
+## 2. Components with local 4-tier types that shadow the shared helper — RESOLVED
 
-These components define their own `TierKey` type and/or `tierKey()` function
-locally, so the 3-tier fix in `lib/substrate-helpers.mjs` does not propagate.
-They will render 4 tiers (including Moderate) when the flag flips.
+All 15 components have been fixed. Server components import `TierKey` from
+`@/lib/substrate-helpers`; the client component `CandidateExplorer` imports
+the type and keeps a commented local runtime mirror (client can't bundle the
+`.mjs`). Every kept-local display constant carries a sync comment. The
+`HomeConditionStat` interface in `lib/substrate-candidates.ts` and the
+`tierLc` return type in `lib/substrate-helpers.ts` were also corrected to
+3-tier. `tsc --noEmit` passes.
 
-### 2a. `app/candidates/CandidateExplorer.tsx`
-- **Local type:** `type TierKey = "strong" | "moderate" | "emerging" | "exploratory"` (line 41)
-- **Local function:** `tierKey()` (line 43) — shadows the imported helper, still recognizes "moderate"
-- **Local constants:** `TIER_ORDER` (line 54), `TIER_LABELS` (line 56), `TIER_RANK` (line 61) — all include "moderate"
-- **Logic:** Line 120 checks `it.tier === "moderate"` in a filter condition
-- **Prose:** Lines 114, 418 reference "moderate" in descriptive text
-- **Fix:** Remove "moderate" from type, function, constants, and filter logic. Update prose.
+### 2a. `app/candidates/CandidateExplorer.tsx` — DONE
+- Imports `type TierKey` from shared helper; local `tierKey()` kept with
+  WHY-comment (client component); `TIER_ORDER`/`TIER_LABELS`/`TIER_RANK`
+  3-tier with sync comment; "unsponsored" marker matches "emerging"; prose
+  updated to "strong or emerging".
 
-### 2b. `app/components/SourceSankey.tsx`
-- **Local type:** `export type TierKey = "strong" | "moderate" | "emerging" | "exploratory"` (line 7)
-- **Local config:** Tier row with `id: "moderate"` (line 34)
-- **Fix:** Remove "moderate" from type and config.
+### 2b. `app/components/SourceSankey.tsx` — DONE
+- `import type { TierKey }` + re-export; moderate `TIERS` row removed; legend
+  auto-shows 3 tiers.
 
-### 2c. `app/components/TierHeatmap.tsx`
-- **Local type:** `export type TierKey = "strong" | "moderate" | "emerging" | "exploratory"` (line 6)
-- **Local config:** Tier row with `key: "moderate"` (line 18), color config (line 28)
-- **Fix:** Remove "moderate" from type and config.
+### 2c. `app/components/TierHeatmap.tsx` — DONE
+- `import type { TierKey }` + re-export; moderate removed from `TIERS` and
+  `cellBg` ramps; grid `repeat(3, 1fr)`.
 
-### 2d. `app/conditions/ConditionsList.tsx`
-- **Local type:** `type TierKey = "strong" | "moderate" | "emerging" | "exploratory"` (line 3)
-- **Local constants:** `TIER_BAR` (line 19), `TIER_ORDER` (line 24) — include "moderate"
-- **Prose:** Line 132 renders `{c.tierCounts.moderate} moderate` in the condition summary
-- **Fix:** Remove "moderate" from type, constants, and prose.
+### 2d. `app/conditions/ConditionsList.tsx` — DONE
+- Imports `TierKey` from shared helper; `TIER_BAR`/`TIER_ORDER` 3-tier;
+  summary now `{strong} strong · {emerging} emerging`.
 
 ---
 
-## 3. Components with local tier labels/counts (no local type, but "moderate" in display data)
+## 3. Components with local tier labels/counts — RESOLVED
 
-These components don't define a local `TierKey` type, but they have
-hardcoded "moderate" in `TIER_ORDER`, `TIER_LABELS`, count objects, or
-prose. They will show a Moderate column/label that is always 0 or stale.
+All 11 components fixed. "moderate" removed from `TIER_ORDER`, `TIER_LABELS`,
+count objects, label maps, Zod enum, and prose.
 
-### 3a. `app/candidates/page.tsx`
-- **Local type:** `type Tier` derived from local `TIER_ORDER` (line 19) — includes "moderate"
-- **Local constants:** `TIER_ORDER` (line 18), `TIER_LABELS` (line 21) — include "moderate"
-- **Count objects:** Lines 54, 67 — `counts: { strong: 0, moderate: 0, ... }` and `totalByTier`
-- **Fix:** Remove "moderate" from `TIER_ORDER`, `TIER_LABELS`, and all count objects.
-
-### 3b. `app/access/preview/page.tsx`
-- **Local constants:** `TIER_ORDER` (line 19), `TIER_LABELS` (line 22) — include "moderate"
-- **Fix:** Remove "moderate" from both.
-
-### 3c. `app/access/preview/[signalId]/page.tsx`
-- **Local constant:** `TIER_LABELS` (line 24) — includes `moderate: "Moderate"`
-- **Fix:** Remove "moderate" entry.
-
-### 3d. `app/components/CandidateCard.tsx`
-- **Spanning tier handling:** Line 202 handles "strong–moderate" spans
-- **Label map:** Line 206 includes `moderate: "Moderate tier"`
-- **Fix:** Remove "moderate" from span handling and label map.
-
-### 3e. `app/components/HomeTierMatrix.tsx`
-- **Type:** `MatrixRow` (line 11) includes `moderate: number`
-- **Config:** Tier row with `key: "moderate"` (line 19), data row (line 27)
-- **Fix:** Remove "moderate" from type and config.
-
-### 3f. `app/conditions/page.tsx`
-- **Count objects:** Line 23 `EMPTY` and line 31 `tierCounts` — include "moderate"
-- **Fix:** Remove "moderate" from count objects.
-
-### 3g. `app/page.tsx` (home)
-- **Count objects:** Line 107 `EMPTY`, line 119 `tierCounts` mapping — include "moderate"
-- **Label map:** Line 140 includes `moderate: "Moderate"`
-- **Fix:** Remove "moderate" from count objects and label map.
-
-### 3h. `app/featured/page.tsx`
-- **Label map:** Line 63 includes `moderate: "Moderate"`
-- **Section heading:** Line 346 "Why Moderate and not Strong"
-- **Fix:** Remove "moderate" from label map. Update section heading to reflect 3-tier taxonomy.
-
-### 3i. `app/featured/anastrozole-endometriosis/page.tsx`
-- **Label map:** Line 77 includes `moderate: "Moderate"`
-- **Fix:** Remove "moderate" entry. (Note: this page renders from live signal data and is gated.)
-
-### 3j. `app/api/mcp/route.ts`
-- **Zod schema:** Line 34 `z.enum(["strong", "moderate", "emerging", "exploratory"])`
-- **Fix:** Remove "moderate" from the enum.
-
-### 3k. `app/candidates/ConditionAccordion.tsx`
-- **Comment:** Line 10 mentions "moderate" in a JSDoc example
-- **Fix:** Update comment to use 3-tier example.
+### 3a. `app/candidates/page.tsx` — DONE
+### 3b. `app/access/preview/page.tsx` — DONE
+### 3c. `app/access/preview/[signalId]/page.tsx` — DONE
+### 3d. `app/components/CandidateCard.tsx` — DONE
+### 3e. `app/components/HomeTierMatrix.tsx` — DONE
+### 3f. `app/conditions/page.tsx` — DONE
+### 3g. `app/page.tsx` (home) — DONE
+### 3h. `app/featured/page.tsx` — DONE
+### 3i. `app/featured/anastrozole-endometriosis/page.tsx` — DONE
+### 3j. `app/api/mcp/route.ts` — DONE
+### 3k. `app/candidates/ConditionAccordion.tsx` — DONE
 
 ---
 
 ## 4. Summary
 
-| Category | Count | Risk when flag flips |
+| Category | Count | Status |
 |---|---|---|
-| TIER_CUTOFFS re-derivation | 1 | Strong tier is empty or nearly empty under 7.5 on 0–8 scale |
-| Local 4-tier types (shadow helper) | 4 | Renders 4 tiers including Moderate; local tierKey() overrides shared fix |
-| Local tier labels/counts (no local type) | 11 | Shows Moderate column/label stuck at 0 or stale |
-| **Total components to fix** | **15** | |
+| TIER_CUTOFFS re-derivation | 1 | **Open** — blocked on rescore |
+| Local 4-tier types (shadow helper) | 4 | **Resolved** |
+| Local tier labels/counts (no local type) | 11 | **Resolved** |
+| Data layer (HomeConditionStat, tierLc return type) | 2 | **Resolved** |
+| **Total components fixed** | **17** | |
 
-**The flag is not safe to flip until all 15 are resolved and the rescore has
-produced new cutoffs.**
+### Follow-ups outside the 15-component scope (noted, not blocking)
+
+- `app/globals.css`: `--tier-moderate`, `--tier-moderate-soft`,
+  `.tier-badge.moderate` still defined (now unused).
+- `lib/corpus-query.ts`: `dist` count object still seeds `moderate: 0`;
+  feeds MCP `whel_corpus_meta` tier distribution. Reads from
+  `lib/corpus-snapshot.json` which still holds v1.3 "moderate" tier values.
+- `app/signal-types/SignalTypesAccordion.tsx`: prose "tops out at Moderate
+  on its own."
+- Historical audit prose in `app/about/technical-architecture/page.tsx` and
+  `app/about/methodology/changelog/page.tsx` references v1.3 "Moderate"
+  tier counts — intentional historical record, left as-is.
+
+**The flag is not safe to flip until TIER_CUTOFFS is re-derived and the
+rescore has produced new cutoffs. The 15 component fixes are done.**

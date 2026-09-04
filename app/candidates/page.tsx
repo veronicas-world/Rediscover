@@ -5,7 +5,7 @@ import CandidateExplorer, { type ExplorerItem } from "./CandidateExplorer";
 import { SIGNALS_PUBLISHED } from "@/lib/site-config";
 import ComingSoon from "@/app/components/ComingSoon";
 import { getCandidates, getCorpusScope } from "@/lib/substrate-candidates";
-import { tierKey, tierRanges } from "@/lib/substrate-helpers";
+import { tierKey, tierRanges, type TierKey } from "@/lib/substrate-helpers";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,12 +15,12 @@ export const metadata: Metadata = {
   description: "Whel's full drug-repurposing candidate index, scored across four evidence dimensions plus a downgrade-only consistency penalty, tiered by confidence, and traceable to every source.",
 };
 
-const TIER_ORDER = ["strong", "moderate", "emerging", "exploratory"] as const;
-type Tier = (typeof TIER_ORDER)[number];
+// Display constants for the 3-tier taxonomy. Not in the shared helper; must stay
+// in sync with the 3-tier TierKey in lib/substrate-helpers.
+const TIER_ORDER = ["strong", "emerging", "exploratory"] as const;
 
-const TIER_LABELS: Record<Tier, string> = {
+const TIER_LABELS: Record<TierKey, string> = {
   strong: "Strong",
-  moderate: "Moderate",
   emerging: "Emerging",
   exploratory: "Exploratory",
 };
@@ -44,14 +44,14 @@ export default async function CandidatesPage() {
   const order: string[] = [];
   const byCondition = new Map<
     string,
-    { slug: string; label: string; items: typeof candidates; counts: Record<Tier, number> }
+    { slug: string; label: string; items: typeof candidates; counts: Record<TierKey, number> }
   >();
 
   for (const c of candidates) {
     const slug = slugFor(c);
     let g = byCondition.get(slug);
     if (!g) {
-      g = { slug, label: c.condition, items: [], counts: { strong: 0, moderate: 0, emerging: 0, exploratory: 0 } };
+      g = { slug, label: c.condition, items: [], counts: { strong: 0, emerging: 0, exploratory: 0 } };
       byCondition.set(slug, g);
       order.push(slug);
     }
@@ -64,7 +64,7 @@ export default async function CandidatesPage() {
     .map((slug) => byCondition.get(slug)!)
     .sort((a, b) => b.items.length - a.items.length);
 
-  const totalByTier: Record<Tier, number> = { strong: 0, moderate: 0, emerging: 0, exploratory: 0 };
+  const totalByTier: Record<TierKey, number> = { strong: 0, emerging: 0, exploratory: 0 };
   for (const cond of conditions) {
     for (const t of TIER_ORDER) totalByTier[t] += cond.counts[t];
   }

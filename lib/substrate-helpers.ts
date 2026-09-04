@@ -26,8 +26,8 @@ export const COND_ALIAS: Record<string, string> = _COND_ALIAS;
 export const SIGNAL_COLS: string = _SIGNAL_COLS;
 
 export function num(v: unknown, d = 0): number { return _num(v, d); }
-export function tierLc(t: unknown): "strong" | "moderate" | "emerging" | "exploratory" {
-  return _tierLc(t) as "strong" | "moderate" | "emerging" | "exploratory";
+export function tierLc(t: unknown): TierKey {
+  return _tierLc(t) as TierKey;
 }
 export function lvl(score: unknown): string { return _lvl(score); }
 export function clip(s: string, n: number): string { return _clip(s, n); }

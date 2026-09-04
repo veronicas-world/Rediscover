@@ -199,11 +199,13 @@ function MarkerChip({ dot, label }: { dot: string; label: string }) {
 }
 
 function TierBadge({ tier }: { tier: Candidate["tier"] }) {
-  // Handle spanning tiers (e.g., "strong–moderate") from the noise-band display.
+  // Handle spanning tiers (e.g., "strong–emerging") from the noise-band display.
   // Use the lower tier for the CSS class/color; show the span as the label.
   const lower = tier.includes("–") ? tier.split("–").pop() : tier;
+  // Display labels for the 3-tier taxonomy. Not in the shared helper; must stay
+  // in sync with the 3-tier TierKey in lib/substrate-helpers.
   const labels: Record<string, string> = {
-    strong: "Strong tier", moderate: "Moderate tier",
+    strong: "Strong tier",
     emerging: "Emerging tier", exploratory: "Exploratory tier",
   };
   const label = tier.includes("–")

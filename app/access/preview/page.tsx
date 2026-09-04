@@ -16,10 +16,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const TIER_ORDER = ["strong", "moderate", "emerging", "exploratory"] as const;
+// Display constants for the 3-tier taxonomy. Not in the shared helper; must stay
+// in sync with the 3-tier TierKey in lib/substrate-helpers. Range strings are
+// display-only and derived from TIER_CUTOFFS in lib/substrate-helpers.
+const TIER_ORDER = ["strong", "emerging", "exploratory"] as const;
 const TIER_LABELS: Record<string, string> = {
   strong: "Strong · 9–10",
-  moderate: "Moderate · 7–8",
   emerging: "Emerging · 4–6",
   exploratory: "Exploratory · 0–3",
 };

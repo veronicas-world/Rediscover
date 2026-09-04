@@ -104,7 +104,7 @@ export default async function Home() {
   const totalConditions = conditions.length;
 
   // Per-condition headline-tier counts for the matrix, from the substrate.
-  const EMPTY = { strong: 0, moderate: 0, emerging: 0, exploratory: 0, total: 0 };
+  const EMPTY = { strong: 0, emerging: 0, exploratory: 0, total: 0 };
   const conditionsWithStats = conditions.map((c) => {
     const st = home.byCondition.get(c.slug) ?? EMPTY;
     return { ...c, totalSignals: st.total, tierCounts: st };
@@ -116,7 +116,6 @@ export default async function Home() {
     slug:        c.slug,
     flagship:    c.slug === "pmdd",
     strong:      c.tierCounts.strong,
-    moderate:    c.tierCounts.moderate,
     emerging:    c.tierCounts.emerging,
     exploratory: c.tierCounts.exploratory,
     total:       c.totalSignals,
@@ -137,7 +136,7 @@ export default async function Home() {
   // lower — surface that disagreement explicitly as a teaching "key" under the
   // two cards.
   const TIER_WORD: Record<string, string> = {
-    strong: "Strong", moderate: "Moderate", emerging: "Emerging", exploratory: "Exploratory",
+    strong: "Strong", emerging: "Emerging", exploratory: "Exploratory",
   };
   const contrastCard = showcase[1];
   const disagreement =

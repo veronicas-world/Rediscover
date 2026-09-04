@@ -20,7 +20,7 @@ export default async function ConditionsPage() {
   ]);
 
   const conditions = conditionsRaw ?? [];
-  const EMPTY = { strong: 0, moderate: 0, emerging: 0, exploratory: 0, total: 0 };
+  const EMPTY = { strong: 0, emerging: 0, exploratory: 0, total: 0 };
 
   const conditionsWithStats = conditions.map((c, i) => {
     const st = home.byCondition.get(c.slug) ?? EMPTY;
@@ -28,7 +28,7 @@ export default async function ConditionsPage() {
       ...c,
       conditionCode: `C-${String(i + 1).padStart(2, "0")}`,
       totalSignals: st.total,
-      tierCounts: { strong: st.strong, moderate: st.moderate, emerging: st.emerging, exploratory: st.exploratory },
+      tierCounts: { strong: st.strong, emerging: st.emerging, exploratory: st.exploratory },
     };
   });
 

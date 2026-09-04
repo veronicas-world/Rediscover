@@ -58,9 +58,10 @@ const LINK: React.CSSProperties = {
   textUnderlineOffset: "2px",
 };
 
+// Display labels for the 3-tier taxonomy. Not in the shared helper; must stay
+// in sync with the 3-tier TierKey in lib/substrate-helpers.
 const TIER_LABEL: Record<string, string> = {
   strong: "Strong",
-  moderate: "Moderate",
   emerging: "Emerging",
   exploratory: "Exploratory",
 };
@@ -343,7 +344,7 @@ export default async function FeaturedSignalPage() {
             </div>
           </section>
 
-          {/* 03 Why Moderate and not Strong */}
+          {/* 03 Why Emerging and not Strong */}
           <section>
             <div style={EYEBROW}>03 &middot; Reading the score</div>
             <h2 className="font-heading" style={H2}>Why {tierLabel} and not Strong</h2>
