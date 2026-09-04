@@ -55,6 +55,14 @@ need re-deriving.
 following SCORING_SPEC §5b rules (a) and (b), freeze them, and update
 `TIER_CUTOFFS` here. This is the single most important blocker.
 
+**Rescore order:** See [`docs/rescore-runbook.md`](../docs/rescore-runbook.md).
+The rescore MUST run in this order: (1) re-extract claims, (2) re-run
+entailment, (3) rebuild contradictions (DELETE + regenerate, not append),
+(4) score signals. Stage 3 is critical: without it, `score_claims.py`
+reads contradiction rows computed against a claim set that no longer
+exists. The driver script `scripts/substrate/rescore.py` enforces this
+order and includes an integrity check (`--check-integrity`).
+
 **Source:** SCORING_SPEC.md lines 272, 276–278, 322–324.
 **Diagnostic:** `scripts/remap-snapshot-to-v14.py`
 
