@@ -155,9 +155,9 @@ export interface SubstrateArm {
   arm: "direct" | "pathway" | "community";
   /** 'efficacy' | 'safety' | 'other' (mechanistic) — efficacy/other drive the headline; safety is separate. */
   aspect: string;
-  /** arm_score = strength × female multiplier, 0–10. */
+  /** arm_score = strength × female multiplier, 0–8. */
   armScore: number;
-  /** Pre-multiplier sum of the five dimensions, 0–10. */
+  /** Pre-multiplier sum of the four dimensions, 0–8. */
   strength: number;
   tier: string;
   /** True for the arm that anchors the pair headline. */

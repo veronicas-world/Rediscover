@@ -312,7 +312,7 @@ export default async function SignalDetail({
             The composite score sums four evidence dimensions, each scored 0 to 2 by the
             model from the evidence on file, plus a downgrade-only consistency penalty
             (0 to &minus;2). Below is the sub-score this specific pair received on each, with what that
-            dimension measures. It scored {c.score} of 10 overall, a {c.tier} reading
+            dimension measures. It scored {c.score} of 8 overall, a {c.tier} reading
             {c.signalType ? `, from a ${c.signalType.replace(/_/g, " ")}` : ""}
             {c.evidenceStrength ? ` rated ${c.evidenceStrength} in strength` : ""}.
           </p>

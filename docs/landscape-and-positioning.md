@@ -23,7 +23,7 @@ way on every run. It does not appear in the output.
 | `scripts/substrate/extract_claims.py` | what counts as a claim, and which sentence supports it |
 | `scripts/substrate/verify_provenance.py` | entailed / neutral / contradicted |
 | `scripts/substrate/detect_contradictions.py` | whether two claims conflict |
-| `scripts/substrate/score_claims.py` | the five 0–2 dimension scores, plus extracted facts (`% female`, sample size) |
+| `scripts/substrate/score_claims.py` | the four 0–2 dimension scores, plus extracted facts (`% female`, sample size) |
 
 Everything downstream is deterministic Python: `female_band`,
 `apply_imprecision`, `tier_for`, `community_independence`,

@@ -43,13 +43,13 @@ const handler = createMcpHandler(
     );
     server.tool(
       "whel_get_candidate",
-      "Full curated record for one candidate: tier, score, per-arm five-dimension scores + rationales, female-applicability, rationale, mechanism, verbatim claims, and side-layers (regulatory, MATRIX, sex-PK). Identify by signalId, id (WHEL-C-001), or drug + condition.",
+      "Full curated record for one candidate: tier, score, per-arm four-dimension scores + rationales, female-applicability, rationale, mechanism, verbatim claims, and side-layers (regulatory, MATRIX, sex-PK). Identify by signalId, id (WHEL-C-001), or drug + condition.",
       { signalId: z.string().optional(), id: z.string().optional(), drug: z.string().optional(), condition: z.string().optional() },
       async (args) => ok(corpus.get(args)),
     );
     server.tool(
       "whel_evidence",
-      "Evidence trail for one candidate: rationale, mechanism, the five dimension scores + rationales, verbatim source claims, and regulatory reads. Use to check WHY Whel graded a pair. Identify by signalId, id, or drug + condition.",
+      "Evidence trail for one candidate: rationale, mechanism, the four dimension scores + rationales, verbatim source claims, and regulatory reads. Use to check WHY Whel graded a pair. Identify by signalId, id, or drug + condition.",
       { signalId: z.string().optional(), id: z.string().optional(), drug: z.string().optional(), condition: z.string().optional() },
       async (args) => ok(corpus.evidence(args)),
     );

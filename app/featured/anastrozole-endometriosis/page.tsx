@@ -150,7 +150,7 @@ export default async function AromataseInhibitorsSignalPage() {
 
   // The live score's denominator follows the spec that actually produced it. Until
   // the rescore is proven by the data, the live rows still carry v1.3 semantics
-  // (strength 0-10), so dividing them by v1.4's max would overstate them.
+  // (strength 0-8), so dividing them by v1.4's max would overstate them.
   const liveMax = delta?.rescored ? CURRENT_SPEC.armStrengthMax : PREVIOUS_SPEC.armStrengthMax;
   const primaryClaim = c?.claims?.[0];
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCandidates, getSubstrateHomeData } from "@/lib/substrate-candidates";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -97,7 +98,12 @@ function compoundKey(signalId: string | undefined, drug: string): string {
 }
 
 export default async function MethodologyPage() {
-  const [cands, home] = await Promise.all([getCandidates(), getSubstrateHomeData()]);
+  // Signal counts are gated: the corpus has not been rescored under v1.4,
+  // and displaying v1.3 counts (especially a "Strong-tier" count under a
+  // 3-tier taxonomy that deleted "Moderate") would be misleading. The
+  // protocol text stays visible; only the live numbers are withheld.
+  const cands = SIGNALS_PUBLISHED ? await getCandidates() : [];
+  const home = SIGNALS_PUBLISHED ? await getSubstrateHomeData() : null;
 
   const total = cands.length;
   const conditions = new Set(cands.map((c) => c.conditionId ?? c.condition.toLowerCase())).size;
@@ -108,11 +114,14 @@ export default async function MethodologyPage() {
   const strongCompounds = new Set(strong.map((c) => compoundKey(c.signalId, c.drug))).size;
   const clinical = cands.filter((c) => c.validationStatus === "clinical").length;
 
+  const PENDING = "pending revalidation";
+  const nv = (n: number) => SIGNALS_PUBLISHED ? String(n) : PENDING;
+
   const SAMPLE_NUMBERS = [
-    { label: "Active pairs (corpus)", value: String(total) },
-    { label: "Strong-tier pairs", value: String(strong.length) },
-    { label: "Conditions represented", value: String(conditions) },
-    { label: "Distinct compounds", value: String(distinctCompounds) },
+    { label: "Active pairs (corpus)", value: nv(total) },
+    { label: "Strong-tier pairs", value: nv(strong.length) },
+    { label: "Conditions represented", value: nv(conditions) },
+    { label: "Distinct compounds", value: nv(distinctCompounds) },
   ];
 
   return (
@@ -226,8 +235,8 @@ export default async function MethodologyPage() {
               lineHeight: 1.55,
             }}
           >
-            Live from the substrate · {home.claims} verbatim claims across {home.documents} source
-            documents back the active signals.
+            Live from the substrate · {home ? `${home.claims} verbatim claims across ${home.documents} source
+            documents back the active signals.` : "pending revalidation"}
           </p>
         </div>
       </div>
@@ -268,14 +277,14 @@ export default async function MethodologyPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <p style={BODY}>
                 The primary sample is every active Strong-tier drug–condition pair in the substrate at
-                the snapshot date. As of the live corpus above, that is {strong.length} Strong-tier
-                pairs spanning {conditions} conditions and {strongCompounds} distinct compounds. The
+                the snapshot date. As of the live corpus above, that is {nv(strong.length)} Strong-tier
+                pairs spanning {nv(conditions)} conditions and {nv(strongCompounds)} distinct compounds. The
                 full list is read directly from the substrate at request time, so the count on this
                 page can never silently drift from what the engine actually holds.
               </p>
               <p style={BODY}>
-                A matched comparator sample is drawn from the Emerging tier ({emerging.length} pairs)
-                and the Exploratory tier ({exploratory.length} pairs), using stratified random sampling
+                A matched comparator sample is drawn from the Emerging tier ({nv(emerging.length)} pairs)
+                and the Exploratory tier ({nv(exploratory.length)} pairs), using stratified random sampling
                 on the anchoring arm so the comparator mix mirrors the Strong sample. The comparators
                 are included specifically so the result can be read as calibration: a Strong tier that
                 corroborates externally at a much higher rate than the lower tiers is the outcome the
@@ -296,11 +305,11 @@ export default async function MethodologyPage() {
                   Structural pre-checks
                 </div>
                 <p style={{ fontSize: "0.92rem", color: "var(--ink-2)", lineHeight: 1.6, margin: 0 }}>
-                  Of the active corpus, {clinical} pairs carry a clinical validation status, meaning a
+                  Of the active corpus, {nv(clinical)} pairs carry a clinical validation status, meaning a
                   Direct evidence arm is strong enough to anchor the pair. Every Strong-tier pair passes the
                   engine&apos;s structural audit: no missing dimension scores, no tier–score-band
                   mismatches, no signal whose anchoring arm lacks a verbatim claim, and no duplicate
-                  source URLs within a pair. The frozen list of the {strong.length} Strong-tier pairs is
+                  source URLs within a pair. The frozen list of the {nv(strong.length)} Strong-tier pairs is
                   archived at the time of execution so the benchmark is reproducible against a fixed
                   snapshot.
                 </p>
@@ -533,7 +542,7 @@ export default async function MethodologyPage() {
                 separate question, and answering it requires trials.
               </p>
               <p style={BODY}>
-                The sample is small ({strong.length} Strong, with matched comparators). The external
+                The sample is small ({nv(strong.length)} Strong, with matched comparators). The external
                 sources of truth are themselves imperfect: guidelines lag the literature, the literature
                 lags the biology, and some conditions in scope (notably PMDD and vulvodynia) have thinner
                 guideline coverage than others. These conditions will tend toward E1 or E2 even where the

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
 import { getCandidates } from "@/lib/substrate-candidates";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
 
 /**
  * Data-driven sitemap: every public page the site intends to be indexed.
@@ -33,7 +34,7 @@ const STATIC_ROUTES = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [{ data: conditionsRaw }, candidates] = await Promise.all([
     supabase.from("conditions").select("slug").order("name"),
-    getCandidates(),
+    SIGNALS_PUBLISHED ? getCandidates() : Promise.resolve([]),
   ]);
 
   return [

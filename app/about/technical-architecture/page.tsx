@@ -279,7 +279,7 @@ const LIMITATION_GROUPS: { heading: string; items: { label: string; body: string
       },
       {
         label: "External review and remediation",
-        body: "An independent external reviewer audit completed May 29 2026 surfaced two material findings. The first was a corroboration-score drift in the LLM rater: the rubric defines corroboration = 0 for one source, 1 for two independent sources, and 2 for three or more, but the rater had been counting more loosely. The rater prompts were tightened to enforce literal source counting; signals were downgraded to the tier the evidence actually supports; and manually-verified PubMed citations were added so each remaining Moderate-tier signal carries the source count the strict rubric requires. The second was a set of 21 ClinicalTrials.gov citations filed under conditions the trials were not run on: 10 signals were deactivated, 5 were reassigned from clinical-trial-finding to cross-condition framing, 1 source was dropped where the signal retained independent support, 2 sources were replaced with proper condition-specific citations, and 1 row was documented as a ClinicalTrials.gov API field limitation. The full audit trail is recorded in database migrations 036 through 040 and in the methodology version log.",
+        body: "An independent external reviewer audit completed May 29 2026 surfaced two material findings. The first was a corroboration-score drift in the LLM rater: the rubric defines corroboration = 0 for one source, 1 for two independent sources, and 2 for three or more, but the rater had been counting more loosely. The rater prompts were tightened to enforce literal source counting; signals were downgraded to the tier the evidence actually supports; and manually-verified PubMed citations were added so (May 2026 audit, v1.3 era) each remaining Moderate-tier signal carries the source count the strict rubric requires. The second was a set of 21 ClinicalTrials.gov citations filed under conditions the trials were not run on: 10 signals were deactivated, 5 were reassigned from clinical-trial-finding to cross-condition framing, 1 source was dropped where the signal retained independent support, 2 sources were replaced with proper condition-specific citations, and 1 row was documented as a ClinicalTrials.gov API field limitation. The full audit trail is recorded in database migrations 036 through 040 and in the methodology version log.",
       },
     ],
   },
@@ -803,12 +803,12 @@ export default function TechnicalArchitecturePage() {
             </p>
           </div>
 
-          {/* Five-dimension rubric */}
+          {/* Four-dimension rubric */}
           <p
             className="font-heading"
             style={{ fontSize: "18px", fontWeight: 500, color: "var(--ink)", marginTop: 36, marginBottom: 6 }}
           >
-            The Five-Dimension Scoring Framework
+            The Four-Dimension Scoring Framework
           </p>
           <p style={{ fontSize: "14px", lineHeight: 1.65, color: "var(--ink-2)", maxWidth: "68ch" }}>
             {FRAMEWORK_INTRO}

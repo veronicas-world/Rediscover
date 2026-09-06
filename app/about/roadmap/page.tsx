@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCorpusScope } from "@/lib/substrate-candidates";
+import { SIGNALS_PUBLISHED } from "@/lib/site-config";
 
 export const metadata = {
   title: "Roadmap | Whel",
@@ -28,9 +29,9 @@ const PATHWAY_COLORS: Record<string, string> = {
    Content
    ────────────────────────────────────────────────────────────────────────── */
 
-function buildPhases(totalSignals: number): { tag: string; sub: string; color: string; items: string[] }[] {
+function buildPhases(totalSignals: number | null): { tag: string; sub: string; color: string; items: string[] }[] {
   const signalsLine =
-    totalSignals > 0
+    totalSignals != null && totalSignals > 0
       ? `${totalSignals} signals, each scored against the published graded rubric`
       : "Signals scored against the published graded rubric";
 
@@ -453,7 +454,7 @@ function RegisterTable({ rows }: { rows: { name: string; role: string; status: S
    ────────────────────────────────────────────────────────────────────────── */
 
 export default async function RoadmapPage() {
-  const { signals: totalSignals } = await getCorpusScope();
+  const totalSignals = SIGNALS_PUBLISHED ? (await getCorpusScope()).signals : null;
   const PHASES = buildPhases(totalSignals);
 
   return (

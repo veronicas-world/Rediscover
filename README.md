@@ -72,18 +72,21 @@ In rough order of ambition:
 
 ## 4. Current state
 
-Numbers as of 2026-08-30. All are live-queryable; see
-[`app/about/what-we-count`](app/about/what-we-count/page.tsx) for exact definitions.
+Numbers as of 2026-08-30 (v1.3 rubric, pre-rescore). The corpus has not been
+rescored under v1.4 (four dimensions, 0–8, three tiers). Tier distribution and
+entailment figures below are from the v1.3 pass and will change. Signal-rendering
+routes are gated behind `SIGNALS_PUBLISHED = false` until the rescore completes.
 
 | | |
 |---|---|
-| Active drug–condition signals | 226 |
-| Tiers | Strong 12, Moderate 79, Emerging 84, Exploratory 51 |
+| Active drug–condition signals | 226 (v1.3, pre-rescore) |
+| Tiers (v1.3, four-tier) | Strong 12, Moderate 79, Emerging 84, Exploratory 51 |
+| Tiers (v1.4, three-tier) | pending rescore |
 | By condition | menopause 64, PCOS 46, endometriosis 42, vulvodynia 29, PMDD 24, adenomyosis 21 |
 | Documents in database | 344 |
 | Quoted-evidence frame | 295 claims from 48 documents |
 | Of those documents | 27 PubMed (17 evidence syntheses), 14 Reddit, 7 ClinicalTrials.gov |
-| Entailment | 273 entailed, 22 neutral, 0 contradicted (92.5%) |
+| Entailment (v1.3) | 273 entailed, 22 neutral, 0 contradicted (92.5%) — pending revalidation |
 | Signals with quoted evidence | 139 |
 | Signals on structured data only | 87 |
 | Human labels collected | 100 (rounds 1 and 2, single rater) |
@@ -93,8 +96,9 @@ Numbers as of 2026-08-30. All are live-queryable; see
 Be clear-eyed about this. An agent that reads only the marketing copy will overstate
 the project's maturity.
 
-- **The tiers are unvalidated model judgements.** Strong / Moderate / Emerging /
-  Exploratory come from a single LLM scoring pass. Cutoffs were calibrated against the
+- **The tiers are unvalidated model judgements.** Strong / Emerging /
+  Exploratory (v1.4 three-tier taxonomy; the v1.3 "Moderate" tier has been
+  eliminated) come from a single LLM scoring pass. Cutoffs were calibrated against the
   score *distribution*, never against ground truth. The validation study exists to fix
   this and has not run.
 - **The entailment figure is a self-consistency metric.** It excludes structured claims
@@ -153,7 +157,7 @@ Two provenance modes:
 4. **Detect contradictions** (`detect_contradictions.py`) — conflicting directions
    within an (intervention, condition) group are pair-checked.
 5. **Score** (`score_claims.py`) — one model call per (intervention, condition, aspect,
-   arm) group produces five 0–2 dimension scores. **Python then decides everything
+   arm) group produces four 0–2 dimension scores. **Python then decides everything
    deterministic**: imprecision caps, the sex-applicability multiplier, the tier, the
    contradiction flag, community corroboration.
 6. **Export** — a reviewable SQL seed migration, applied by hand in Supabase Studio.
