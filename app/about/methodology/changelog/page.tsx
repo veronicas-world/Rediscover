@@ -135,12 +135,40 @@ export default function MethodologyChangelogPage() {
           }}
         >
 
-          {/* v4.3 — rubric correction: downgrade-only consistency */}
+          {/* v4.3 — current method; grades still v4.2 pending regrade */}
           <EntryWrapper isFirst>
             <div style={ENTRY_EYEBROW}>
               Methodology v4.3 &middot; September 2, 2026
             </div>
             <p style={ENTRY_PARA}>
+              <strong style={{ color: "var(--ink)" }}>Method version and grade
+              version are stated separately here.</strong> The current method is
+              v4.3. No signal has been graded under it yet: the index still holds
+              grades produced under the previous method, v4.2, pending a regrade
+              of the corpus under v4.3. When the regrade lands, this entry will
+              read the same way &mdash; the method version is v4.3, and the grades
+              in the index will then be v4.3 as well.
+            </p>
+            <p style={ENTRY_PARA_NEXT}>
+              The v4.3 method is a four-dimension rubric, each dimension scored
+              0&ndash;2 for a total of 0&ndash;8, with tier cutoffs derived
+              after scoring. Consistency is downgrade-only: sources that disagree
+              cost the signal points, and a single source is treated as not
+              assessable rather than silently worth a point. Rigor distinguishes
+              a randomised trial at low risk of bias from one at high risk.
+              Specificity asks whether the measured outcome is the
+              patient-relevant endpoint or a surrogate standing in for it. The
+              pathway arm carries corroboration counted in independent
+              mechanistic lines rather than documents. A flagged contradiction
+              pair must carry a penalty of at least one point.
+            </p>
+            <p style={ENTRY_PARA_NEXT}>
+              Tier cutoffs are provisional until the corpus has been
+              regraded under v4.3 and they can be re-derived from the new
+              distribution. The detailed revision history below records what
+              changed and why.
+            </p>
+            <p style={ENTRY_PARA_NEXT}>
               A correction to the scoring rubric, published before the corpus is
               regraded under it. Test-retest measurement and a distribution audit
               found that three of the five dimensions were carrying almost no
