@@ -96,6 +96,12 @@ WHEL-Independent-Review-*.docx
 WHEL-Roadmap-page-draft.md
 guideline-pdfs/
 
+# Outreach drafts and prospect lists -- contain personal medical history and
+# researchers' published email addresses. Must never enter the public commit
+# history; a later deletion would not remove them from it.
+docs/outreach-drafts.md
+docs/outreach-prospects.md
+
 # Substrate pipeline local working store (SQLite scratch; not the production DB)
 scripts/substrate/.work/
 apply-substrate/

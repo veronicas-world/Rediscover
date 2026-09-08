@@ -69,6 +69,50 @@ reproducible protocol. Under Cochrane/PRISMA-S practice, the correct shape is br
 retrieval → screening → inclusion, with the search fully documented. The current Whel
 shape (tiny retrieval → everything kept) is the reverse.
 
+**Duplicate publication: one study, many reports (design requirement for the redesign).**
+Cochrane's unit of interest is the study, not the report. Chapter 4 of the Handbook
+(version 6.5.1) states that "systematic reviews have studies as the primary units of
+interest and analysis. A single study may have more than one report about it (or record
+for it)" (Section 4.2.3, "Studies versus reports of studies"), and that selection
+therefore requires two processes, one of which is "to link together multiple reports of
+the same study" into a single study (Section 4.6.1, "Studies (not reports) as the unit
+of interest"). Section 4.6.2 ("Identifying multiple reports from the same study") is
+blunt about the failure mode: "Duplicate publication can introduce substantial biases if
+studies are inadvertently included more than once in a meta-analysis"; duplicates range
+"from identical manuscripts to reports describing different outcomes of the study or
+results at different time points"; and detecting them "can be difficult" — some
+"detective work" is required. For the redesign this is a screening-stage requirement,
+per standard systematic review practice: **all reports of one study or guideline must be
+linked together and counted once.**
+
+- Cochrane Handbook, Chapter 4: Lefebvre C, Glanville J, Briscoe S, Featherstone R,
+  Littlewood A, Metzendorf M-I, et al. Searching for and selecting studies. In: Higgins
+  JPT, Thomas J, Chandler J, et al, editors. Cochrane Handbook for Systematic Reviews of
+  Interventions version 6.5.1 (updated March 2025). Cochrane, 2025.
+  https://training.cochrane.org/handbook/current/chapter-04 (Sections 4.2.3, 4.6.1, 4.6.2)
+
+**Whel's dedup would not catch this.** The pipeline dedups at insert time:
+`fetch_pubmed.py` computes `sha256(title + "\n\n" + abstract)` of the document,
+and `fetch_pathway.py` dedups on a content hash and the (source, external_id,
+condition) triple. Co-publication defeats both keys. This hazard was hit literally
+while building `docs/outreach-prospects.md`: the 2023 International Guideline for the
+Assessment and Management of PCOS is one document co-published in four journals —
+Fertil Steril (PMID 37589624, DOI 10.1016/j.fertnstert.2023.07.025), J Clin Endocrinol
+Metab (PMID 37580314, DOI 10.1210/clinem/dgad463), Human Reproduction (PMID 37580037,
+DOI 10.1093/humrep/dead156), and Eur J Endocrinol (PMID 37580861, DOI
+10.1093/ejendo/lvad096) — as four formattings with four PMIDs. Each version carries a
+different external_id, and each journal re-typesets the text, so the content hashes
+differ as well. Under the current pipeline all four would enter as four sources, and
+corroboration would score shared claims as four-way agreement: the exact bias
+Cochrane warns about, built into the scoring pipeline.
+
+**The risk grows with corpus size.** At retmax=2 the hazard rarely materializes — a
+duplicate would have to surface twice in a two-record sample. Guideline co-publication
+across journals is deliberate practice (the PCOS Network published in four journals
+specifically to maximize reach) and is common in full result sets, so the problem gets
+worse exactly when we fix retmax: more records retrieved means more duplicate reports
+entering, with no mechanism that links them.
+
 ---
 
 ## 3. How comparable databases take in literature

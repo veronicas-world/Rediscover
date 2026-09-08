@@ -107,6 +107,18 @@ certainty-of-evidence scale to drug–disease pairs.**
 - [ReDO_DB](https://data.tp53.org.uk/redo_db.php) (373 drugs) uses a boolean
   flag matrix across study types, with no certainty scale and no quotes.
 
+**The lead of the closest comparable project names the gap himself.**
+[Pantziarka et al., *ecancermedicalscience* 2018 (DOI: 10.3332/ecancer.2018.886,
+PMID: 30679953)](https://doi.org/10.3332/ecancer.2018.886) is the paper that
+introduced ReDO_DB, and Pan Pantziarka is its first and corresponding author.
+In the Discussion he writes that the database's future scope could include "an
+indication of the strength of evidence for each of the drugs in addition to
+showing the range (in vitro, in vivo etc) of evidentiary sources." This is the
+strongest single piece of evidence in this document for the open slot: it is
+not us inferring the limitation from what his database lacks, it is the person
+who built the closest comparable resource stating the missing capability
+himself, in his own words.
+
 Formal evidence grading exists in precision oncology and in evidence-based
 medicine. It has not been transplanted into repurposing.
 
