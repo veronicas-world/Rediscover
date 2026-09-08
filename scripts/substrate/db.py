@@ -17,7 +17,7 @@ from config import WORK_DB
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS entities (
     id TEXT PRIMARY KEY, type TEXT NOT NULL, label TEXT NOT NULL,
-    norm_key TEXT NOT NULL, ontology_id TEXT, UNIQUE(type, norm_key)
+    norm_key TEXT NOT NULL, ontology_id TEXT, ontology_source TEXT, UNIQUE(type, norm_key)
 );
 CREATE TABLE IF NOT EXISTS documents (
     id TEXT PRIMARY KEY, content_sha256 TEXT NOT NULL UNIQUE, source TEXT NOT NULL,
@@ -65,6 +65,19 @@ def init_db(reset: bool = False):
     conn.executescript(SCHEMA)
     conn.commit()
     return conn
+
+
+def ensure_entity_columns(conn):
+    """Self-heal a pre-existing entities table (CREATE TABLE IF NOT EXISTS won't
+    add columns introduced later). Mirrors migration 048: ontology_source records
+    where an entity's ontology_id came from (e.g. 'Open Targets' for a ChEMBL id
+    promoted from the Open Targets drug record, vs 'RxNorm' for our own
+    resolution)."""
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(entities)")}
+    for name, decl in (("ontology_source", "TEXT"),):
+        if name not in cols:
+            conn.execute(f"ALTER TABLE entities ADD COLUMN {name} {decl}")
+    conn.commit()
 
 
 def new_id() -> str:

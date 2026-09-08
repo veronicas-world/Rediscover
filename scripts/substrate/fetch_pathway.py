@@ -132,9 +132,26 @@ def _insert_structured(conn, *, source, external_id, url, statement, record, con
     if conn.execute("SELECT 1 FROM documents WHERE content_sha256=?", (csha,)).fetchone():
         return False
     dup = conn.execute(
-        "SELECT 1 FROM documents WHERE source=? AND external_id=? AND meta_json LIKE ?",
+        "SELECT content_sha256 FROM documents WHERE source=? AND external_id=? AND meta_json LIKE ?",
         (source, external_id, f'%"condition": "{cond_key}"%')).fetchone()
     if dup:
+        # Known (source, external_id, condition): skip, but NEVER silently. If the
+        # stored content differs from what the source now returns, that is a
+        # legitimate upstream update being discarded by the dedup guard — surface
+        # it in the manifest and on the console so the run tells us when a
+        # source's content has changed. (How to supersede/refresh is a separate
+        # decision; this is the visibility floor.)
+        if dup["content_sha256"] != csha:
+            manifest.record(
+                source=source, cond_key=cond_key, event="content_changed",
+                database=RETRIEVAL.get(source, {}).get("interface"),
+                external_id=external_id,
+                old_content_sha256=dup["content_sha256"],
+                new_content_sha256=csha,
+                timestamp=datetime.now(timezone.utc).isoformat())
+            print(f"  [content changed] {source} {external_id} ({cond_key}): upstream content "
+                  f"differs from stored (sha {dup['content_sha256'][:12]}.. != {csha[:12]}..) — "
+                  f"kept stored version; see run manifest (content_changed)")
         return False
     now = datetime.now(timezone.utc).isoformat()
     doc_id, span_id = db.new_id(), db.new_id()
@@ -259,6 +276,45 @@ def fetch_opentargets(conn, cond_key, ot_id, max_drugs=None):
     return made
 
 
+def promote_ot_chembl(conn):
+    """Promote the ChEMBL id that Open Targets provides (in each document's
+    meta.record.chembl_id) onto the intervention entity's ontology_id, and
+    record the source (ontology_source = 'Open Targets') so it is clear the ID
+    came from Open Targets' drug record rather than our own resolution (e.g.
+    RxNorm grounding).
+
+    Only entities that map to exactly ONE distinct ChEMBL id are promoted
+    (unambiguous). An existing ontology_id is never overwritten. Returns the
+    number of entities promoted."""
+    db.ensure_entity_columns(conn)
+    rows = conn.execute("""
+        SELECT e.id,
+               COUNT(DISTINCT json_extract(d.meta_json, '$.record.chembl_id')) AS n_ids,
+               MIN(json_extract(d.meta_json, '$.record.chembl_id')) AS chembl
+        FROM entities e
+        JOIN claims c ON c.intervention_id = e.id
+        JOIN documents d ON c.document_id = d.id
+        WHERE e.type = 'intervention' AND d.source = 'opentargets'
+          AND json_extract(d.meta_json, '$.record.chembl_id') IS NOT NULL
+          AND json_extract(d.meta_json, '$.record.chembl_id') != ''
+        GROUP BY e.id
+        HAVING n_ids = 1
+    """).fetchall()
+    n = 0
+    for r in rows:
+        cur = conn.execute("SELECT ontology_id FROM entities WHERE id=?", (r["id"],)).fetchone()
+        if cur and cur["ontology_id"]:
+            continue  # already grounded — never overwrite
+        conn.execute("UPDATE entities SET ontology_id=?, ontology_source=? WHERE id=?",
+                     (f"ChEMBL:{r['chembl']}", "Open Targets", r["id"]))
+        n += 1
+    conn.commit()
+    if n:
+        print(f"  promoted {n} ChEMBL id(s) from Open Targets onto intervention entities "
+              f"(ontology_source='Open Targets')")
+    return n
+
+
 def run_opentargets(conn, keys, max_drugs=None):
     max_drugs = _OT["max_drugs"] if max_drugs is None else max_drugs
     ids = _ot_disease_ids()
@@ -271,6 +327,7 @@ def run_opentargets(conn, keys, max_drugs=None):
         print(f"  [{ck}] Open Targets {ot_id}")
         total += fetch_opentargets(conn, ck, ot_id, max_drugs=max_drugs)
         time.sleep(_OT["delay_s"])
+    promote_ot_chembl(conn)
     print(f"  pathway(opentargets): {total} structured claim(s)")
     return total
 
@@ -453,10 +510,20 @@ def main():
                     help="comma-separated subset (default: all six)")
     ap.add_argument("--source", choices=["opentargets", "aems", "all"], default="all")
     ap.add_argument("--max-drugs", type=int, default=15, help="max candidates per condition")
+    ap.add_argument("--promote-chembl", action="store_true",
+                    help="one-off: promote ChEMBL ids from Open Targets records onto "
+                         "intervention entities (ontology_id + ontology_source), no fetching")
     args = ap.parse_args()
     conds = [c.strip() for c in args.conditions.split(",")] if args.conditions else None
-    sources = ("opentargets", "aems") if args.source == "all" else (args.source,)
     db.init_db()
+    if args.promote_chembl:
+        conn = db.connect()
+        print("== Promote Open Targets ChEMBL ids onto entities ==")
+        n = promote_ot_chembl(conn)
+        print(f"  {n} entities now have ontology_id")
+        conn.close()
+        return 0
+    sources = ("opentargets", "aems") if args.source == "all" else (args.source,)
     run(conditions=conds, max_drugs=args.max_drugs, sources=sources)
     return 0
 

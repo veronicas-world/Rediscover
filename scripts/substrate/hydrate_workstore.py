@@ -41,11 +41,14 @@ def _b(v):
 def run():
     conn = db.init_db(reset=False)  # create tables if missing; keep any existing rows
 
-    ents = _fetch_all("entities", ["id", "type", "label", "norm_key", "ontology_id"])
+    ents = _fetch_all("entities", ["id", "type", "label", "norm_key", "ontology_id", "ontology_source"])
+    db.ensure_entity_columns(conn)
     for e in ents:
         conn.execute(
-            "INSERT OR IGNORE INTO entities (id,type,label,norm_key,ontology_id) VALUES (?,?,?,?,?)",
-            (e["id"], e["type"], e["label"], e["norm_key"], e.get("ontology_id")))
+            "INSERT OR IGNORE INTO entities (id,type,label,norm_key,ontology_id,ontology_source)"
+            " VALUES (?,?,?,?,?,?)",
+            (e["id"], e["type"], e["label"], e["norm_key"], e.get("ontology_id"),
+             e.get("ontology_source")))
 
     docs = _fetch_all("documents", ["id", "content_sha256", "source", "external_id", "url",
                                     "title", "raw_text", "retrieved_at", "meta"])

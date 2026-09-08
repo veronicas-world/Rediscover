@@ -143,6 +143,36 @@ def _norm(s):
     return re.sub(r"\s+", " ", s).strip().lower()
 
 
+# Interventions that mean "no identifiable intervention". Extraction produces
+# these when the source sentence discusses treatment in general without naming a
+# drug, class, or supplement ("various treatments", "unspecified treatment",
+# "natural compound"). A claim with no identifiable intervention cannot be
+# graded, so it is rejected AT ENTRY (extraction) — it never reaches the
+# signals table; there is no display filter. Deliberately an explicit list, not
+# a regex: drug classes ("SSRIs"), combinations ("metformin + OCP"), and
+# non-drug interventions ("laser therapy") are real design/scope questions and
+# are NOT rejected here. Normalized: lowercase, whitespace-collapsed (see
+# _norm). Last reviewed 2026-09-08 against the corpus (8 active artifact
+# signals, 18 claims, all from pubmed/reddit text).
+_ARTIFACT_INTERVENTIONS = {
+    # observed in the corpus
+    "unspecified", "unspecified treatment", "unspecified treatments",
+    "unspecified treatment groups", "treatment (unspecified)",
+    "treatment unspecified", "various treatments", "multiple interventions",
+    "interventions", "intervention", "daily use", "unknown",
+    "natural compound", "natural compounds",
+    # same placeholder class — no identifiable intervention
+    "unspecified therapy", "unspecified drug", "not specified", "not reported",
+    "not stated", "n/a", "none", "no treatment", "no intervention",
+}
+
+
+def _is_artifact_intervention(label):
+    """True when the intervention label means 'not identifiable' (see the list
+    above). Used at entry so artifact claims never reach the signals table."""
+    return bool(label) and _norm(label) in _ARTIFACT_INTERVENTIONS
+
+
 def _locate(quote, span_text):
     idx = span_text.find(quote)
     if idx != -1:
@@ -190,7 +220,7 @@ def run():
     conn.commit()
     print(f"  triage: {len(spans)} candidate spans, {len(pending) - len(spans)} skipped (no signal)")
 
-    total = verified = rejected = 0
+    total = verified = rejected = artifact_rejected = 0
     # one prompt per (condition, mode): literature vs. community-tuned (patient report)
     _systems = {(ck, comm): _system_for(ck, comm)
                 for ck in CONDITIONS for comm in (False, True)}
@@ -225,6 +255,14 @@ def run():
                     direction = (it.get("direction") or "unclear").strip()
                 except (KeyError, AttributeError, TypeError):
                     continue
+                # Entry rejection: an intervention that cannot be identified is not
+                # gradable. Reject at extraction so it never reaches the signals
+                # table (list is _ARTIFACT_INTERVENTIONS above).
+                if _is_artifact_intervention(interv):
+                    artifact_rejected += 1
+                    print(f"  [artifact] rejected: intervention {interv!r} "
+                          f"unidentifiable -> {claim_text[:60]!r}")
+                    continue
                 loc = _locate(quote, span["text"])
                 if loc:
                     ds, de = span["start_char"] + loc[0], span["start_char"] + loc[1]
@@ -245,7 +283,9 @@ def run():
                      datetime.now(timezone.utc).isoformat()))
                 total += 1
         conn.commit()
-    print(f"  extracted {total} claims ({verified} provenance-verified, {rejected} rejected)")
+    print(f"  extracted {total} claims ({verified} provenance-verified, {rejected} rejected"
+          + (f", {artifact_rejected} artifact-intervention rejected" if artifact_rejected else "")
+          + ")")
     return total
 
 
@@ -282,13 +322,59 @@ def recheck_community():
     return n
 
 
+def purge_artifact_interventions():
+    """One-off cleanup of artifact claims/signals/entities created BEFORE the
+    entry rejection existed (2026-09-08). Deletes claims whose intervention is an
+    artifact label, their signals, and the now-orphaned artifact entities. The
+    entry rejection above prevents new ones; this clears the historical rows so
+    the next export carries a corpus with no placeholder interventions.
+    Verified against the current store: no contradiction references any of these
+    claims, so the deletes are FK-safe. Audit-friendly: counts are printed, and
+    the same labels are listed in _ARTIFACT_INTERVENTIONS.
+    """
+    conn = db.connect()
+    labels = [r[0] for r in conn.execute(
+        "SELECT DISTINCT label FROM entities WHERE type='intervention'")]
+    labels = [l for l in labels if _is_artifact_intervention(l)]
+    if not labels:
+        print("  no artifact intervention entities found — nothing to purge")
+        return 0
+    ph = ",".join("?" * len(labels))
+    ent_subq = (f"SELECT id FROM entities WHERE type='intervention' AND label IN ({ph})")
+    del_sig = 0
+    try:
+        del_sig = conn.execute(
+            f"DELETE FROM substrate_signals WHERE intervention_id IN ({ent_subq})",
+            labels).rowcount
+    except sqlite3.OperationalError:
+        pass  # signals table may not exist in a brand-new store
+    del_cl = conn.execute(
+        f"DELETE FROM claims WHERE intervention_id IN ({ent_subq})", labels).rowcount
+    del_ent = conn.execute(
+        f"DELETE FROM entities WHERE id IN ({ent_subq})"
+        " AND id NOT IN (SELECT DISTINCT intervention_id FROM claims)",
+        labels).rowcount
+    conn.commit()
+    print(f"  purged {del_cl} artifact claim(s), {del_sig} signal(s), "
+          f"{del_ent} orphaned entity(ies)")
+    print("  labels purged:")
+    for l in sorted(labels):
+        print(f"    - {l}")
+    return del_cl
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--recheck-community", action="store_true",
                     help="reset community spans that yielded no claim (recover titles the old "
                          "clinical triage dropped), then re-extract them community-aware")
+    ap.add_argument("--purge-artifacts", action="store_true",
+                    help="delete claims/signals/entities whose intervention is an artifact label "
+                         "(see _ARTIFACT_INTERVENTIONS); run once to clear pre-rejection rows")
     args = ap.parse_args()
     if args.recheck_community:
         recheck_community()
+    if args.purge_artifacts:
+        purge_artifact_interventions()
     run()

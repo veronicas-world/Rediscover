@@ -54,8 +54,10 @@ def build_sql(conn):
     L.append("BEGIN;")
     L.append("")
 
-    ents = conn.execute("SELECT id, type, label, norm_key, ontology_id FROM entities").fetchall()
-    L += _insert("entities", ["id", "type", "label", "norm_key", "ontology_id"], ents)
+    ents = conn.execute("SELECT id, type, label, norm_key, ontology_id, ontology_source"
+                        " FROM entities").fetchall()
+    L += _insert("entities",
+                 ["id", "type", "label", "norm_key", "ontology_id", "ontology_source"], ents)
 
     docs = conn.execute(
         "SELECT id, content_sha256, source, external_id, url, title, raw_text, retrieved_at, meta_json"

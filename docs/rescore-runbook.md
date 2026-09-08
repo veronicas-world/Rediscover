@@ -221,3 +221,68 @@ driver for the same stages. The rescore driver is now the one-command
 end-to-end path: it adds the lossless rescue semantics of stage 3 (backup +
 DELETE) and the scoring/export finalize. `run.py` is kept for backward
 compatibility; new runs should use `rescore.py`.
+
+## Migration channel: decision (recorded 2026-09-08)
+
+Migrations 047 and 051 are regenerated on every rescore, and at 40x they would
+reach ~50MB / ~71k statements (047) plus ~23MB (051). Supabase rejects single
+migrations at that size (dashboard ~1MB body limit). The options were weighed:
+
+> **Recorded decision — C: delta migrations.** Keep the local work store as
+> the source of truth; emit only the *delta* (new/changed rows since the last
+> sync) as small, numbered, immutable migrations — never rewrite 047/051.
+> This preserves the reviewer property (each numbered migration is immutable
+> history showing exactly what went in and when; the full picture is "apply
+> 04x → 05x in order").
+
+A is direct-to-Supabase writes (loses the human review gate / splits the audit
+artifact between DB and manifest); B is COPY bulk load (loses one-statement-per-
+row diffability; idempotency manual). C is a *workaround-free* fix, not
+chunking. **Do not implement yet** — it is downstream of the pending retmax
+decision.
+
+## Dedup guard and source updates (2026-09-08)
+
+Structured sources (Open Targets, AEMS) dedup on (source, external_id,
+condition) *in addition to* the content hash — which is correct for
+duplication but means a legitimately updated upstream record is discarded
+(supersede/keep-both is an open decision, see below). The run NEVER skips
+silently: when a known (source, external_id, condition) row's content hash
+differs from what the source now returns, the fetch prints
+`[content changed]` and records a `content_changed` event in the run manifest,
+so a corpus that needs refreshing announces itself.
+
+**Supersede vs keep-both (report, not decided):**
+- *Supersede (in-place update + provenance trail):* the documents table has no
+  `superseded_by` column, so this needs a schema change — e.g.
+  `documents.superseded_by uuid references documents(id)` plus
+  `documents.superseded_at`, and the claim/spans re-pointed to the new row
+  (document_id is not immutable in the local store). Cost: a migration (046-add),
+  plus re-chunk/re-extract of the changed row.
+- *Keep both (older marked superseded):* needs only a status column
+  (`documents.superseded boolean`), no re-pointing; the old row + its claims
+  stay for audit. Cost: smaller; scorer would need to ignore superseded docs.
+- The current schema supports **neither today** (no supersede column); the
+  minimum-via-manifest visibility above is what ships now.
+
+## Artifact intervention rejection (2026-09-08)
+
+Claims whose intervention cannot be identified ("unspecified", "various
+treatments", "unknown", "natural compound", ...) are rejected **at extraction
+(entry)** — see `extract_claims._ARTIFACT_INTERVENTIONS` — and never reach the
+signals table; there is no display-time filter. The historical rows (18
+claims / 12 signals / 10 entities) were purged once with
+`extract_claims --purge-artifacts`, so the next export has zero placeholder
+interventions. The rejected list is explicit (classes like "SSRIs",
+combinations, and non-drugs like "laser therapy" are NOT rejected — they are a
+separate scope question).
+
+## ChEMBL id promotion (2026-09-08)
+
+Open Targets provides a ChEMBL id per drug record (`meta.record.chembl_id`).
+`fetch_pathway.promote_ot_chembl()` copies it onto the intervention entity as
+`ontology_id = 'ChEMBL:<id>'` with `ontology_source = 'Open Targets'` (so the
+source of the id is explicit — it came from the OT drug record, not our own
+RxNorm resolution). Unambiguous only; an existing `ontology_id` is never
+overwritten. Wired into `run_opentargets` (and available one-off as
+`fetch_pathway.py --promote-chembl`). 60/180 interventions now carry an id.
