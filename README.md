@@ -70,6 +70,13 @@ In rough order of ambition:
 6. **Be independently audited.** The counting page publishes query definitions so an
    outside reviewer can recompute every number. That invitation is sincere.
 
+One thing to be clear about: the candidate list is **curated, not discovered**. It was
+assembled from a fixed, capped sample of sources (see
+`docs/retrieval-standards-research.md`), not produced by an automated
+candidate-generation system. The evidence on how repurposing platforms actually
+generate candidates, and why Whel's list is a curated set rather than a discovery
+result, is in `docs/candidate-generation-research.md`.
+
 ## 4. Current state
 
 Numbers as of 2026-08-30 (v1.3 rubric, pre-rescore). The corpus has not been
