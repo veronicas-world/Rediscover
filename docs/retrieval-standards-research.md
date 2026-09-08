@@ -95,8 +95,9 @@ linked together and counted once.**
 `fetch_pubmed.py` computes `sha256(title + "\n\n" + abstract)` of the document,
 and `fetch_pathway.py` dedups on a content hash and the (source, external_id,
 condition) triple. Co-publication defeats both keys. This hazard was hit literally
-while building `docs/outreach-prospects.md`: the 2023 International Guideline for the
-Assessment and Management of PCOS is one document co-published in four journals —
+while compiling candidate sources for the outreach prospecting notes: the 2023
+International Guideline for the Assessment and Management of PCOS is one document
+co-published in four journals —
 Fertil Steril (PMID 37589624, DOI 10.1016/j.fertnstert.2023.07.025), J Clin Endocrinol
 Metab (PMID 37580314, DOI 10.1210/clinem/dgad463), Human Reproduction (PMID 37580037,
 DOI 10.1093/humrep/dead156), and Eur J Endocrinol (PMID 37580861, DOI
