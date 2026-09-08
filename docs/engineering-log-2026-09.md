@@ -211,68 +211,119 @@ All committed in `208ed3a`.
 
 ## 5. README claims audit (Part 3 of the audit)
 
-The repo's self-account (README) was verified against the code. Of the
-claims checked, **12 were supported** and **8 were stale or unsupported**.
-The stale ones were fixed in `208ed3a`:
+The repo's self-account (README) was verified against the code. Two
+distinct sets of findings came out of this, and they must not be
+conflated:
 
-- Pipeline step 5: "five 0–2 dimension scores" → "four".
-- Working-on section: "Strong / Moderate / Emerging / Exploratory" →
-  "Strong / Emerging / Exploratory" (3-tier).
-- §4 table: tier distribution and entailment figures dated "(v1.3,
-  pre-rescore)" and "pending revalidation", matching the site's gating
-  convention.
-- Human-labels claim verified against `scripts/audit-output/2026-08-pre-validation/human-labels.json`:
-  100 labels, 100 distinct claims, all from r1 (single rater), created
-  2026-08-01, updated 2026-08-31. README's "100 human labels collected
-  (rounds 1 and 2, single rater)" confirmed.
+- **Stale language claims** — the README and visible pages describing the
+  v1.3 scale (five dimensions, four tiers, 0–10) as if it were current.
+  These were **fixed in `208ed3a`**:
+  - Pipeline step 5: "five 0–2 dimension scores" → "four".
+  - Working-on section: "Strong / Moderate / Emerging / Exploratory" →
+    "Strong / Emerging / Exploratory" (3-tier).
+  - §4 table: tier distribution and entailment figures dated "(v1.3,
+    pre-rescore)" and "pending revalidation", matching the site's gating
+    convention.
+  - Human-labels claim verified against `scripts/audit-output/2026-08-pre-validation/human-labels.json`:
+    100 labels, 100 distinct claims, all from r1 (single rater), created
+    2026-08-01, updated 2026-08-31. README's "100 human labels collected
+    (rounds 1 and 2, single rater)" confirmed.
+
+- **The substantive case against the repo's self-account** — eight
+  criticisms of the project's actual evidentiary strength. These are
+  **not fixed**; they are the standing weaknesses a reviewer should see,
+  recorded in §5.1 at full strength. Where one has been partially
+   addressed (the gate leak, the consistency penalty), the fix is noted
+  with its commit and date but the criticism is not softened.
 
 ### 5.1 The case against the repo's self-account
 
 What follows is the "case against" section from Part 3 of the audit,
 preserved here so the reasoning is not lost when the README is later
-rewritten. It argues against the repo's own account of itself, claim by
-claim, with the file and line evidence. It is the record of what was
-actually wrong, not a summary of what was fixed.
+rewritten. It argues against the repo's own account of itself. It is the
+record of what is actually weak about this project, at full strength — the
+version a reviewer should see. This document exists to be handed to a
+reviewer who should see the project at its least flattering. Where an item
+has since been fixed, the fix is noted with its commit and date, but the
+criticism is not softened by the fix.
 
-**Claim 1 — "five 0–2 dimension scores" (README §3, pipeline step 5).**
-The v1.4 rubric has four scored dimensions (corroboration, rigor,
-specificity, plausibility) plus a downgrade-only consistency penalty. The
-README described five. This was the v1.3 scale leaking into the current
-method's description. **Stale. Fixed.**
+**1. The rubric has never been validated.** The tiers are unvalidated LLM
+judgements. They come from a single scoring pass by one model
+(`config.MODEL = "claude-sonnet-4-6"`); the cutoffs were calibrated against
+the score *distribution*, never against ground truth. The validation study
+is pre-registered (`docs/validation-protocol-DRAFT.md`) and **has not
+run**. Every tier on the site is an unvalidated model rating until it does.
+The README says this in its working-on section; the audit found no reason
+to soften it.
 
-**Claim 2 — "Strong / Moderate / Emerging / Exploratory" (README §4,
-working-on).** The v1.4 rubric has three tiers; "Moderate" was eliminated
-(SCORING_SPEC.md §5). The README described four. **Stale. Fixed.**
+**2. The cutoffs are arbitrary.** `TIER_CUTOFFS` (7.5 / 3.5) were set on
+the v1.3 lattice (0–10, five dimensions) and have never been re-derived on
+the v1.4 lattice. On 0–8, a cutoff at 7.5 means Strong requires a score of
+8 — all four dimensions at maximum with no consistency penalty. The remap
+(`scripts/remap-snapshot-to-v14.py`) puts **0 signals at score 8** (with
+penalty) or **1** (without). 3.5 is also wrong: the remapped mode is 4 (54
+signals), and rule (b) forbids a cutoff on or adjacent to a modal value.
+Strong is structurally near-empty under the current cutoffs. Both cutoffs
+were derived on the old lattice and both need re-deriving; until then, the
+tier labels on any signal are provisional.
 
-**Claim 3 — "The Five-Dimension Scoring Framework" (technical-architecture
-page heading).** Same four-vs-five error on a live page. **Stale. Fixed.**
+**3. The consistency penalty is inert.** After both fixes (scope to the
+signal's own claims, exclude same-document rows), `num_contradictions` is
+**0 for all 226 signals**. The penalty fires on 0 of 226. The
+`contradiction_flag` is dead in the current corpus. This is not a bug in
+the fix; it is a property of the data — there are no cross-document
+contradictions to penalize — but it means the consistency dimension adds
+no discrimination between tiers today.
 
-**Claim 4 — JSON-LD "Moderate-tier" (technical-architecture page).** The
-structured data described a tier that no longer exists in the taxonomy.
-**Stale. Fixed** (prefixed as historical).
+**4. Single-source dominance.** **87% of** `(intervention, condition)`
+**groups** (99 of 114) **have entailed efficacy claims from a single
+document.** There is no second source to disagree with. Corroboration is 0
+for **116 of 226 signals (51%)** — single-source, so their arithmetic
+maximum on the 0–8 scale is 6 (three dimensions at 2, corroboration at 0).
+Corroboration is capped at 1 or below for **221 of 226 signals (98%)**;
+only 5 signals reach corroboration 2. A four-dimension rubric is a
+three-dimension rubric for half of the corpus. Any Strong cutoff above 6
+excludes half the corpus by construction.
 
-**Claim 5 — "of 10" (preview/[signalId] page).** The arm-strength scale is
-0–8 under v1.4, not 0–10. **Stale. Fixed.**
+**5. The entailment check is not independent.** The judge
+(`verify_provenance.py`, via `llm.py`) and the extractor
+(`extract_claims.py`) are the same model family — both default to
+`config.MODEL = "claude-sonnet-4-6"`. The 92.5% figure is a
+self-consistency metric, not independent verification: a 92.5%
+self-agreement rate from a model checking its own work is not evidence
+that the claims are supported, it is evidence that the model is
+internally consistent. That sentence is the most accurate line in the
+audit and is preserved here intact. The judge catches overreach; it does
+not verify the claims against anything outside the model.
 
-**Claim 6 — "(strength 0-10)" (anastrozole-endometriosis page comment).**
-Same 0–10 vs 0–8 error. **Stale. Fixed.**
+**6. The contradiction detector has never been run with the revised
+prompt.** The v2 detector (4 gates + `same_document` field + JSONL
+rejection log) is committed but **has not been run** against the corpus
+(blocked on Anthropic credits). The v1 detector had a material
+intra-document bias: 63% of its candidate pairs were intra-document, 100%
+of its acceptances were intra-document, and it recorded no rejection
+rationales — the 46 cross-document NLI rejections are not auditable. The
+"zero contradictions" finding is a coverage limitation (87% single-source),
+not evidence of consensus.
 
-**Claim 7 — "five-dimension" (MCP tool descriptions).** The MCP server
-described a five-dimension rubric to external tools. **Stale. Fixed.**
+**7. Three routes leaked signal data while the flag was false.** While
+`SIGNALS_PUBLISHED = false`, three routes still rendered live signal data:
+`app/about/methodology/page.tsx` (signal counts), `app/about/roadmap/page.tsx`
+(signal count), and `app/sitemap.ts` (per-signal URLs). Found in the Part 2
+audit; **fixed in `208ed3a` on 2026-09-06** — all three now gate behind
+`SIGNALS_PUBLISHED`, and a re-check found zero remaining ungated callers.
+Recorded here as found-and-fixed, not dropped: the leak existed, and the
+fix is dated.
 
-**Claim 8 — "0–10" and "five dimensions" (CandidateCard JSDoc).** The
-component's own documentation described the v1.3 scale. **Stale. Fixed.**
-
-**Claims 9–20 — supported.** The remaining claims checked held up against
-the code: the pipeline order (chunk → extract → verify → detect → score →
-export), the two provenance modes (text vs structured render), the
-exclusion of structured claims from entailment figures, the
-anchor-and-corroborate headline derivation, the deterministic post-scoring
-steps in Python, the hand-applied migrations, the single-flag gating of
-signal routes, the 87% single-document coverage limitation, the inert
-consistency penalty, the 3-tier taxonomy, the provisional TIER_CUTOFFS, and
-the human-labels count. These are the claims the repo gets right, and they
-are the ones it should keep saying.
+**8. The sex-applicability multiplier is overstated.** Six bands are
+described (F1–F6, `female_band` in `score_claims.py`); **two fire**. The
+snapshot shows F1 and F4 only. The README's own claim is that "every
+pathway signal defaults to F4 (×0.75)" because Open Targets records carry
+no `% female` field; the snapshot shows 51 of 87 pathway signals (59%) at
+F4, with 36 at F1 — so even the README's "every" is an overstatement, and
+the six-band framing promises resolution the data does not deliver. That
+is a data-availability penalty wearing a sex-applicability label.
+Internally recorded, externally overstated.
 
 **What cannot be verified without a human expert.** The audit could verify
 what the code does and what the database holds. It could not verify the
@@ -293,7 +344,11 @@ Re-runnable diagnostic that remaps the v1.3 scoring snapshot
 and reports penalty distribution, score frequency, and tier split under the
 current `TIER_CUTOFFS`. Zero API credits. Used to establish that:
 
-- **The consistency penalty is inert** (fires on 4 of 226 signals, 1.8%).
+- **The consistency penalty is inert.** The remap's own heuristic
+  classification (its approximation of the v1.4 rule on snapshot fields,
+  which it admits does not model the penalty accurately) fires on 4 of 226
+  signals (1.8%); the actual scoring path after Fix 1 + Fix 2 fires on 0 of
+  226 (see §5.1 item 3). Either way, it is inert as a discriminator.
 - **Half the corpus is capped at 6** (116 signals are single-source, so
   their arithmetic maximum on 0–8 is 6).
 - **The top of the scale is structurally unreachable** (4 signals score 7,
