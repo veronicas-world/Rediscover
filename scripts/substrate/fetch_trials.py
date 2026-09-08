@@ -25,10 +25,12 @@ import urllib.request
 from datetime import datetime, timezone
 
 import db
-from config import USER_AGENT, CONDITIONS
+from config import USER_AGENT, CONDITIONS, RETRIEVAL
+import manifest
 
 _CTX = ssl.create_default_context()
 _CT_BASE = "https://clinicaltrials.gov/api/v2/studies"
+_CT = RETRIEVAL["clinicaltrials"]
 _FIELDS = ",".join([
     "protocolSection.identificationModule",
     "protocolSection.conditionsModule",
@@ -49,7 +51,7 @@ def _cond_term(cond_key):
 def _fetch(cond_term, page_size):
     params = urllib.parse.urlencode({
         "query.cond": cond_term,
-        "aggFilters": "studyType:int",   # interventional trials only
+        "aggFilters": _CT["agg_filter"],   # interventional trials only
         "pageSize": str(page_size),
         "fields": _FIELDS,
     })
@@ -57,13 +59,14 @@ def _fetch(cond_term, page_size):
                                 headers={"Accept": "application/json", "User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(req, timeout=45, context=_CTX) as r:
-            return (json.load(r) or {}).get("studies", []) or []
+            data = json.load(r) or {}
+            return (data.get("studies") or []), (data.get("totalCount") or 0)
     except urllib.error.HTTPError as e:
         print(f"  [warn] ClinicalTrials.gov HTTP {e.code} for {cond_term!r}")
-        return []
+        return [], 0
     except urllib.error.URLError as e:
         print(f"  [warn] ClinicalTrials.gov error for {cond_term!r}: {e}")
-        return []
+        return [], 0
 
 
 def _trial_text(study):
@@ -91,10 +94,11 @@ def _trial_text(study):
     return idm.get("nctId"), title, phases, status, text[:4000]
 
 
-def fetch_condition(conn, cond_key, max_trials=15):
+def fetch_condition(conn, cond_key, max_trials=None):
+    max_trials = _CT["max_trials"] if max_trials is None else max_trials
     seen = {r["external_id"] for r in conn.execute(
         "SELECT external_id FROM documents WHERE source='clinicaltrials'")}
-    studies = _fetch(_cond_term(cond_key), max_trials)
+    studies, total = _fetch(_cond_term(cond_key), max_trials)
     made = 0
     for study in studies:
         nct, title, phases, status, text = _trial_text(study)
@@ -113,18 +117,25 @@ def fetch_condition(conn, cond_key, max_trials=15):
         seen.add(nct)
         made += 1
         print(f"  + ({cond_key}) {nct} [{phases}/{status}]: {title[:56]}")
+    manifest.record(source="clinicaltrials", cond_key=cond_key, event="api_v2",
+                    database="ClinicalTrials.gov", interface=_CT["interface"],
+                    query="query.cond=" + _cond_term(cond_key),
+                    filters=_CT["agg_filter"], limit_page_size=max_trials,
+                    records_matching=total, records_fetched=len(studies),
+                    dedup_skipped=len(studies) - made, records_inserted=made)
     conn.commit()
     return made
 
 
-def run(conditions=None, max_trials=15):
+def run(conditions=None, max_trials=None):
+    max_trials = _CT["max_trials"] if max_trials is None else max_trials
     conn = db.connect()
     keys = conditions or list(CONDITIONS.keys())
     total = 0
     for ck in keys:
         print(f"  [{ck}] ClinicalTrials.gov ({_cond_term(ck)})")
         total += fetch_condition(conn, ck, max_trials=max_trials)
-        time.sleep(0.4)
+        time.sleep(_CT["delay_s"])
     print(f"  direct(clinicaltrials): {total} trial document(s)")
     return total
 

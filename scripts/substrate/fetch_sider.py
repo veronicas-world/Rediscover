@@ -23,13 +23,15 @@ import urllib.request
 from datetime import datetime, timezone
 
 import db
-from config import USER_AGENT, CONDITIONS, WORK_DIR
+import manifest
+from config import USER_AGENT, CONDITIONS, WORK_DIR, RETRIEVAL
 from fetch_pathway import _insert_structured, _CONDITION_EVENTS, _drugs_for_condition
 
 _CTX = ssl.create_default_context()
 _BASE = "http://sideeffects.embl.de/media/download"  # /media/files is now 404
 _DRUG_PAGE = "http://sideeffects.embl.de/drugs"
 _CACHE = WORK_DIR / "sider"
+_SIDER = RETRIEVAL["sider"]
 SIDER_RENDER_VERSION = "pathway-render/sider-v1"
 
 _FILES = {"drug_names": "drug_names.tsv", "freq": "meddra_freq.tsv.gz"}
@@ -110,7 +112,9 @@ def _render_sider(drug, term, freq, cond_label):
             f"mechanistic lead for further investigation, not evidence of benefit.")
 
 
-def run(conditions=None, max_drugs=10, max_events_per_drug=3):
+def run(conditions=None, max_drugs=None, max_events_per_drug=None):
+    max_drugs = _SIDER["max_drugs"] if max_drugs is None else max_drugs
+    max_events_per_drug = _SIDER["max_events_per_drug"] if max_events_per_drug is None else max_events_per_drug
     conn = db.connect()
     keys = conditions or list(CONDITIONS.keys())
     files = _ensure_files()
@@ -136,6 +140,7 @@ def run(conditions=None, max_drugs=10, max_events_per_drug=3):
     for ck in keys:
         relevant = _CONDITION_EVENTS.get(ck, set())
         cond_label = CONDITIONS[ck]["canonical"]
+        per_cond_events = 0
         for drug in per_cond[ck]:
             stitches = name2stitch.get(drug.strip().lower(), set())
             seen_terms = set()
@@ -150,7 +155,7 @@ def run(conditions=None, max_drugs=10, max_events_per_drug=3):
                     seen_terms.add(term.lower())
                     statement = _render_sider(drug, term, se["freq"], cond_label)
                     record = {"drug": drug, "side_effect": term, "frequency": se["freq"],
-                              "stitch_id": st, "source_version": "SIDER 4.1 (2015)",
+                              "stitch_id": st, "source_version": _SIDER["source_version"],
                               "reading": ["safety", "mechanistic_lead"], "reverse_translation": True}
                     if _insert_structured(conn, source="sider", external_id=f"sider:{st}:{term}".lower(),
                                           url=f"{_DRUG_PAGE}/{st.lstrip('CID').lstrip('0') or st}",
@@ -158,8 +163,18 @@ def run(conditions=None, max_drugs=10, max_events_per_drug=3):
                                           intervention=drug, aspect="safety", direction="negative",
                                           outcome=term, render_version=SIDER_RENDER_VERSION):
                         total += 1
+                        per_cond_events += 1
                         picked += 1
                         print(f"  + (sider/{ck}) {drug} \u2014 {term}")
+        manifest.record(source="sider", cond_key=ck, event="bulk_tsv",
+                        database="SIDER", interface=_SIDER["interface"],
+                        filters={"condition_relevant_terms": sorted(relevant)} if relevant else None,
+                        limit_max_drugs=max_drugs, limit_max_events_per_drug=max_events_per_drug,
+                        drugs_checked=len(per_cond[ck]),
+                        stitches_matched=len(set().union(*[name2stitch.get(d.strip().lower(), set())
+                                                           for d in per_cond[ck]])) if per_cond[ck] else 0,
+                        records_matching=per_cond_events, records_fetched=per_cond_events,
+                        records_inserted=per_cond_events)
         conn.commit()
     print(f"  pathway(sider): {total} structured claim(s)")
     return total

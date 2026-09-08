@@ -22,7 +22,73 @@ RUN_LOG = SUBSTRATE_DIR / "audit-output" / "substrate-run.json"
 WORK_DIR = pathlib.Path(os.environ.get("WHEL_SUBSTRATE_WORK", str(SUBSTRATE_DIR / ".work")))
 WORK_DB = WORK_DIR / "substrate-work.db"
 WORK_DIR.mkdir(parents=True, exist_ok=True)
-(SUBSTRATE_DIR / "audit-output").mkdir(parents=True, exist_ok=True)
+AUDIT_OUT = SUBSTRATE_DIR / "audit-output"
+AUDIT_OUT.mkdir(parents=True, exist_ok=True)
+
+
+# ── Retrieval parameters (PRISMA-S) ──────────────────────────────────────────
+# ONE place to see and change every limit/filter the fetchers apply. Changing a
+# value here is a config edit; the fetchers have no other hard-coded caps. The
+# values below reproduce EXACTLY the behaviour of the original fetchers
+# (retmax=2, max 5 docs per condition, etc.). The retmax/max_documents decision
+# is pending — nothing here has been raised.
+RETRIEVAL = {
+    "pubmed": {
+        "interface": "NCBI E-utilities (esearch/efetch)",
+        "db": "pubmed",
+        "retmax": 2,             # PMIDs requested per esearch (was esearch default)
+        "per_query": 2,          # effective per-query fetch cap (was fetch_condition default)
+        "max_documents": 5,      # document cap per condition (was fetch_condition default)
+        "sort": "relevance",
+        "esearch_delay_s": 0.4,
+        "efetch_delay_s": 0.5,
+    },
+    "clinicaltrials": {
+        "interface": "ClinicalTrials.gov API v2",
+        "max_trials": 15,        # page size AND per-condition cap (was run default)
+        "agg_filter": "studyType:int",
+        "delay_s": 0.4,
+    },
+    "community": {
+        "interface": "Reddit OAuth JSON API",
+        "max_posts": 15,         # top posts per condition (was run default)
+        "max_comments": 20,      # comments per post (was run default)
+        "search_limit": 25,      # per-search limit (was _search default)
+        "sort": "top",
+        "time_range": "all",
+        "delay_s": 1.5,
+    },
+    "opentargets": {
+        "interface": "Open Targets Platform GraphQL API v4",
+        "max_drugs": 15,         # candidate drugs per condition (was run default)
+        "delay_s": 0.5,
+    },
+    "aems": {
+        "interface": "openFDA drug/event API",
+        "max_drugs": 10,         # candidate drugs per condition (was min(max_drugs, 10))
+        "max_events_per_drug": 3,
+        "patient_sex_filter": "patientsex:2",
+        "delay_s": 1.6,
+    },
+    "sider": {
+        "interface": "SIDER 4.1 bulk TSV (cached download)",
+        "max_drugs": 10,         # candidate drugs per condition (was run default)
+        "max_events_per_drug": 3,
+        "source_version": "SIDER 4.1 (2015)",
+    },
+}
+
+
+# ── Dry-run cost assumptions (planning estimates only) ───────────────────────
+# No historical usage exists yet (the previous run log recorded empty usage), so
+# per-call token budgets below are informed guesses to be recalibrated from the
+# first real run. Cost = calls x tokens x PRICE_IN/OUT (config.MODEL prices).
+DRY_RUN_COST_ASSUMPTIONS = {
+    "extract":       {"input": 600,  "output": 250},   # per candidate span
+    "entail":        {"input": 500,  "output": 200},   # per claim needing a label
+    "contradiction": {"input": 900,  "output": 200},   # per candidate pair
+    "score":         {"input": 2500, "output": 800},   # per (intervention, condition, aspect, arm) group
+}
 
 # Single LLM backbone. The model is a commodity; the substrate is the moat.
 MODEL = "claude-sonnet-4-6"

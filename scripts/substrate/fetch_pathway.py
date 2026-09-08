@@ -35,15 +35,18 @@ import urllib.request
 from datetime import datetime, timezone
 
 import db
-from config import USER_AGENT, CONDITIONS, REPO
+import manifest
+from config import USER_AGENT, CONDITIONS, REPO, RETRIEVAL
 
 _CTX = ssl.create_default_context()
 _OT_GRAPHQL = "https://api.platform.opentargets.org/api/v4/graphql"
 _OPENFDA = "https://api.fda.gov/drug/event.json"
 _ONTOLOGY = REPO / "lib" / "conditions-ontology.json"
-OT_RENDER_VERSION = "pathway-render/opentargets-v1"
-AEMS_RENDER_VERSION = "pathway-render/aems-v1"
-_AEMS_DELAY = 1.6  # ~37 req/min, under the openFDA free-tier 40/min
+OT_RENDER_VERSION = "pathway-render/opentargets-v2"   # v2: retrieval date moved to meta (was in statement)
+AEMS_RENDER_VERSION = "pathway-render/aems-v2"          # v2: retrieval date moved to meta (was in statement)
+_OT = RETRIEVAL["opentargets"]
+_AEM = RETRIEVAL["aems"]
+_AEMS_DELAY = _AEM["delay_s"]  # ~37 req/min, under the openFDA free-tier 40/min
 
 # Reused verbatim from scripts/opentargets-pipeline.js (DISEASE_QUERY), trimmed to the
 # fields we render from.
@@ -115,9 +118,23 @@ def _insert_structured(conn, *, source, external_id, url, statement, record, con
                        intervention, aspect, direction, outcome, render_version):
     """Insert a structured record as document + ONE span + ONE deterministic claim.
     Bypasses LLM extraction: the rendered statement IS the claim, quoted verbatim and
-    pre-verified (we authored the rendering from the record). Returns True if new."""
+    pre-verified (we authored the rendering from the record). Returns True if new.
+
+    Dedup is TWO-keyed: content hash AND (source, external_id, condition). The hash
+    check is the primary guard now that statements no longer embed the retrieval
+    date (2026-09-08; v2 renders). The (source, external_id, condition) guard exists
+    for the hash-transition run after that change — the 118 rows fetched before it
+    carry date-embedded hashes, so a date-free re-render alone hashes differently
+    and would otherwise re-insert every record once. The same drug legitimately has
+    one row PER condition (the condition is inside this key), so cross-condition
+    records are preserved."""
     csha = db.sha256(statement)
     if conn.execute("SELECT 1 FROM documents WHERE content_sha256=?", (csha,)).fetchone():
+        return False
+    dup = conn.execute(
+        "SELECT 1 FROM documents WHERE source=? AND external_id=? AND meta_json LIKE ?",
+        (source, external_id, f'%"condition": "{cond_key}"%')).fetchone()
+    if dup:
         return False
     now = datetime.now(timezone.utc).isoformat()
     doc_id, span_id = db.new_id(), db.new_id()
@@ -160,9 +177,14 @@ def _post_graphql(query, variables):
         return json.load(r)
 
 
-def _render_ot(drug_name, drug_type, stage, moa, target_name, cond_label, snapshot):
-    """Deterministic, fixed-order rendering of one Open Targets drug-candidate record."""
-    parts = [f"Per Open Targets (retrieved {snapshot}), {drug_name}"]
+def _render_ot(drug_name, drug_type, stage, moa, target_name, cond_label):
+    """Deterministic, fixed-order rendering of one Open Targets drug-candidate record.
+
+    The retrieval date is PROVENANCE, not content: it is NOT rendered into the
+    statement (it lives in the record JSON and the retrieval manifest), so the
+    rendered statement — and its content hash — is stable across days, and a
+    re-run dedups instead of re-inserting."""
+    parts = [f"Per Open Targets, {drug_name}"]
     if drug_type:
         parts.append(f" (a {drug_type})")
     parts.append(f" is a clinical candidate for {cond_label}")
@@ -176,7 +198,8 @@ def _render_ot(drug_name, drug_type, stage, moa, target_name, cond_label, snapsh
     return "".join(parts)
 
 
-def fetch_opentargets(conn, cond_key, ot_id, max_drugs=15):
+def fetch_opentargets(conn, cond_key, ot_id, max_drugs=None):
+    max_drugs = _OT["max_drugs"] if max_drugs is None else max_drugs
     snapshot = datetime.now(timezone.utc).date().isoformat()
     cond_label = CONDITIONS[cond_key]["canonical"]
     try:
@@ -187,8 +210,14 @@ def fetch_opentargets(conn, cond_key, ot_id, max_drugs=15):
     disease = (resp.get("data") or {}).get("disease")
     if not disease:
         print(f"  [warn] OT returned no disease for {cond_key} ({ot_id}) — {resp.get('errors')}")
+        manifest.record(source="opentargets", cond_key=cond_key, event="graphql",
+                        database="Open Targets Platform", interface=_OT["interface"],
+                        query=ot_id, filters={"disease": ot_id}, limit_max_drugs=max_drugs,
+                        records_matching=0, records_fetched=0, records_inserted=0)
         return 0
-    rows = ((disease.get("drugAndClinicalCandidates") or {}).get("rows")) or []
+    candidates = (disease.get("drugAndClinicalCandidates") or {})
+    rows = candidates.get("rows") or []
+    total_matching = candidates.get("count") or len(rows)
     made = 0
     for row in rows[:max_drugs]:
         drug = row.get("drug") or {}
@@ -207,7 +236,7 @@ def fetch_opentargets(conn, cond_key, ot_id, max_drugs=15):
             if tgts:
                 target_name = tgts[0].get("approvedName")
         statement = _render_ot(name, drug_type, row.get("maxClinicalStage"),
-                               moa, target_name, cond_label, snapshot)
+                               moa, target_name, cond_label)
         record = {"chembl_id": chembl, "drug_type": drug.get("drugType"),
                   "max_clinical_stage": row.get("maxClinicalStage"),
                   "mechanism_of_action": moa, "target": target_name,
@@ -220,11 +249,18 @@ def fetch_opentargets(conn, cond_key, ot_id, max_drugs=15):
                               outcome="mechanistic association", render_version=OT_RENDER_VERSION):
             made += 1
             print(f"  + (opentargets/{cond_key}) {name} — stage {row.get('maxClinicalStage')}")
+    manifest.record(source="opentargets", cond_key=cond_key, event="graphql",
+                    database="Open Targets Platform", interface=_OT["interface"],
+                    query=ot_id, filters={"disease": ot_id}, limit_max_drugs=max_drugs,
+                    retrieved=snapshot,
+                    records_matching=total_matching, records_fetched=len(rows),
+                    dedup_skipped=len(rows) - made, records_inserted=made)
     conn.commit()
     return made
 
 
-def run_opentargets(conn, keys, max_drugs=15):
+def run_opentargets(conn, keys, max_drugs=None):
+    max_drugs = _OT["max_drugs"] if max_drugs is None else max_drugs
     ids = _ot_disease_ids()
     total = 0
     for ck in keys:
@@ -234,7 +270,7 @@ def run_opentargets(conn, keys, max_drugs=15):
             continue
         print(f"  [{ck}] Open Targets {ot_id}")
         total += fetch_opentargets(conn, ck, ot_id, max_drugs=max_drugs)
-        time.sleep(0.5)
+        time.sleep(_OT["delay_s"])
     print(f"  pathway(opentargets): {total} structured claim(s)")
     return total
 
@@ -309,14 +345,17 @@ _CONDITION_EVENTS = {
 }
 
 
-def _render_aems(drug, event, n, total, cond_label, snapshot):
+def _render_aems(drug, event, n, total, cond_label):
     # Dual read (ARMS_SPEC §2): the same datum is a safety consideration AND a mechanistic
     # lead. Both clauses are structural so neither can be stripped, and the lead clause is
     # hedged ("not evidence of benefit") because over-reading adverse events as mechanism is
-    # the documented trap (confounding by indication, reporting bias).
+    # the documented trap (confounding by indication, reporting bias). The retrieval date
+    # is PROVENANCE, not content: it is NOT rendered into the statement (it lives in the
+    # record JSON and the retrieval manifest), so the statement and its content hash are
+    # stable across days and re-runs dedup instead of re-inserting.
     denom = f" (of {total} female reports for {drug} in the analysed sample)" if total else ""
-    return (f"In FDA AEMS (the FDA Adverse Event Reporting System, formerly FAERS; retrieved "
-            f"{snapshot}), {n} report(s) of {event} were recorded for {drug} among female "
+    return (f"In FDA AEMS (the FDA Adverse Event Reporting System, formerly FAERS), "
+            f"{n} report(s) of {event} were recorded for {drug} among female "
             f"patients{denom}. This is a raw adverse-event report count, not a disproportionality "
             f"statistic or evidence of causation, and is subject to reporting bias and confounding. "
             f"Read two ways: as a safety consideration, and \u2014 because it suggests {drug} acts on a "
@@ -335,7 +374,9 @@ def _drugs_for_condition(conn, cond_key):
     return [r["label"] for r in rows]
 
 
-def fetch_aems(conn, cond_key, max_drugs=10, max_events_per_drug=3):
+def fetch_aems(conn, cond_key, max_drugs=None, max_events_per_drug=None):
+    max_drugs = _AEM["max_drugs"] if max_drugs is None else max_drugs
+    max_events_per_drug = _AEM["max_events_per_drug"] if max_events_per_drug is None else max_events_per_drug
     snapshot = datetime.now(timezone.utc).date().isoformat()
     drugs = _drugs_for_condition(conn, cond_key)[:max_drugs]
     if not drugs:
@@ -347,9 +388,11 @@ def fetch_aems(conn, cond_key, max_drugs=10, max_events_per_drug=3):
         total, gynae = _aems_for_drug(drug)
         # keep only events relevant to THIS condition; skip the drug here if none match
         events = [(e, n) for (e, n) in gynae if e.lower() in relevant] if relevant else gynae
+        picked = events[:max_events_per_drug]
         cond_label = CONDITIONS[cond_key]["canonical"]
-        for event, n in events[:max_events_per_drug]:
-            statement = _render_aems(drug, event, n, total, cond_label, snapshot)
+        made_before = made
+        for event, n in picked:
+            statement = _render_aems(drug, event, n, total, cond_label)
             record = {"drug": drug, "event": event, "report_count": n,
                       "total_female_reports": total, "retrieved": snapshot,
                       "reading": ["safety", "mechanistic_lead"], "reverse_translation": True}
@@ -360,11 +403,28 @@ def fetch_aems(conn, cond_key, max_drugs=10, max_events_per_drug=3):
                                   outcome=event, render_version=AEMS_RENDER_VERSION):
                 made += 1
                 print(f"  + (aems/{cond_key}) {drug} — {event} ({n})")
+        manifest.record(source="aems", cond_key=cond_key, drug=drug, event="openfda",
+                        database="openFDA AEMS", interface=_AEM["interface"],
+                        query=_aems_search(drug.lower()),
+                        filters={"patientsex": "2 (female)",
+                                 "gynae_meddra_terms": len(relevant) > 0},
+                        limit_max_events_per_drug=max_events_per_drug,
+                        retrieved=snapshot,
+                        records_matching=total,
+                        records_fetched=len(events),
+                        dedup_skipped=len(picked) - (made - made_before),
+                        records_inserted=made - made_before)
     conn.commit()
+    # condition-level summary carries the authoritative per-condition total
+    manifest.record(source="aems", cond_key=cond_key, event="condition_summary",
+                    database="openFDA AEMS", interface=_AEM["interface"],
+                    limit_max_drugs=max_drugs, limit_max_events_per_drug=max_events_per_drug,
+                    drugs_checked=len(drugs), records_inserted=made)
     return made
 
 
-def run_aems(conn, keys, max_drugs=10):
+def run_aems(conn, keys, max_drugs=None):
+    max_drugs = _AEM["max_drugs"] if max_drugs is None else max_drugs
     total = 0
     for ck in keys:
         print(f"  [{ck}] AEMS (openFDA, female reports)")
@@ -375,14 +435,15 @@ def run_aems(conn, keys, max_drugs=10):
 
 # ── orchestration ───────────────────────────────────────────────────────────
 
-def run(conditions=None, max_drugs=15, sources=("opentargets", "aems")):
+def run(conditions=None, max_drugs=None, sources=("opentargets", "aems")):
+    max_drugs = _OT["max_drugs"] if max_drugs is None else max_drugs
     conn = db.connect()
     keys = conditions or list(CONDITIONS.keys())
     total = 0
     if "opentargets" in sources:
         total += run_opentargets(conn, keys, max_drugs)
     if "aems" in sources:
-        total += run_aems(conn, keys, max_drugs=min(max_drugs, 10))
+        total += run_aems(conn, keys, max_drugs=min(max_drugs, RETRIEVAL["aems"]["max_drugs"]))
     return total
 
 

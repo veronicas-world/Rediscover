@@ -33,12 +33,14 @@ import urllib.request
 from datetime import datetime, timezone
 
 import db
-from config import CONDITIONS, load_dotenv
+import manifest
+from config import CONDITIONS, RETRIEVAL, load_dotenv
 
 _CTX = ssl.create_default_context()
 # Reddit recommends a unique descriptive UA: "<platform>:<app>:<version> (by /u/<user>)".
 _UA = "python:whel-substrate:1.0 (by /u/whel-bio; women's-health research)"
-_DELAY = 1.5  # be polite — Reddit rate-limits unauthenticated JSON aggressively
+_COM = RETRIEVAL["community"]
+_DELAY = _COM["delay_s"]  # be polite — Reddit rate-limits unauthenticated JSON aggressively
 
 # condition key -> subreddits (ported from scripts/reddit-pipeline.js CONDITION_SUBREDDITS)
 _SUBREDDITS = {
@@ -107,9 +109,11 @@ def _api_get(path):
         return None
 
 
-def _search(subreddit, query, limit=25):
+def _search(subreddit, query, limit=None):
+    limit = _COM["search_limit"] if limit is None else limit
     q = urllib.parse.quote(query)
-    data = _api_get(f"/r/{subreddit}/search?q={q}&sort=top&limit={limit}&t=all&restrict_sr=1")
+    data = _api_get(f"/r/{subreddit}/search?q={q}&sort={_COM['sort']}&limit={limit}"
+                    f"&t={_COM['time_range']}&restrict_sr=1")
     time.sleep(_DELAY)
     if not data:
         return []
@@ -170,7 +174,9 @@ def _insert_doc(conn, *, external_id, url, title, raw_text, meta):
     return True
 
 
-def fetch_condition(conn, cond_key, max_posts=15, max_comments=20):
+def fetch_condition(conn, cond_key, max_posts=None, max_comments=None):
+    max_posts = _COM["max_posts"] if max_posts is None else max_posts
+    max_comments = _COM["max_comments"] if max_comments is None else max_comments
     subs = _SUBREDDITS.get(cond_key, [])
     if not subs:
         print(f"  [{cond_key}] no subreddits mapped — skipping")
@@ -179,7 +185,15 @@ def fetch_condition(conn, cond_key, max_posts=15, max_comments=20):
     posts, seen = [], set()
     for sub in subs:
         for q in _QUERIES:
-            for p in _search(sub, q):
+            found = _search(sub, q)
+            manifest.record(source="reddit", cond_key=cond_key, event="search",
+                            database="Reddit", interface=_COM["interface"],
+                            query=q, subreddit=sub,
+                            filters={"sort": _COM["sort"], "t": _COM["time_range"]},
+                            limit_search=_COM["search_limit"],
+                            records_matching=len(found), records_fetched=len(found),
+                            records_inserted=0)
+            for p in found:
                 pid = p.get("id")
                 if pid and pid not in seen and "/comments/" in (p.get("permalink") or ""):
                     seen.add(pid)
@@ -188,6 +202,9 @@ def fetch_condition(conn, cond_key, max_posts=15, max_comments=20):
     posts = posts[:max_posts]
 
     made = 0
+    posts_inserted = 0
+    comments_fetched = 0
+    comments_inserted = 0
     for p in posts:
         pid = p.get("id")
         permalink = p.get("permalink")
@@ -201,8 +218,11 @@ def fetch_condition(conn, cond_key, max_posts=15, max_comments=20):
         if _insert_doc(conn, external_id=f"t3_{pid}", url=url, title=title,
                        raw_text=post_text, meta=base_meta):
             made += 1
+            posts_inserted += 1
         # comments for this post (this is where agreement/disagreement lives)
-        for c in _fetch_comments(permalink, pid, cap=max_comments):
+        c_fetched = _fetch_comments(permalink, pid, cap=max_comments)
+        comments_fetched += len(c_fetched)
+        for c in c_fetched:
             cbody = _clean(c["body"])[:4000]
             cmeta = {"condition": cond_key, "subreddit": f"r/{p.get('subreddit')}",
                      "thread_id": pid, "kind": "comment", "author": c.get("author"),
@@ -212,12 +232,24 @@ def fetch_condition(conn, cond_key, max_posts=15, max_comments=20):
             if _insert_doc(conn, external_id=f"t1_{cid}", url=f"{url}{cid}/", title=title,
                            raw_text=cbody, meta=cmeta):
                 made += 1
+                comments_inserted += 1
         conn.commit()
+    manifest.record(source="reddit", cond_key=cond_key, event="condition_summary",
+                    database="Reddit", interface=_COM["interface"],
+                    posts_found=len(posts), posts_taken=min(len(posts), max_posts),
+                    posts_cap=max_posts, comments_cap=max_comments,
+                    comments_fetched=comments_fetched,
+                    records_fetched=len(posts) + comments_fetched,
+                    records_inserted=made,
+                    dedup_skipped=(len(posts) - posts_inserted)
+                                  + (comments_fetched - comments_inserted))
     print(f"  [{cond_key}] {len(posts)} posts + their comments -> {made} documents")
     return made
 
 
-def run(conditions=None, max_posts=15, max_comments=20):
+def run(conditions=None, max_posts=None, max_comments=None):
+    max_posts = _COM["max_posts"] if max_posts is None else max_posts
+    max_comments = _COM["max_comments"] if max_comments is None else max_comments
     conn = db.connect()
     if not _oauth_token():
         print("  Reddit blocks unauthenticated access (429/403). One-time OAuth setup:")
